@@ -1,15 +1,19 @@
-// Database configuration and connection setup
-// Example using mongoose or pg/mysql
+const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    const connStr = process.env.MONGODB_URI || 'mongodb://localhost:27017/carelink';
-    console.log(`Connecting to database at ${connStr}...`);
-    // Example: await mongoose.connect(connStr);
-    console.log('Database connected successfully');
+    const connStr = process.env.MONGODB_URI;
+
+    if (!connStr) {
+      throw new Error("MONGODB_URI is not configured in .env");
+    }
+
+    await mongoose.connect(connStr);
+
+    console.log("MongoDB connected successfully");
   } catch (error) {
-    console.error(`Database connection error: ${error.message}`);
-    process.exit(1);
+    console.error("Database connection error:", error.message);
+    throw error;
   }
 };
 
