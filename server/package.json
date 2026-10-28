@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "CareLink Backend API Server",
   "main": "src/app.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
