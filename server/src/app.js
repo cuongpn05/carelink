@@ -9,6 +9,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.route');
+const caregiverRoutes = require('./routes/caregiverRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +32,9 @@ app.get('/api/health', (req, res) => {
 // Authentication & Account Routes (support both /api/auth and /api/v1/auth)
 app.use('/api/auth', authRoutes);
 app.use('/api/v1/auth', authRoutes);
+
+// Caregiver Routes
+app.use('/api/caregivers', caregiverRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
