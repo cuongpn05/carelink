@@ -1,15 +1,37 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './context/AuthContext';
+import { HomePage } from './pages/HomePage';
+import { ServicesPage } from './pages/ServicesPage';
+import { CaregiversPage } from './pages/CaregiversPage';
+import { AboutPage } from './pages/AboutPage';
 
 const App: React.FC = () => {
   return (
-    <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-      <h1 style={{ fontSize: '2.5rem', color: '#0284c7', marginBottom: '1rem' }}>
-        Welcome to CareLink
-      </h1>
-      <p style={{ color: '#64748b', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
-        Connecting care, supporting communities, and enhancing healthcare delivery.
-      </p>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              borderRadius: '12px',
+              background: '#0f172a',
+              color: '#fff',
+              fontSize: '14px',
+            },
+          }}
+        />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/caregivers" element={<CaregiversPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          {/* Fallback to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 };
 

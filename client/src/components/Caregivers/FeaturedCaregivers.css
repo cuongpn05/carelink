@@ -1,0 +1,188 @@
+.caregivers-section {
+  padding: 60px 0 84px 0;
+  background-color: #ffffff;
+  width: 100%;
+}
+
+.caregivers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 2vw, 32px);
+}
+
+.caregiver-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.caregiver-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.09);
+  border-color: #cbd5e1;
+}
+
+.caregiver-card-inner {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+/* Avatar container */
+.caregiver-avatar-container {
+  position: relative;
+  width: 120px;
+  height: 132px;
+  flex-shrink: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background-color: #f1f5f9;
+}
+
+.caregiver-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.caregiver-card:hover .caregiver-avatar {
+  transform: scale(1.05);
+}
+
+.available-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 12px;
+  height: 12px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.available-dot {
+  width: 7.5px;
+  height: 7.5px;
+  background-color: #22c55e;
+  border-radius: 50%;
+}
+
+/* Details right */
+.caregiver-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.caregiver-header-info {
+  margin-bottom: 2px;
+}
+
+.caregiver-name {
+  font-size: 17.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.2px;
+}
+
+.caregiver-role {
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+/* Meta rows */
+.caregiver-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.meta-icon {
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.star-icon {
+  flex-shrink: 0;
+}
+
+.rating-score {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 13px;
+}
+
+.review-count {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+/* Footer with Price & Button */
+.caregiver-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #f1f5f9;
+  gap: 8px;
+}
+
+.caregiver-rate {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1d4ed8;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+.btn-view-profile {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d4ed8;
+  background-color: #ffffff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-view-profile:hover {
+  background-color: #eff6ff;
+  border-color: #1d4ed8;
+  color: #1e40af;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .caregivers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .caregivers-grid {
+    grid-template-columns: 1fr;
+  }
+}
