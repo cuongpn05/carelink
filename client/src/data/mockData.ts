@@ -1,0 +1,118 @@
+import { Caregiver, ServiceCategory, TrustFeature } from '../types';
+
+export const serviceCategories: ServiceCategory[] = [
+  {
+    id: 'home-care',
+    title: 'Chăm sóc tại nhà',
+    description: 'Hỗ trợ sinh hoạt và chăm sóc sức khỏe tại nhà.',
+    iconType: 'home',
+    themeColor: 'blue',
+    targetSlug: 'cham-soc-tai-nha',
+  },
+  {
+    id: 'elderly-care',
+    title: 'Chăm sóc người cao tuổi',
+    description: 'Đồng hành và hỗ trợ người lớn tuổi hàng ngày.',
+    iconType: 'elderly',
+    themeColor: 'purple',
+    targetSlug: 'cham-soc-nguoi-cao-tuoi',
+  },
+  {
+    id: 'post-treatment-care',
+    title: 'Chăm sóc sau điều trị',
+    description: 'Hỗ trợ phục hồi và chăm sóc sau khi xuất viện.',
+    iconType: 'medical',
+    themeColor: 'green',
+    targetSlug: 'cham-soc-sau-dieu-tri',
+  },
+  {
+    id: 'child-care',
+    title: 'Chăm sóc trẻ em',
+    description: 'Hỗ trợ chăm sóc trẻ với sự tận tâm và an toàn.',
+    iconType: 'baby',
+    themeColor: 'orange',
+    targetSlug: 'cham-soc-tre-em',
+  },
+];
+
+export const featuredCaregivers: Caregiver[] = [
+  {
+    id: 'cg-01',
+    name: 'Nguyễn Thị Minh',
+    title: 'Nhân viên chăm sóc',
+    experienceYears: 5,
+    rating: 4.9,
+    reviewCount: 32,
+    hourlyRate: 150000,
+    avatar: 'https://images.unsplash.com/photo-1594824813583-0599a0937a34?auto=format&fit=crop&w=400&q=80',
+    bio: 'Tận tâm, chu đáo và kiên nhẫn. Tôi có 5 năm kinh nghiệm đồng hành, chăm sóc người cao tuổi và người cần hỗ trợ phục hồi sức khỏe tại gia đình.',
+    skills: ['Hỗ trợ vận động nhẹ', 'Chuẩn bị dinh dưỡng lành mạnh', 'Vệ sinh cá nhân an toàn', 'Đo huyết áp & đường huyết'],
+    certifications: ['Chứng chỉ Chăm sóc sức khỏe gia đình', 'Kỹ năng Sơ cấp cứu Red Cross'],
+    serviceCategoryIds: ['elderly-care', 'home-care'],
+    location: 'Quận 1, TP. Hồ Chí Minh',
+    isAvailable: true,
+    phone: '0901 234 567',
+  },
+  {
+    id: 'cg-02',
+    name: 'Trần Thị Hương',
+    title: 'Điều dưỡng viên',
+    experienceYears: 4,
+    rating: 4.8,
+    reviewCount: 28,
+    hourlyRate: 180000,
+    avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80',
+    bio: 'Tốt nghiệp chuyên ngành Điều dưỡng với 4 năm công tác tại bệnh viện và dịch vụ y tế tại nhà. Có kỹ năng chuyên sâu về chăm sóc sau phẫu thuật.',
+    skills: ['Thay băng & chăm sóc vết mổ', 'Theo dõi chỉ số sinh hiệu', 'Hỗ trợ tập phục hồi chức năng', 'Tuân thủ y lệnh bác sĩ'],
+    certifications: ['Chứng chỉ hành nghề Điều dưỡng viên', 'Chứng nhận Hồi sức cấp cứu cơ bản'],
+    serviceCategoryIds: ['post-treatment-care', 'home-care'],
+    location: 'Bình Thạnh, TP. Hồ Chí Minh',
+    isAvailable: true,
+    phone: '0912 345 678',
+  },
+  {
+    id: 'cg-03',
+    name: 'Lê Văn Thành',
+    title: 'Nhân viên chăm sóc',
+    experienceYears: 3,
+    rating: 4.9,
+    reviewCount: 21,
+    hourlyRate: 140000,
+    avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=400&q=80',
+    bio: 'Nhiệt huyết, trách nhiệm và có thể lực tốt. Thường xuyên đồng hành cùng bệnh nhân tập vật lý trị liệu cơ bản và giúp đỡ người thân an tâm.',
+    skills: ['Hỗ trợ di chuyển & xe lăn', 'Vật lý trị liệu cơ bản', 'Túc trực ca đêm', 'Trò chuyện & nâng cao tinh thần'],
+    certifications: ['Chứng chỉ Chăm sóc người cao tuổi chuẩn quốc gia', 'Chứng nhận Kỹ thuật viên hỗ trợ vật lý trị liệu'],
+    serviceCategoryIds: ['home-care', 'elderly-care'],
+    location: 'Thủ Đức, TP. Hồ Chí Minh',
+    isAvailable: true,
+    phone: '0983 456 789',
+  },
+];
+
+export const trustFeatures: TrustFeature[] = [
+  {
+    id: 'tf-security',
+    title: 'An toàn & Bảo mật',
+    description: 'Thông tin cá nhân được bảo vệ tuyệt đối.',
+    iconType: 'shield',
+  },
+  {
+    id: 'tf-scheduling',
+    title: 'Đặt lịch linh hoạt',
+    description: 'Dễ dàng chọn thời gian phù hợp với nhu cầu.',
+    iconType: 'clock',
+  },
+  {
+    id: 'tf-professionals',
+    title: 'Đội ngũ chuyên nghiệp',
+    description: 'Được đào tạo và kiểm tra kỹ lưỡng.',
+    iconType: 'users',
+  },
+  {
+    id: 'tf-support',
+    title: 'Hỗ trợ 24/7',
+    description: 'Luôn sẵn sàng đồng hành cùng bạn.',
+    iconType: 'headphone',
+  },
+];
+
