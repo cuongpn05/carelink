@@ -6,6 +6,8 @@ import { HomePage } from './pages/HomePage';
 import { ServicesPage } from './pages/ServicesPage';
 import { CaregiversPage } from './pages/CaregiversPage';
 import { AboutPage } from './pages/AboutPage';
+import { AuthPage } from './pages/AuthPage';
+import { BecomeCaregiverPage } from './pages/BecomeCaregiverPage';
 
 const App: React.FC = () => {
   return (
@@ -24,6 +26,8 @@ const App: React.FC = () => {
         />
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/become-caregiver" element={<BecomeCaregiverPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/caregivers" element={<CaregiversPage />} />
           <Route path="/about" element={<AboutPage />} />

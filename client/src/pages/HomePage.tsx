@@ -7,7 +7,6 @@ import { FeaturedCaregivers } from '../components/Caregivers/FeaturedCaregivers'
 import { TrustBanner } from '../components/Trust/TrustBanner';
 import { Footer } from '../components/Footer/Footer';
 import { CaregiverDetailModal } from '../components/Modal/CaregiverDetailModal';
-import { AuthModal } from '../components/Modal/AuthModal';
 import { getCaregivers } from '../services/caregiverService';
 import { Caregiver, ServiceCategory } from '../types';
 import toast from 'react-hot-toast';
@@ -18,13 +17,6 @@ export const HomePage: React.FC = () => {
   const [featuredCaregiversLoading, setFeaturedCaregiversLoading] = useState(true);
   const [featuredCaregiversError, setFeaturedCaregiversError] = useState(false);
   const [featuredRetryCount, setFeaturedRetryCount] = useState(0);
-  const [authModalConfig, setAuthModalConfig] = useState<{
-    isOpen: boolean;
-    mode: 'login' | 'register';
-  }>({
-    isOpen: false,
-    mode: 'login',
-  });
 
   const navigate = useNavigate();
 
@@ -57,11 +49,7 @@ export const HomePage: React.FC = () => {
   }, [featuredRetryCount]);
 
   const handleOpenAuth = (mode: 'login' | 'register') => {
-    setAuthModalConfig({ isOpen: true, mode });
-  };
-
-  const handleCloseAuth = () => {
-    setAuthModalConfig((prev) => ({ ...prev, isOpen: false }));
+    navigate(`/auth?mode=${mode}`);
   };
 
   const handleSelectCategory = (category: ServiceCategory) => {
@@ -78,10 +66,7 @@ export const HomePage: React.FC = () => {
   return (
     <div className="home-page-layout">
       {/* 1. Header — Thanh điều hướng */}
-      <Navbar
-        onOpenLoginModal={() => handleOpenAuth('login')}
-        onOpenRegisterModal={() => handleOpenAuth('register')}
-      />
+      <Navbar />
 
       {/* Main Content */}
       <main>
@@ -112,14 +97,6 @@ export const HomePage: React.FC = () => {
         caregiver={selectedCaregiver}
         onClose={() => setSelectedCaregiver(null)}
       />
-
-      {/* Login / Register Modal */}
-      <AuthModal
-        isOpen={authModalConfig.isOpen}
-        initialMode={authModalConfig.mode}
-        onClose={handleCloseAuth}
-      />
     </div>
   );
 };
-
