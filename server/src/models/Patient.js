@@ -1,16 +1,16 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const patientSchema = new mongoose.Schema(
   {
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: [true, 'createdBy là bắt buộc'],
+      ref: "User",
+      required: [true, "createdBy là bắt buộc"],
     },
 
     fullName: {
       type: String,
-      required: [true, 'Họ tên bệnh nhân là bắt buộc'],
+      required: [true, "Họ tên bệnh nhân là bắt buộc"],
       trim: true,
     },
 
@@ -20,30 +20,30 @@ const patientSchema = new mongoose.Schema(
 
     gender: {
       type: String,
-      enum: ['male', 'female', 'other'],
-      default: 'other',
+      enum: ["male", "female", "other"],
+      default: "other",
     },
 
     relationship: {
       type: String,
       trim: true,
-      default: '',
+      default: "",
     },
 
     address: {
       type: String,
       trim: true,
-      default: '',
+      default: "",
     },
 
     careNotes: {
       type: String,
-      default: '',
+      default: "",
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-module.exports = mongoose.model('Patient', patientSchema);
+module.exports = mongoose.model("Patient", patientSchema);

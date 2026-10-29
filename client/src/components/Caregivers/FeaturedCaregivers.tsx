@@ -1,15 +1,26 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Clock, ArrowRight } from 'lucide-react';
-import { featuredCaregivers } from '../../data/mockData';
 import { Caregiver } from '../../types';
 import './FeaturedCaregivers.css';
 
 interface FeaturedCaregiversProps {
   onViewDetails: (caregiver: Caregiver) => void;
+  caregivers: Caregiver[];
+  showSectionHeader?: boolean;
+  loading?: boolean;
+  error?: boolean;
+  onRetry?: () => void;
 }
 
-export const FeaturedCaregivers: React.FC<FeaturedCaregiversProps> = ({ onViewDetails }) => {
+export const FeaturedCaregivers: React.FC<FeaturedCaregiversProps> = ({
+  onViewDetails,
+  caregivers,
+  showSectionHeader = true,
+  loading = false,
+  error = false,
+  onRetry,
+}) => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN').format(price) + 'đ/giờ';
   };
@@ -18,25 +29,38 @@ export const FeaturedCaregivers: React.FC<FeaturedCaregiversProps> = ({ onViewDe
     <section className="caregivers-section">
       <div className="container">
         {/* Section Header */}
-        <div className="section-header">
-          <div className="section-header-left">
-            <div className="tag-badge">
-              <span>ĐỘI NGŨ CHĂM SÓC</span>
+        {showSectionHeader && (
+          <div className="section-header">
+            <div className="section-header-left">
+              <div className="tag-badge">
+                <span>ĐỘI NGŨ CHĂM SÓC</span>
+              </div>
+              <h2 className="section-title">Người chăm sóc nổi bật</h2>
+              <p className="section-subtitle">
+                Tham khảo hồ sơ và lựa chọn người phù hợp với nhu cầu.
+              </p>
             </div>
-            <h2 className="section-title">Người chăm sóc nổi bật</h2>
-            <p className="section-subtitle">
-              Tham khảo hồ sơ và lựa chọn người phù hợp với nhu cầu.
-            </p>
+            <Link to="/caregivers" className="section-link-more">
+              <span>Xem tất cả</span>
+              <ArrowRight size={16} />
+            </Link>
           </div>
-          <Link to="/caregivers" className="section-link-more">
-            <span>Xem tất cả</span>
-            <ArrowRight size={16} />
-          </Link>
-        </div>
+        )}
 
         {/* Caregiver Cards */}
         <div className="caregivers-grid">
-          {featuredCaregivers.map((cg) => (
+          {loading ? (
+            <div className="caregiver-list-state" role="status">Đang tải người chăm sóc nổi bật...</div>
+          ) : error ? (
+            <div className="caregiver-list-state" role="alert">
+              <span>Không thể tải danh sách người chăm sóc.</span>
+              {onRetry && (
+                <button type="button" onClick={onRetry}>Thử tải lại</button>
+              )}
+            </div>
+          ) : caregivers.length === 0 ? (
+            <div className="caregiver-list-state">Hiện chưa có người chăm sóc nổi bật.</div>
+          ) : caregivers.map((cg) => (
             <div key={cg.id} className="caregiver-card">
               <div className="caregiver-card-inner">
                 {/* Avatar Left */}
