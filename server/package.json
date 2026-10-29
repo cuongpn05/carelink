@@ -18,7 +18,8 @@
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.24.7",
-    "morgan": "^1.12.1"
+    "morgan": "^1.12.1",
+    "nodemailer": "^10.3.1"
   },
   "devDependencies": {
     "jest": "^29.7.0",

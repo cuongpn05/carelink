@@ -1,10 +1,14 @@
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const morgan = require("morgan");
-require("dotenv").config();
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const path = require('path');
 
-const connectDB = require("./config/db");
+// Tải file .env từ thư mục server kể cả khi chạy từ thư mục gốc
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/auth.route');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,15 +16,29 @@ const PORT = process.env.PORT || 5000;
 // Security & Logging Middlewares
 app.use(helmet());
 app.use(cors());
-app.use(morgan("dev"));
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Health Check Route
-app.get("/api/health", (req, res) => {
+app.get('/api/health', (req, res) => {
   res.status(200).json({
-    status: "success",
-    message: "CareLink Server is running",
+    status: 'success',
+    message: 'CareLink Server is running',
+  });
+});
+
+// Authentication & Account Routes (support both /api/auth and /api/v1/auth)
+app.use('/api/auth', authRoutes);
+app.use('/api/v1/auth', authRoutes);
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled Application Error:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Lỗi hệ thống nội bộ.',
+    error: process.env.NODE_ENV === 'development' ? err.stack : undefined,
   });
 });
 
@@ -33,7 +51,7 @@ const startServer = async () => {
       console.log(`CareLink Server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error("Failed to start server:", error.message);
+    console.error('Failed to start server:', error.message);
     process.exit(1);
   }
 };

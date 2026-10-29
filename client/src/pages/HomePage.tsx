@@ -7,28 +7,16 @@ import { FeaturedCaregivers } from '../components/Caregivers/FeaturedCaregivers'
 import { TrustBanner } from '../components/Trust/TrustBanner';
 import { Footer } from '../components/Footer/Footer';
 import { CaregiverDetailModal } from '../components/Modal/CaregiverDetailModal';
-import { AuthModal } from '../components/Modal/AuthModal';
 import { Caregiver, ServiceCategory } from '../types';
 import toast from 'react-hot-toast';
 
 export const HomePage: React.FC = () => {
   const [selectedCaregiver, setSelectedCaregiver] = useState<Caregiver | null>(null);
-  const [authModalConfig, setAuthModalConfig] = useState<{
-    isOpen: boolean;
-    mode: 'login' | 'register';
-  }>({
-    isOpen: false,
-    mode: 'login',
-  });
 
   const navigate = useNavigate();
 
   const handleOpenAuth = (mode: 'login' | 'register') => {
-    setAuthModalConfig({ isOpen: true, mode });
-  };
-
-  const handleCloseAuth = () => {
-    setAuthModalConfig((prev) => ({ ...prev, isOpen: false }));
+    navigate(`/auth?mode=${mode}`);
   };
 
   const handleSelectCategory = (category: ServiceCategory) => {
@@ -45,10 +33,7 @@ export const HomePage: React.FC = () => {
   return (
     <div className="home-page-layout">
       {/* 1. Header — Thanh điều hướng */}
-      <Navbar
-        onOpenLoginModal={() => handleOpenAuth('login')}
-        onOpenRegisterModal={() => handleOpenAuth('register')}
-      />
+      <Navbar />
 
       {/* Main Content */}
       <main>
@@ -72,13 +57,6 @@ export const HomePage: React.FC = () => {
       <CaregiverDetailModal
         caregiver={selectedCaregiver}
         onClose={() => setSelectedCaregiver(null)}
-      />
-
-      {/* Login / Register Modal */}
-      <AuthModal
-        isOpen={authModalConfig.isOpen}
-        initialMode={authModalConfig.mode}
-        onClose={handleCloseAuth}
       />
     </div>
   );
