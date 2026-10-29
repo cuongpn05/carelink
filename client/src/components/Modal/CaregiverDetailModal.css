@@ -167,6 +167,41 @@
   margin: 22px 0;
 }
 
+.caregiver-detail-status {
+  margin: -8px 0 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.caregiver-detail-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin: -8px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  background: #fff7f6;
+  color: #b42318;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.caregiver-detail-error button {
+  padding: 7px 11px;
+  border: 1px solid #f3b4ad;
+  border-radius: 6px;
+  background: #fff;
+  color: #9f2118;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.caregiver-detail-error button:hover {
+  background: #fff0ee;
+}
+
 /* Sections */
 .modal-section {
   margin-bottom: 20px;

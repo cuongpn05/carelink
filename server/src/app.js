@@ -3,7 +3,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 require("dotenv").config();
-
+const caregiverRoutes = require("./routes/caregiverRoutes");
 const connectDB = require("./config/db");
 
 const app = express();
@@ -23,7 +23,7 @@ app.get("/api/health", (req, res) => {
     message: "CareLink Server is running",
   });
 });
-
+app.use("/api/caregivers", caregiverRoutes);
 // Start Server after connecting to Database
 const startServer = async () => {
   try {
