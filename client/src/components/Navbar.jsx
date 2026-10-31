@@ -364,6 +364,34 @@ export const Navbar = () => {
                     type="button"
                     onClick={() => {
                       setDropdownOpen(false);
+                      navigate('/profile');
+                    }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      color: '#334155',
+                      fontSize: '13.5px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  >
+                    <UserIcon size={16} className="text-blue-600" />
+                    <span>Hồ sơ cá nhân & Uy tín</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDropdownOpen(false);
                       navigate('/become-caregiver');
                     }}
                     style={{

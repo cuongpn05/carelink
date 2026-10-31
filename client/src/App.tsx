@@ -8,6 +8,7 @@ import { CaregiversPage } from './pages/CaregiversPage';
 import { AboutPage } from './pages/AboutPage';
 import { AuthPage } from './pages/AuthPage';
 import { BecomeCaregiverPage } from './pages/BecomeCaregiverPage';
+import ProfilePage from './pages/ProfilePage';
 
 const App: React.FC = () => {
   return (
@@ -31,6 +32,7 @@ const App: React.FC = () => {
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/caregivers" element={<CaregiversPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           {/* Fallback to home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
