@@ -9,6 +9,7 @@ import {
   ShieldX,
   LogOut,
   User as UserIcon,
+  Calendar,
   ChevronDown,
   Menu,
   X,
