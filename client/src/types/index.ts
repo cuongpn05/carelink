@@ -6,6 +6,12 @@ export interface Caregiver {
   rating: number;
   reviewCount: number;
   hourlyRate: number; // e.g. 150000
+  pricing?: {
+    hourlyRate?: number;
+    dailyRate?: number;
+    weeklyRate?: number | null;
+    monthlyRate?: number | null;
+  };
   avatar: string;
   bio: string;
   skills: string[];
@@ -40,4 +46,3 @@ export interface User {
   avatar?: string;
   phone?: string;
 }
-

@@ -10,6 +10,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.route');
 const caregiverRoutes = require('./routes/caregiverRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -35,6 +36,8 @@ app.use('/api/v1/auth', authRoutes);
 
 // Caregiver Routes
 app.use('/api/caregivers', caregiverRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/v1/bookings', bookingRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

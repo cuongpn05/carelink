@@ -23,6 +23,46 @@
 
 ## 🚀 HƯỚNG DẪN CÀI ĐẶT & CHẠY DỰ ÁN
 
+## 📅 API ĐẶT LỊCH
+
+Các API dưới đây yêu cầu đăng nhập và gửi access token qua header:
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+Các endpoint hỗ trợ cả tiền tố `/api` và `/api/v1`.
+
+### Tạo lịch đặt
+
+`POST /api/bookings` hoặc `POST /api/v1/bookings` (chỉ dành cho tài khoản khách hàng đã xác thực email)
+
+```json
+{
+  "caregiverId": "ID hồ sơ hoặc tài khoản người chăm sóc",
+  "packageType": "HOURLY",
+  "durationValue": 4,
+  "startTime": "2027-01-01T08:00:00.000Z",
+  "serviceArea": "Ninh Kiều",
+  "serviceAddress": "12 Đường ABC, Ninh Kiều",
+  "requiredSkills": ["Chăm sóc người cao tuổi"],
+  "note": "Vui lòng gọi trước khi đến",
+  "paymentMethod": "CASH"
+}
+```
+
+Gói `HOURLY` nhận `durationValue` là 2, 4, 6, 8, 10 hoặc 12 giờ. Gói
+`DAILY`, `WEEKLY`, `MONTHLY` nhận số nguyên dương. Server lấy giá từ hồ sơ
+người chăm sóc, tự tính `endTime` và `totalPrice`; không gửi giá hoặc giờ kết
+thúc từ client. Tháng được tính là 30 ngày.
+
+### Lấy lịch của tôi
+
+- `GET /api/bookings/mine` — lịch mà tài khoản hiện tại đặt hoặc nhận.
+- `GET /api/bookings/:id` — chi tiết một lịch mà tài khoản hiện tại tham gia.
+
+Mọi phản hồi đều có dạng `{ "success": true, "message": "...", "data": ... }`.
+
 ### 1. Cài đặt toàn bộ dependencies
 Tại thư mục gốc của dự án, chạy:
 ```bash

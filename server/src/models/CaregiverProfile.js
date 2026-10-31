@@ -61,6 +61,13 @@ const caregiverProfileSchema = new mongoose.Schema(
       index: true,
     }, // Admin duyệt mới được hiện lên danh sách tìm kiếm
 
+    verificationStatus: {
+      type: String,
+      enum: ['PENDING', 'VERIFIED', 'REJECTED'],
+      default: undefined,
+      index: true,
+    },
+
     // Các trường phục vụ BỘ LỌC (Filter)
     gender: {
       type: String,
@@ -146,6 +153,17 @@ const caregiverProfileSchema = new mongoose.Schema(
       type: Number,
       default: 100,
       index: true,
+    },
+
+    hourlyRate: {
+      type: Number,
+      min: [0, 'hourlyRate không được âm'],
+      default: undefined,
+    },
+    reviewCount: {
+      type: Number,
+      min: 0,
+      default: undefined,
     },
   },
   {

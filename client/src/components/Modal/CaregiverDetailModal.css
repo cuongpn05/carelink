@@ -311,6 +311,110 @@
   background-color: #1e40af;
 }
 
+.btn-modal-book:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.booking-form-section {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: #f8fbff;
+}
+
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.booking-form label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.booking-form input,
+.booking-form select,
+.booking-form textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 14px;
+}
+
+.booking-form textarea {
+  resize: vertical;
+}
+
+.booking-form-row,
+.booking-form-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.booking-form-actions {
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.booking-form-actions .btn-modal-book {
+  flex: 0 1 auto;
+}
+
+.booking-cancel-btn {
+  padding: 10px 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-full);
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.booking-estimate,
+.booking-success {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 14px;
+}
+
+.booking-estimate small {
+  display: block;
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.booking-error {
+  color: #b42318;
+  font-size: 13px;
+}
+
+.booking-success {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.booking-success h4 {
+  margin-bottom: 2px;
+  font-size: 16px;
+}
+
 @media (max-width: 580px) {
   .caregiver-modal-header {
     flex-direction: column;
@@ -329,5 +433,16 @@
     width: 100%;
     justify-content: center;
   }
-}
 
+  .booking-form-row {
+    flex-direction: column;
+  }
+
+  .booking-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .booking-form-actions .btn-modal-book {
+    width: 100%;
+  }
+}

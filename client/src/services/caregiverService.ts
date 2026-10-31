@@ -40,19 +40,30 @@ export interface CaregiverPageResult {
 
 interface ApiCaregiver {
   _id: string;
+  fullName?: string;
+  phone?: string;
+  avatarUrl?: string;
   userId?: {
     fullName?: string;
     email?: string;
     phone?: string;
     avatar?: string;
+    avatarUrl?: string;
   } | null;
   bio?: string;
   experienceYears?: number;
   skills?: string[];
   serviceAreas?: string[];
   hourlyRate?: number;
+  pricing?: {
+    hourlyRate?: number;
+    dailyRate?: number;
+    weeklyRate?: number | null;
+    monthlyRate?: number | null;
+  };
   ratingAvg?: number;
   reviewCount?: number;
+  totalReviews?: number;
 }
 
 interface CaregiverResponse {
@@ -73,20 +84,21 @@ const fallbackAvatar =
 
 const toCaregiver = (item: ApiCaregiver): Caregiver => ({
   id: item._id,
-  name: item.userId?.fullName || 'Người chăm sóc',
+  name: item.userId?.fullName || item.fullName || 'Người chăm sóc',
   title: 'Nhân viên chăm sóc',
   experienceYears: item.experienceYears ?? 0,
   rating: item.ratingAvg ?? 0,
-  reviewCount: item.reviewCount ?? 0,
-  hourlyRate: item.hourlyRate ?? 0,
-  avatar: item.userId?.avatar || fallbackAvatar,
+  reviewCount: item.totalReviews ?? item.reviewCount ?? 0,
+  hourlyRate: item.pricing?.hourlyRate ?? item.hourlyRate ?? 0,
+  pricing: item.pricing,
+  avatar: item.userId?.avatarUrl || item.userId?.avatar || item.avatarUrl || fallbackAvatar,
   bio: item.bio || 'Hồ sơ chưa có phần giới thiệu.',
   skills: item.skills ?? [],
   certifications: [],
   serviceCategoryIds: [],
   location: item.serviceAreas?.join(', ') || 'Chưa cập nhật khu vực',
   isAvailable: false,
-  phone: item.userId?.phone,
+  phone: item.userId?.phone || item.phone,
 });
 
 export const getCaregivers = async (
