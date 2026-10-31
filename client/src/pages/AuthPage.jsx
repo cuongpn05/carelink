@@ -41,7 +41,6 @@ export const AuthPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [suspendedWarning, setSuspendedWarning] = useState('');
   const [countdown, setCountdown] = useState(0);
-  const [role, setRole] = useState('CUSTOMER');
   
   // Nếu đã đăng nhập thì tự động chuyển hướng về trang chủ hoặc redirect
   useEffect(() => {
@@ -376,64 +375,7 @@ export const AuthPage = () => {
         {/* ======================================================== */}
         {step === 'REGISTER' && (
           <form onSubmit={handleRegisterSubmit}>
-            {/* Chọn vai trò đăng ký */}
-            <div style={{ marginBottom: '18px' }}>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '13.5px',
-                  fontWeight: 600,
-                  color: '#334155',
-                  marginBottom: '8px',
-                }}
-              >
-                Bạn đăng ký với vai trò:
-              </label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => setRole('CUSTOMER')}
-                  style={{
-                    padding: '10px 8px',
-                    borderRadius: '10px',
-                    border: `2px solid ${role === 'CUSTOMER' ? '#2563eb' : '#e2e8f0'}`,
-                    backgroundColor: role === 'CUSTOMER' ? '#eff6ff' : '#ffffff',
-                    color: role === 'CUSTOMER' ? '#1d4ed8' : '#64748b',
-                    fontWeight: role === 'CUSTOMER' ? 700 : 500,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  <span>👤 Khách hàng</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('CAREGIVER')}
-                  style={{
-                    padding: '10px 8px',
-                    borderRadius: '10px',
-                    border: `2px solid ${role === 'CAREGIVER' ? '#2563eb' : '#e2e8f0'}`,
-                    backgroundColor: role === 'CAREGIVER' ? '#eff6ff' : '#ffffff',
-                    color: role === 'CAREGIVER' ? '#1d4ed8' : '#64748b',
-                    fontWeight: role === 'CAREGIVER' ? 700 : 500,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  <span>🤝 Người chăm sóc</span>
-                </button>
-              </div>
-            </div>
+            
             <div style={{ marginBottom: '16px' }}>
               <label
                 style={{

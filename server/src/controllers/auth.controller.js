@@ -15,11 +15,12 @@ const {
 
 /**
  * 1. Đăng ký tài khoản người dùng mới (Chỉ lưu vào bảng tạm PendingRegistration)
+ * Mặc định tất cả người dùng đăng ký đều là Khách hàng (CUSTOMER).
  * POST /api/auth/register
  */
 const register = async (req, res) => {
   try {
-    const { email, password, fullName, phone, role } = req.body;
+    const { email, password, fullName, phone } = req.body;
 
     // Validate đầu vào bắt buộc
     if (!email || !password || !fullName || !phone) {
@@ -37,7 +38,6 @@ const register = async (req, res) => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    const targetRole = role === 'CAREGIVER' ? 'CAREGIVER' : 'CUSTOMER';
 
     // Kiểm tra xem email đã được kích hoạt trong bảng Account chính thức chưa
     const existingAccount = await Account.findOne({ email: normalizedEmail });
@@ -65,7 +65,6 @@ const register = async (req, res) => {
         passwordHash,
         fullName: fullName.trim(),
         phone: phone.trim(),
-        role: targetRole,
         otpCode,
         otpExpiresAt,
         createdAt: new Date(),
@@ -149,12 +148,10 @@ const verifyOtp = async (req, res) => {
     }
 
     // === 5. BƯỚC QUAN TRỌNG: LÚC NÀY MỚI LƯU CHÍNH THỨC VÀO DB (Account & User) ===
-    const targetRole = pending.role === 'CAREGIVER' ? 'CAREGIVER' : 'CUSTOMER';
-
     const newAccount = new Account({
       email: pending.email,
       passwordHash: pending.passwordHash,
-      role: targetRole,
+      role: 'CUSTOMER',
       isEmailVerified: true,
       status: 'ACTIVE',
       reputationScore: 100,
@@ -166,45 +163,10 @@ const verifyOtp = async (req, res) => {
       accountId: newAccount._id,
       fullName: pending.fullName,
       phone: pending.phone,
-      role: targetRole === 'CAREGIVER' ? 'caregiver' : 'customer',
+      role: 'customer',
       isActive: true,
     });
     await newUser.save();
-
-    // Nếu đăng ký vai trò Caregiver, tự động tạo luôn hồ sơ đối tác CaregiverProfile
-    let caregiverProfile = null;
-    if (targetRole === 'CAREGIVER') {
-      caregiverProfile = await CaregiverProfile.findOneAndUpdate(
-        { accountId: newAccount._id },
-        {
-          accountId: newAccount._id,
-          userId: newUser._id,
-          fullName: newUser.fullName,
-          phone: newUser.phone,
-          avatarUrl: newUser.avatarUrl || '',
-          idCardNumber: 'Chưa cập nhật',
-          idCardImages: [],
-          bio: 'Cộng tác viên chăm sóc mới trên nền tảng CareLink.',
-          approvalStatus: 'APPROVED',
-          verificationStatus: 'VERIFIED',
-          gender: 'OTHER',
-          experienceYears: 1,
-          skills: ['Chăm sóc người cao tuổi'],
-          serviceAreas: ['Ninh Kiều'],
-          pricing: {
-            hourlyRate: 80000,
-            dailyRate: 600000,
-            weeklyRate: 4000000,
-            monthlyRate: 15000000,
-          },
-          hourlyRate: 80000,
-          ratingAvg: 5.0,
-          reviewCount: 0,
-          priorityScore: 100,
-        },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
-    }
 
     // 6. Xóa bản ghi trong bảng tạm để làm sạch dữ liệu
     await PendingRegistration.deleteOne({ _id: pending._id });
@@ -235,7 +197,7 @@ const verifyOtp = async (req, res) => {
           lastLoginAt: newAccount.lastLoginAt,
         },
         user: newUser,
-        caregiverProfile: caregiverProfile || null,
+        caregiverProfile: null,
         accessToken,
         refreshToken,
       },
@@ -466,9 +428,10 @@ const logout = async (req, res) => {
 };
 
 /**
- * 6. Đăng ký trở thành Cộng tác viên (Caregiver)
+ * 6. Đăng ký trở thành Đối tác Caregiver (Nộp hồ sơ chờ phỏng vấn / duyệt)
  * POST /api/auth/register-caregiver
  * Yêu cầu: Đã đăng nhập (verifyToken) & Tài khoản ACTIVE (checkAccountActive)
+ * Lưu ý: Trạng thái ban đầu là PENDING (chờ phỏng vấn & xét duyệt, CHƯA ĐỔI ROLE).
  */
 const registerCaregiver = async (req, res) => {
   try {
@@ -502,13 +465,28 @@ const registerCaregiver = async (req, res) => {
       });
     }
 
-    // Cập nhật role của Account lên CAREGIVER
-    if (account.role !== 'CAREGIVER') {
-      account.role = 'CAREGIVER';
-      await account.save();
+    // Kiểm tra hồ sơ đối tác đã tồn tại chưa
+    const existingProfile = await CaregiverProfile.findOne({ accountId: account._id });
+    if (existingProfile) {
+      if (existingProfile.approvalStatus === 'PENDING') {
+        return res.status(400).json({
+          success: false,
+          message: 'Hồ sơ của bạn đang ở trạng thái chờ phỏng vấn và xét duyệt.',
+          data: existingProfile,
+        });
+      }
+
+      if (existingProfile.approvalStatus === 'APPROVED') {
+        return res.status(400).json({
+          success: false,
+          message: 'Bạn đã là đối tác Caregiver chính thức của CareLink.',
+          data: existingProfile,
+        });
+      }
     }
 
-    // Tạo mới hoặc cập nhật hồ sơ Caregiver
+    // Tạo mới hoặc cập nhật hồ sơ với trạng thái PENDING (chờ phỏng vấn)
+    // Tài khoản vẫn giữ role CUSTOMER cho đến khi Admin phỏng vấn và duyệt
     const newProfile = await CaregiverProfile.findOneAndUpdate(
       { accountId: account._id },
       {
@@ -531,8 +509,8 @@ const registerCaregiver = async (req, res) => {
         bio: bio ? bio.trim() : '',
         gender: gender || user.gender || 'OTHER',
         age: Number(age) || undefined,
-        approvalStatus: 'APPROVED',
-        verificationStatus: 'VERIFIED',
+        approvalStatus: 'PENDING',
+        verificationStatus: 'PENDING',
         ratingAvg: 5.0,
         priorityScore: 100,
       },
@@ -541,7 +519,7 @@ const registerCaregiver = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Đăng ký trở thành đối tác Caregiver thành công!',
+      message: 'Nộp hồ sơ thành công! Ban Quản Trị sẽ liên hệ để phỏng vấn trong vòng 24h.',
       data: newProfile,
     });
   } catch (error) {
@@ -642,6 +620,47 @@ const refreshToken = async (req, res) => {
   }
 };
 
+/**
+ * 9. Phê duyệt hồ sơ đối tác Caregiver (Sau khi phỏng vấn thành công)
+ * PATCH /api/auth/approve-caregiver/:caregiverProfileId
+ * Admin duyệt -> Chuyển role Account thành CAREGIVER và approvalStatus thành APPROVED
+ */
+const approveCaregiver = async (req, res) => {
+  try {
+    const { caregiverProfileId } = req.params;
+
+    const profile = await CaregiverProfile.findById(caregiverProfileId);
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy hồ sơ người chăm sóc.',
+      });
+    }
+
+    profile.approvalStatus = 'APPROVED';
+    profile.verificationStatus = 'VERIFIED';
+    await profile.save();
+
+    // Cấp quyền CAREGIVER cho Account
+    if (profile.accountId) {
+      await Account.findByIdAndUpdate(profile.accountId, { role: 'CAREGIVER' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Phê duyệt hồ sơ đối tác thành công! Tài khoản đã được cấp quyền CAREGIVER.',
+      data: profile,
+    });
+  } catch (error) {
+    console.error('Lỗi API approveCaregiver:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Lỗi máy chủ khi phê duyệt hồ sơ.',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   verifyOtp,
@@ -651,4 +670,5 @@ module.exports = {
   registerCaregiver,
   getMe,
   refreshToken,
+  approveCaregiver,
 };
