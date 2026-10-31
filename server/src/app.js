@@ -9,6 +9,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.route');
+const userRoutes = require('./routes/user.route');
 const caregiverRoutes = require('./routes/caregiverRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 
@@ -30,9 +31,13 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Authentication & Account Routes (support both /api/auth and /api/v1/auth)
+// Authentication & Account Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/v1/auth', authRoutes);
+
+// User Profile Routes
+app.use('/api/user', userRoutes);
+app.use('/api/v1/user', userRoutes);
 
 // Caregiver Routes
 app.use('/api/caregivers', caregiverRoutes);

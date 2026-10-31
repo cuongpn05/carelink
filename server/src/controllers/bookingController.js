@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const CaregiverProfile = require('../models/CaregiverProfile');
 const User = require('../models/User');
+const Account = require('../models/Account');
+const ReputationLog = require('../models/ReputationLog');
 const { calculateBookingDetails } = require('../utils/booking.util');
 
 const getCaregiverIdentity = async (req, { requireApproval = true } = {}) => {
@@ -133,7 +135,6 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // Older caregiver records use verificationStatus=VERIFIED; new records use approvalStatus=APPROVED.
     const isApproved =
       caregiver.approvalStatus === 'APPROVED' ||
       caregiver.get('verificationStatus') === 'VERIFIED';
@@ -152,10 +153,6 @@ const createBooking = async (req, res) => {
     }
 
     if (!caregiverAccountId) {
-      console.error('Booking blocked: caregiver profile has no linked account.', {
-        caregiverProfileId: caregiver._id.toString(),
-        caregiverUserId: caregiver.userId?.toString(),
-      });
       return res.status(400).json({
         success: false,
         message: 'Hồ sơ người chăm sóc chưa liên kết tài khoản. Vui lòng liên hệ quản trị viên.',
@@ -241,6 +238,8 @@ const createBooking = async (req, res) => {
       paymentMethod,
     });
 
+    const enriched = await enrichBooking(booking, req.account._id);
+
     return res.status(201).json({
       success: true,
       message: 'Đã gửi yêu cầu đặt lịch. Người chăm sóc cần xác nhận.',
@@ -248,7 +247,6 @@ const createBooking = async (req, res) => {
     });
   } catch (error) {
     console.error('createBooking error:', error);
-
     if (error.name === 'ValidationError' || error.name === 'CastError') {
       return res.status(400).json({
         success: false,
@@ -263,6 +261,9 @@ const createBooking = async (req, res) => {
   }
 };
 
+/**
+ * Lấy danh sách lịch đặt của tài khoản hiện tại (Khách hàng hoặc Người chăm sóc)
+ */
 const getMyBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({
@@ -270,12 +271,16 @@ const getMyBookings = async (req, res) => {
         { customerId: req.account._id },
         { caregiverId: req.account._id },
       ],
-    }).sort({ startTime: -1 });
+    }).sort({ createdAt: -1 });
+
+    const enrichedBookings = await Promise.all(
+      bookings.map((b) => enrichBooking(b, req.account._id))
+    );
 
     return res.status(200).json({
       success: true,
       message: 'Lấy danh sách lịch đặt thành công.',
-      data: bookings,
+      data: enrichedBookings,
     });
   } catch (error) {
     console.error('getMyBookings error:', error);
@@ -647,7 +652,7 @@ const getBookingById = async (req, res) => {
     if (!mongoose.isValidObjectId(req.params.id)) {
       return res.status(400).json({
         success: false,
-        message: 'bookingId không hợp lệ.',
+        message: 'Mã lịch đặt không hợp lệ.',
       });
     }
 
@@ -656,7 +661,8 @@ const getBookingById = async (req, res) => {
     if (
       !booking ||
       (booking.customerId.toString() !== req.account._id.toString() &&
-        booking.caregiverId?.toString() !== req.account._id.toString())
+        booking.caregiverId?.toString() !== req.account._id.toString() &&
+        req.account.role !== 'ADMIN')
     ) {
       return res.status(404).json({
         success: false,
@@ -664,10 +670,12 @@ const getBookingById = async (req, res) => {
       });
     }
 
+    const enriched = await enrichBooking(booking, req.account._id);
+
     return res.status(200).json({
       success: true,
       message: 'Lấy thông tin lịch đặt thành công.',
-      data: booking,
+      data: enriched,
     });
   } catch (error) {
     console.error('getBookingById error:', error);

@@ -11,6 +11,8 @@ const {
   confirmCaregiverBooking,
   rejectCaregiverBooking,
   getBookingById,
+  cancelBooking,
+  updateBookingStatus,
 } = require('../controllers/bookingController');
 const {
   verifyToken,
@@ -19,6 +21,8 @@ const {
 } = require('../middlewares/auth.middleware');
 
 router.use(verifyToken, checkAccountActive);
+
+// Tạo lịch đặt (Chỉ dành cho vai trò CUSTOMER)
 router.post('/', authorizeRoles('CUSTOMER'), createBooking);
 router.get('/incoming', getIncomingCaregiverBookings);
 router.patch('/:id/confirm', confirmCaregiverBooking);
@@ -32,5 +36,11 @@ router.patch(
   markCustomerBookingNotificationRead,
 );
 router.get('/:id', getBookingById);
+
+// Hủy lịch theo quy tắc & phạt uy tín
+router.patch('/:id/cancel', cancelBooking);
+
+// Cập nhật trạng thái vòng đời lịch (CONFIRMED, IN_PROGRESS, COMPLETED)
+router.patch('/:id/status', updateBookingStatus);
 
 module.exports = router;

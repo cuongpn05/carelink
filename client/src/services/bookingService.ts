@@ -1,4 +1,5 @@
 export type BookingPackage = 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 export interface CreateBookingInput {
   caregiverId: string;
@@ -12,15 +13,52 @@ export interface CreateBookingInput {
   paymentMethod: 'CASH' | 'BANK_TRANSFER';
 }
 
+export interface CaregiverBookingInfo {
+  accountId: string;
+  fullName: string;
+  avatarUrl: string;
+  phone: string;
+  isPhoneRevealed: boolean;
+  ratingAvg: number;
+  totalReviews: number;
+  experienceYears: number;
+  serviceAreas: string[];
+  reputationScore: number;
+}
+
+export interface CustomerBookingInfo {
+  accountId: string;
+  fullName: string;
+  avatarUrl: string;
+  phone: string;
+  isPhoneRevealed: boolean;
+  email: string;
+  reputationScore: number;
+  status: string;
+  isLowReputation: boolean;
+}
+
+export interface CancellationInfo {
+  cancelledBy: string;
+  cancelledByRole: 'CUSTOMER' | 'CAREGIVER' | null;
+  reason: string;
+  cancelledAt: string;
+  penaltyPointsDeducted: number;
+}
+
 export interface Booking {
   _id: string;
+  customerId: string;
+  caregiverId: string;
+  bookingType: 'DIRECT' | 'OPEN_POST';
   startTime: string;
   endTime: string;
   packageType: BookingPackage;
   durationValue: number;
   totalPrice: number;
-  status: string;
+  status: BookingStatus;
   paymentMethod: 'CASH' | 'BANK_TRANSFER';
+  serviceArea: string;
   serviceAddress: string;
   serviceArea?: string;
   note?: string;

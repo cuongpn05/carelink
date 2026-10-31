@@ -111,6 +111,14 @@ export const AuthProvider = ({ children }) => {
     }
   }, [accessToken]);
 
+  // Cập nhật thông tin User trong context
+  const updateUserData = useCallback((updatedUser) => {
+    setUser(updatedUser);
+    if (updatedUser) {
+      localStorage.setItem('carelink_user', JSON.stringify(updatedUser));
+    }
+  }, []);
+
   // Cập nhật Caregiver Profile trong context khi vừa đăng ký đối tác
   const updateCaregiverProfile = useCallback((profile) => {
     setCaregiverProfile(profile);
@@ -162,6 +170,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     saveAuthData,
     logout,
+    updateUserData,
     updateCaregiverProfile,
     refreshAuthProfile,
   };
