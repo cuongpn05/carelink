@@ -24,6 +24,11 @@ const pendingRegistrationSchema = new mongoose.Schema(
       required: [true, 'Số điện thoại là bắt buộc'],
       trim: true,
     },
+    role: {
+      type: String,
+      enum: ['CUSTOMER', 'CAREGIVER'],
+      default: 'CUSTOMER',
+    },
     otpCode: {
       type: String,
       required: [true, 'Mã OTP là bắt buộc'],
@@ -49,4 +54,3 @@ const PendingRegistration =
   mongoose.model('PendingRegistration', pendingRegistrationSchema);
 
 module.exports = PendingRegistration;
-

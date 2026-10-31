@@ -19,7 +19,7 @@ const {
  */
 const register = async (req, res) => {
   try {
-    const { email, password, fullName, phone } = req.body;
+    const { email, password, fullName, phone, role } = req.body;
 
     // Validate đầu vào bắt buộc
     if (!email || !password || !fullName || !phone) {
@@ -37,6 +37,7 @@ const register = async (req, res) => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+    const targetRole = role === 'CAREGIVER' ? 'CAREGIVER' : 'CUSTOMER';
 
     // Kiểm tra xem email đã được kích hoạt trong bảng Account chính thức chưa
     const existingAccount = await Account.findOne({ email: normalizedEmail });
@@ -64,6 +65,7 @@ const register = async (req, res) => {
         passwordHash,
         fullName: fullName.trim(),
         phone: phone.trim(),
+        role: targetRole,
         otpCode,
         otpExpiresAt,
         createdAt: new Date(),
@@ -147,10 +149,12 @@ const verifyOtp = async (req, res) => {
     }
 
     // === 5. BƯỚC QUAN TRỌNG: LÚC NÀY MỚI LƯU CHÍNH THỨC VÀO DB (Account & User) ===
+    const targetRole = pending.role === 'CAREGIVER' ? 'CAREGIVER' : 'CUSTOMER';
+
     const newAccount = new Account({
       email: pending.email,
       passwordHash: pending.passwordHash,
-      role: 'CUSTOMER',
+      role: targetRole,
       isEmailVerified: true,
       status: 'ACTIVE',
       reputationScore: 100,
@@ -162,8 +166,45 @@ const verifyOtp = async (req, res) => {
       accountId: newAccount._id,
       fullName: pending.fullName,
       phone: pending.phone,
+      role: targetRole === 'CAREGIVER' ? 'caregiver' : 'customer',
+      isActive: true,
     });
     await newUser.save();
+
+    // Nếu đăng ký vai trò Caregiver, tự động tạo luôn hồ sơ đối tác CaregiverProfile
+    let caregiverProfile = null;
+    if (targetRole === 'CAREGIVER') {
+      caregiverProfile = await CaregiverProfile.findOneAndUpdate(
+        { accountId: newAccount._id },
+        {
+          accountId: newAccount._id,
+          userId: newUser._id,
+          fullName: newUser.fullName,
+          phone: newUser.phone,
+          avatarUrl: newUser.avatarUrl || '',
+          idCardNumber: 'Chưa cập nhật',
+          idCardImages: [],
+          bio: 'Cộng tác viên chăm sóc mới trên nền tảng CareLink.',
+          approvalStatus: 'APPROVED',
+          verificationStatus: 'VERIFIED',
+          gender: 'OTHER',
+          experienceYears: 1,
+          skills: ['Chăm sóc người cao tuổi'],
+          serviceAreas: ['Ninh Kiều'],
+          pricing: {
+            hourlyRate: 80000,
+            dailyRate: 600000,
+            weeklyRate: 4000000,
+            monthlyRate: 15000000,
+          },
+          hourlyRate: 80000,
+          ratingAvg: 5.0,
+          reviewCount: 0,
+          priorityScore: 100,
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+    }
 
     // 6. Xóa bản ghi trong bảng tạm để làm sạch dữ liệu
     await PendingRegistration.deleteOne({ _id: pending._id });
@@ -194,6 +235,7 @@ const verifyOtp = async (req, res) => {
           lastLoginAt: newAccount.lastLoginAt,
         },
         user: newUser,
+        caregiverProfile: caregiverProfile || null,
         accessToken,
         refreshToken,
       },
@@ -460,24 +502,10 @@ const registerCaregiver = async (req, res) => {
       });
     }
 
-    // Kiểm tra xem đã có hồ sơ CaregiverProfile chưa
-    const existingProfile = await CaregiverProfile.findOne({ accountId: account._id });
-    if (existingProfile) {
-      if (existingProfile.approvalStatus === 'PENDING') {
-        return res.status(400).json({
-          success: false,
-          message: 'Hồ sơ đối tác của bạn đang chờ quản trị viên phê duyệt.',
-          data: existingProfile,
-        });
-      }
-
-      if (existingProfile.approvalStatus === 'APPROVED') {
-        return res.status(400).json({
-          success: false,
-          message: 'Bạn đã là đối tác Caregiver chính thức của CareLink.',
-          data: existingProfile,
-        });
-      }
+    // Cập nhật role của Account lên CAREGIVER
+    if (account.role !== 'CAREGIVER') {
+      account.role = 'CAREGIVER';
+      await account.save();
     }
 
     // Tạo mới hoặc cập nhật hồ sơ Caregiver
@@ -503,7 +531,8 @@ const registerCaregiver = async (req, res) => {
         bio: bio ? bio.trim() : '',
         gender: gender || user.gender || 'OTHER',
         age: Number(age) || undefined,
-        approvalStatus: 'PENDING',
+        approvalStatus: 'APPROVED',
+        verificationStatus: 'VERIFIED',
         ratingAvg: 5.0,
         priorityScore: 100,
       },
@@ -512,7 +541,7 @@ const registerCaregiver = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Nộp hồ sơ đăng ký đối tác thành công! Hồ sơ của bạn đang chờ phê duyệt trong vòng 24h.',
+      message: 'Đăng ký trở thành đối tác Caregiver thành công!',
       data: newProfile,
     });
   } catch (error) {
