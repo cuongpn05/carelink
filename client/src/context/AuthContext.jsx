@@ -1,7 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axiosClient from '../api/axiosClient';
 
-const AuthContext = createContext(null);
+/**
+ * @typedef {{ role?: string, _id?: string, status?: string, reputationScore?: number }} AuthAccount
+ * @typedef {{ account: AuthAccount|null, user: object|null, caregiverProfile: object|null, accessToken: string|null, isAuthenticated: boolean, loading: boolean, saveAuthData: Function, logout: Function, updateCaregiverProfile: Function, refreshAuthProfile: Function }} AuthContextValue
+ */
+
+const AuthContext = createContext(/** @type {AuthContextValue|null} */ (null));
 
 export const AuthProvider = ({ children }) => {
   const [account, setAccount] = useState(() => {
@@ -170,4 +175,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

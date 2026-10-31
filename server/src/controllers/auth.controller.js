@@ -421,7 +421,7 @@ const logout = async (req, res) => {
 const registerCaregiver = async (req, res) => {
   try {
     const account = req.account;
-    const user = req.user;
+    const user = req.user || await User.findOne({ accountId: req.account._id });
 
     const {
       idCardNumber,
@@ -450,10 +450,31 @@ const registerCaregiver = async (req, res) => {
       });
     }
 
-    // Kiểm tra xem accountId này đã có hồ sơ trong CaregiverProfile chưa
-    const existingProfile = await CaregiverProfile.findOne({ accountId: account._id });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tài khoản chưa có hồ sơ người dùng để liên kết hồ sơ chăm sóc.',
+      });
+    }
+
+    // Find legacy profiles through either relationship, then repair both references.
+    const existingProfile = await CaregiverProfile.findOne({
+      $or: [
+        { accountId: account._id },
+        { userId: user._id },
+      ],
+    });
 
     if (existingProfile) {
+      if (
+        existingProfile.accountId?.toString() !== account._id.toString() ||
+        existingProfile.userId?.toString() !== user._id.toString()
+      ) {
+        existingProfile.accountId = account._id;
+        existingProfile.userId = user._id;
+        await existingProfile.save();
+      }
+
       if (existingProfile.approvalStatus === 'PENDING') {
         return res.status(400).json({
           success: false,

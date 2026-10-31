@@ -20,10 +20,12 @@ const getCaregivers = async (req, res) => {
     } = req.query;
 
     // 1. Tạo điều kiện lọc hồ sơ
-    const filter = {};
-
-    // Mặc định chỉ hiển thị người đã xác minh
-    filter.verificationStatus = "VERIFIED";
+    const filter = {
+      $or: [
+        { approvalStatus: "APPROVED" },
+        { verificationStatus: "VERIFIED" },
+      ],
+    };
 
     // 2. Lọc theo kinh nghiệm
     if (minExperience !== undefined) {
@@ -82,7 +84,14 @@ const getCaregivers = async (req, res) => {
         });
       }
 
-      filter.hourlyRate = priceFilter;
+      filter.$and = [
+        {
+          $or: [
+            { "pricing.hourlyRate": priceFilter },
+            { hourlyRate: priceFilter },
+          ],
+        },
+      ];
     }
 
     // 4. Lọc theo đánh giá
@@ -117,20 +126,18 @@ const getCaregivers = async (req, res) => {
       };
     }
 
-    // 7. Cho phép chọn trạng thái xác minh
-    // Chỉ admin mới có thể tìm theo trạng thái khác VERIFIED.
-    // Người dùng công khai luôn chỉ xem VERIFIED.
+    // Chỉ admin mới có thể yêu cầu trạng thái xác minh khác trạng thái đã duyệt.
     if (verificationStatus !== undefined) {
-      const userRole = req.user?.role;
+      const userRole = req.account?.role;
 
-      if (userRole !== "admin") {
+      if (userRole !== "ADMIN") {
         return res.status(403).json({
           success: false,
           message: "Chỉ admin được lọc theo trạng thái xác minh",
         });
       }
 
-      const validStatuses = ["PENDING", "VERIFIED", "REJECTED"];
+      const validStatuses = ["PENDING", "APPROVED", "VERIFIED", "REJECTED"];
 
       if (!validStatuses.includes(verificationStatus)) {
         return res.status(400).json({
@@ -139,51 +146,33 @@ const getCaregivers = async (req, res) => {
         });
       }
 
-      filter.verificationStatus = verificationStatus;
+      filter.$or = verificationStatus === "VERIFIED" || verificationStatus === "APPROVED"
+        ? [
+            { approvalStatus: "APPROVED" },
+            { verificationStatus: "VERIFIED" },
+          ]
+        : [
+            { approvalStatus: verificationStatus },
+            { verificationStatus },
+          ];
     }
 
-    // 8. Tìm người chăm sóc theo tên tài khoản
-    let userIds = [];
-
+    // User stores names but has no caregiver role/isActive fields; approval is on the profile.
     if (keyword) {
       const users = await User.find({
         fullName: {
           $regex: escapeRegex(keyword),
           $options: "i",
         },
-        role: "caregiver",
-        isActive: true,
       }).select("_id");
 
-      userIds = users.map((user) => user._id);
-
-      filter.userId = {
-        $in: userIds,
-      };
-    }
-
-    // 9. Lấy thông tin các tài khoản caregiver đang hoạt động
-    const activeUsers = await User.find({
-      role: "caregiver",
-      isActive: true,
-    }).select("_id");
-
-    const activeUserIds = activeUsers.map((user) => user._id);
-
-    if (filter.userId) {
-      const keywordIds = filter.userId.$in;
-
-      filter.userId = {
-        $in: keywordIds.filter((id) =>
-          activeUserIds.some(
-            (activeId) => activeId.toString() === id.toString(),
-          ),
-        ),
-      };
-    } else {
-      filter.userId = {
-        $in: activeUserIds,
-      };
+      filter.$and = filter.$and || [];
+      filter.$and.push({
+        $or: [
+          { userId: { $in: users.map((user) => user._id) } },
+          { fullName: { $regex: escapeRegex(keyword), $options: "i" } },
+        ],
+      });
     }
 
     // 10. Phân trang
@@ -204,15 +193,15 @@ const getCaregivers = async (req, res) => {
     }
 
     // 11. Sắp xếp
-    const allowedSortFields = [
-      "createdAt",
-      "hourlyRate",
-      "experienceYears",
-      "ratingAvg",
-      "reviewCount",
-    ];
+    const sortFieldMap = {
+      createdAt: "createdAt",
+      hourlyRate: "pricing.hourlyRate",
+      experienceYears: "experienceYears",
+      ratingAvg: "ratingAvg",
+      reviewCount: "totalReviews",
+    };
 
-    if (!allowedSortFields.includes(sortBy)) {
+    if (!Object.prototype.hasOwnProperty.call(sortFieldMap, sortBy)) {
       return res.status(400).json({
         success: false,
         message: "sortBy không hợp lệ",
@@ -227,7 +216,7 @@ const getCaregivers = async (req, res) => {
     }
 
     const sortOptions = {
-      [sortBy]: order === "asc" ? 1 : -1,
+      [sortFieldMap[sortBy]]: order === "asc" ? 1 : -1,
     };
 
     const skip = (currentPage - 1) * pageSize;
@@ -237,7 +226,7 @@ const getCaregivers = async (req, res) => {
       CaregiverProfile.find(filter)
         .populate({
           path: "userId",
-          select: "fullName email phone avatar",
+          select: "fullName email phone avatarUrl",
         })
         .sort(sortOptions)
         .skip(skip)
@@ -274,28 +263,31 @@ const getFeaturedCaregivers = async (req, res) => {
       20,
     );
 
-    // Lấy các tài khoản caregiver đang hoạt động
-    const activeUsers = await User.find({
-      role: "caregiver",
-      isActive: true,
-    }).select("_id");
-
-    const activeUserIds = activeUsers.map((user) => user._id);
-
-    // Tìm người chăm sóc nổi bật
+    // Profile schema uses approvalStatus/totalReviews, not User role/isActive.
     const caregivers = await CaregiverProfile.find({
-      userId: { $in: activeUserIds },
-      verificationStatus: "VERIFIED",
+      $and: [
+        {
+          $or: [
+            { approvalStatus: "APPROVED" },
+            { verificationStatus: "VERIFIED" },
+          ],
+        },
+        {
+          $or: [
+            { totalReviews: { $gte: 1 } },
+            { reviewCount: { $gte: 1 } },
+          ],
+        },
+      ],
       ratingAvg: { $gte: 4.5 },
-      reviewCount: { $gte: 1 },
     })
       .populate({
         path: "userId",
-        select: "fullName avatar",
+        select: "fullName avatarUrl",
       })
       .sort({
         ratingAvg: -1,
-        reviewCount: -1,
+        totalReviews: -1,
       })
       .limit(limit)
       .lean();
@@ -333,20 +325,19 @@ const getCaregiverDetail = async (req, res) => {
     // 2. Tìm hồ sơ người chăm sóc
     const caregiver = await CaregiverProfile.findOne({
       _id: id,
-      verificationStatus: "VERIFIED",
+      $or: [
+        { approvalStatus: "APPROVED" },
+        { verificationStatus: "VERIFIED" },
+      ],
     })
       .populate({
         path: "userId",
-        select: "fullName avatar phone email isActive role",
-        match: {
-          role: "caregiver",
-          isActive: true,
-        },
+        select: "fullName avatarUrl phone email",
       })
       .lean();
 
     // 3. Kiểm tra hồ sơ có tồn tại không
-    if (!caregiver || !caregiver.userId) {
+    if (!caregiver) {
       return res.status(404).json({
         success: false,
         message: "Không tìm thấy người chăm sóc",
