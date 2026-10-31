@@ -41,6 +41,7 @@ export const AuthPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [suspendedWarning, setSuspendedWarning] = useState('');
   const [countdown, setCountdown] = useState(0);
+  const [devOtpCode, setDevOtpCode] = useState('');
 
   // Nếu đã đăng nhập thì tự động chuyển hướng về trang chủ hoặc redirect
   useEffect(() => {
@@ -85,6 +86,7 @@ export const AuthPage = () => {
       if (res.success) {
         toast.success(res.message || 'Mã OTP đã được gửi tới email!');
         // Chuyển sang bước nhập OTP và bắt đầu đếm ngược 60s
+        if (res.data?.devOtpCode) setDevOtpCode(res.data.devOtpCode);
         setStep('VERIFY_OTP');
         setCountdown(60);
       }
@@ -141,6 +143,7 @@ export const AuthPage = () => {
 
       if (res.success) {
         toast.success('Mã OTP mới đã được gửi tới email của bạn!');
+        if (res.data?.devOtpCode) setDevOtpCode(res.data.devOtpCode);
         setCountdown(60);
       }
     } catch (err) {
@@ -198,7 +201,8 @@ export const AuthPage = () => {
         toast.error('Tài khoản chưa được kích hoạt. Đang chuyển tới màn hình xác thực OTP...');
         // Tự động gửi lại OTP và chuyển sang bước VERIFY_OTP
         try {
-          await axiosClient.post('/auth/resend-otp', { email: email.trim().toLowerCase() });
+          const resendRes = await axiosClient.post('/auth/resend-otp', { email: email.trim().toLowerCase() });
+          if (resendRes.data?.devOtpCode) setDevOtpCode(resendRes.data.devOtpCode);
           setCountdown(60);
         } catch {
           // Bỏ qua lỗi nếu vừa gửi gần đây

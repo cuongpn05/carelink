@@ -24,6 +24,12 @@ const sendOtpEmail = async (email, otpCode, purpose = 'Đăng ký tài khoản C
   const subject = `[CareLink] Mã xác thực OTP cho ${purpose}`;
   const text = `Mã xác thực CareLink của bạn là: ${otpCode}. Mã có hiệu lực trong 5 phút. Vui lòng không chia sẻ mã này cho bất kỳ ai.`;
 
+  console.log('\n====================================================');
+  console.log(`[CareLink OTP Log] Gửi tới: ${email}`);
+  console.log(`[CareLink OTP Log] Mục đích: ${purpose}`);
+  console.log(`[CareLink OTP Log] 🔑 MÃ XÁC THỰC (OTP): ${otpCode}`);
+  console.log('====================================================\n');
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
       <div style="text-align: center; margin-bottom: 24px;">
@@ -56,7 +62,12 @@ const sendOtpEmail = async (email, otpCode, purpose = 'Đăng ký tài khoản C
     </div>
   `;
 
-  return await sendEmail({ to: email, subject, html, text });
+  try {
+    return await sendEmail({ to: email, subject, html, text });
+  } catch (err) {
+    console.error(`⚠️ [Nodemailer] Không thể gửi email tới ${email}:`, err.message);
+    return { error: err.message, mock: true };
+  }
 };
 
 /**
