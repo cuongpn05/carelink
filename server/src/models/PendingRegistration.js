@@ -49,3 +49,4 @@ const PendingRegistration =
   mongoose.model('PendingRegistration', pendingRegistrationSchema);
 
 module.exports = PendingRegistration;
+

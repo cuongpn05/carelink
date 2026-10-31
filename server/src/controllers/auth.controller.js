@@ -80,7 +80,6 @@ const register = async (req, res) => {
       data: {
         email: normalizedEmail,
         otpExpiresAt,
-        devOtpCode: process.env.NODE_ENV !== 'production' ? otpCode : undefined,
       },
     });
   } catch (error) {
@@ -262,7 +261,6 @@ const resendOtp = async (req, res) => {
       data: {
         email: normalizedEmail,
         otpExpiresAt,
-        devOtpCode: process.env.NODE_ENV !== 'production' ? otpCode : undefined,
       },
     });
   } catch (error) {
