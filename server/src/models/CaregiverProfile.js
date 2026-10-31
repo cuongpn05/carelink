@@ -8,6 +8,7 @@ const caregiverProfileSchema = new mongoose.Schema(
       ref: 'Accounts',
       required: [true, 'accountId là bắt buộc'],
       unique: true,
+      sparse: true,
       index: true,
     },
 
