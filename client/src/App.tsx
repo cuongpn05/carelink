@@ -10,6 +10,8 @@ import { AuthPage } from './pages/AuthPage';
 import { BecomeCaregiverPage } from './pages/BecomeCaregiverPage';
 import { CaregiverBookingsPage } from './pages/CaregiverBookingsPage';
 import { MyBookingsPage } from './pages/MyBookingsPage';
+import ProfilePage from './pages/ProfilePage';
+import BookingsPage from './pages/BookingsPage';
 
 const App: React.FC = () => {
   return (

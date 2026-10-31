@@ -6,6 +6,70 @@ const Account = require('../models/Account');
 const ReputationLog = require('../models/ReputationLog');
 const { calculateBookingDetails } = require('../utils/booking.util');
 
+const enrichBooking = async (booking, viewerAccountId) => {
+  const bookingData = typeof booking.toObject === 'function' ? booking.toObject() : booking;
+  const customerAccountId = bookingData.customerId?._id || bookingData.customerId;
+  const caregiverId = bookingData.caregiverId?._id || bookingData.caregiverId;
+  const caregiverProfileId = bookingData.caregiverProfileId?._id || bookingData.caregiverProfileId;
+
+  const [customerAccount, caregiverProfile] = await Promise.all([
+    customerAccountId ? Account.findById(customerAccountId).lean() : null,
+    caregiverProfileId || caregiverId
+      ? CaregiverProfile.findOne({
+          $or: [
+            ...(caregiverProfileId ? [{ _id: caregiverProfileId }] : []),
+            ...(caregiverId
+              ? [{ accountId: caregiverId }, { _id: caregiverId }, { userId: caregiverId }]
+              : []),
+          ],
+        }).lean()
+      : null,
+  ]);
+
+  const caregiverAccountId = caregiverProfile?.accountId || caregiverId;
+  const [customerUser, caregiverAccount, caregiverUser] = await Promise.all([
+    customerAccountId ? User.findOne({ accountId: customerAccountId }).lean() : null,
+    caregiverAccountId ? Account.findById(caregiverAccountId).lean() : null,
+    caregiverAccountId ? User.findOne({ accountId: caregiverAccountId }).lean() : null,
+  ]);
+  const phoneIsRevealed =
+    Boolean(bookingData.confirmedAt) ||
+    ['CONFIRMED', 'IN_PROGRESS', 'COMPLETED'].includes(bookingData.status);
+
+  return {
+    ...bookingData,
+    customer: customerAccount
+      ? {
+          accountId: customerAccount._id,
+          fullName: customerUser?.fullName || '',
+          avatarUrl: customerUser?.avatarUrl || '',
+          phone: customerUser?.phone || '',
+          isPhoneRevealed: phoneIsRevealed || customerAccount._id.toString() === viewerAccountId.toString(),
+          email: customerAccount.email || '',
+          reputationScore: customerAccount.reputationScore ?? 100,
+          status: customerAccount.status || '',
+          isLowReputation: (customerAccount.reputationScore ?? 100) < 70,
+        }
+      : null,
+    caregiver: caregiverProfile
+      ? {
+          accountId: caregiverAccount?._id || caregiverAccountId,
+          fullName: caregiverProfile.fullName || caregiverUser?.fullName || '',
+          avatarUrl: caregiverProfile.avatarUrl || caregiverUser?.avatarUrl || '',
+          phone: caregiverProfile.phone || caregiverUser?.phone || '',
+          isPhoneRevealed:
+            phoneIsRevealed ||
+            caregiverAccount?._id?.toString() === viewerAccountId.toString(),
+          ratingAvg: caregiverProfile.ratingAvg ?? 5,
+          totalReviews: caregiverProfile.totalReviews ?? 0,
+          experienceYears: caregiverProfile.experienceYears ?? 0,
+          serviceAreas: caregiverProfile.serviceAreas || [],
+          reputationScore: caregiverAccount?.reputationScore ?? 100,
+        }
+      : null,
+  };
+};
+
 const getCaregiverIdentity = async (req, { requireApproval = true } = {}) => {
   const profileFilter = [{ accountId: req.account._id }];
   if (req.user?._id) profileFilter.push({ userId: req.user._id });
@@ -243,7 +307,7 @@ const createBooking = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: 'Đã gửi yêu cầu đặt lịch. Người chăm sóc cần xác nhận.',
-      data: booking,
+      data: enriched,
     });
   } catch (error) {
     console.error('createBooking error:', error);
@@ -647,6 +711,218 @@ const rejectCaregiverBooking = async (req, res) => {
   }
 };
 
+const cancelBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'bookingId không hợp lệ.' });
+    }
+    if (reason.length < 3) {
+      return res.status(400).json({ success: false, message: 'Lý do hủy phải có ít nhất 3 ký tự.' });
+    }
+
+    let ownerFilter;
+    if (req.account.role === 'CUSTOMER') {
+      ownerFilter = { customerId: req.account._id };
+    } else if (req.account.role === 'CAREGIVER') {
+      const caregiverIdentity = await getCaregiverIdentity(req);
+      if (!caregiverIdentity) {
+        return res.status(403).json({
+          success: false,
+          message: 'Chỉ người chăm sóc đã được duyệt mới có thể hủy lịch.',
+        });
+      }
+      ownerFilter = getCaregiverBookingOwnerFilter(caregiverIdentity);
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: 'Chỉ khách hàng hoặc người chăm sóc của lịch mới được hủy.',
+      });
+    }
+
+    const requestedBooking = await Booking.findOne({
+      _id: id,
+      ...ownerFilter,
+      status: { $in: ['PENDING', 'CONFIRMED'] },
+    }).select('customerId caregiverId caregiverProfileId startTime status');
+
+    if (!requestedBooking) {
+      const existingBooking = await Booking.findById(id).select('customerId status');
+      if (!existingBooking || existingBooking.customerId.toString() !== req.account._id.toString()) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy lịch đặt thuộc về bạn hoặc lịch không còn tồn tại.',
+        });
+      }
+      return res.status(409).json({
+        success: false,
+        message: 'Chỉ có thể hủy lịch đang chờ hoặc đã xác nhận.',
+      });
+    }
+
+    const hoursUntilStart =
+      (new Date(requestedBooking.startTime).getTime() - Date.now()) / (60 * 60 * 1000);
+    let penaltyPoints = 0;
+    if (requestedBooking.status === 'CONFIRMED') {
+      penaltyPoints =
+        req.account.role === 'CAREGIVER'
+          ? (hoursUntilStart < 12 ? 15 : 5)
+          : (hoursUntilStart < 2 ? 15 : 5);
+    }
+
+    const now = new Date();
+    const booking = await Booking.findOneAndUpdate(
+      {
+        _id: requestedBooking._id,
+        ...ownerFilter,
+        status: requestedBooking.status,
+      },
+      {
+        $set: {
+          status: 'CANCELLED',
+          'cancellationInfo.cancelledBy': req.account._id,
+          'cancellationInfo.cancelledByRole': req.account.role,
+          'cancellationInfo.reason': reason,
+          'cancellationInfo.cancelledAt': now,
+          'cancellationInfo.penaltyPointsDeducted': penaltyPoints,
+        },
+      },
+      { new: true, runValidators: true },
+    );
+
+    if (!booking) {
+      return res.status(409).json({
+        success: false,
+        message: 'Lịch vừa được cập nhật. Vui lòng tải lại danh sách.',
+      });
+    }
+
+    let currentReputationScore = req.account.reputationScore;
+    if (penaltyPoints > 0) {
+      const penalizedAccount = await Account.findById(req.account._id);
+      if (!penalizedAccount) {
+        throw new Error('Không tìm thấy tài khoản để cập nhật điểm uy tín.');
+      }
+
+      const previousScore = penalizedAccount.reputationScore;
+      currentReputationScore = Math.max(0, previousScore - penaltyPoints);
+      penalizedAccount.reputationScore = currentReputationScore;
+      await penalizedAccount.save();
+      await ReputationLog.create({
+        accountId: req.account._id,
+        bookingId: booking._id,
+        changeAmount: currentReputationScore - previousScore,
+        previousScore,
+        newScore: currentReputationScore,
+        reason: `Hủy lịch #${booking._id.toString().slice(-8)}: ${reason}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: penaltyPoints
+        ? `Đã hủy lịch và trừ ${penaltyPoints} điểm uy tín.`
+        : 'Đã hủy lịch thành công, không bị trừ điểm uy tín.',
+      data: {
+        booking: await enrichBooking(booking, req.account._id),
+        currentReputationScore,
+      },
+    });
+  } catch (error) {
+    console.error('cancelBooking error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi hủy lịch đặt.',
+    });
+  }
+};
+
+const updateBookingStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body || {};
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'bookingId không hợp lệ.' });
+    }
+    if (!['CONFIRMED', 'IN_PROGRESS', 'COMPLETED'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Trạng thái lịch không hợp lệ.' });
+    }
+
+    if (status === 'CONFIRMED' && req.account.role === 'CAREGIVER') {
+      return confirmCaregiverBooking(req, res);
+    }
+
+    const booking = await Booking.findById(id);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy lịch đặt.' });
+    }
+
+    const isCustomer = booking.customerId.toString() === req.account._id.toString();
+    let isCaregiver = false;
+    if (req.account.role === 'CAREGIVER') {
+      const caregiverIdentity = await getCaregiverIdentity(req);
+      isCaregiver = Boolean(
+        caregiverIdentity &&
+          (caregiverIdentity.bookingIds.some(
+            (caregiverId) => caregiverId.toString() === booking.caregiverId?.toString(),
+          ) ||
+            caregiverIdentity.profileIds.some(
+              (profileId) => profileId.toString() === booking.caregiverProfileId?.toString(),
+            )),
+      );
+    }
+
+    if (!isCustomer && !isCaregiver) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bạn không có quyền cập nhật lịch đặt này.',
+      });
+    }
+
+    const allowedTransitions = isCaregiver
+      ? {
+          CONFIRMED: ['IN_PROGRESS'],
+          IN_PROGRESS: ['COMPLETED'],
+        }
+      : {
+          IN_PROGRESS: ['COMPLETED'],
+        };
+    if (!allowedTransitions[booking.status]?.includes(status)) {
+      return res.status(409).json({
+        success: false,
+        message: 'Không thể chuyển lịch sang trạng thái được yêu cầu.',
+      });
+    }
+
+    const updatedBooking = await Booking.findOneAndUpdate(
+      { _id: booking._id, status: booking.status },
+      { $set: { status } },
+      { new: true, runValidators: true },
+    );
+    if (!updatedBooking) {
+      return res.status(409).json({
+        success: false,
+        message: 'Lịch vừa được cập nhật. Vui lòng tải lại danh sách.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Đã cập nhật trạng thái lịch đặt.',
+      data: await enrichBooking(updatedBooking, req.account._id),
+    });
+  } catch (error) {
+    console.error('updateBookingStatus error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi cập nhật trạng thái lịch đặt.',
+    });
+  }
+};
+
 const getBookingById = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
@@ -695,5 +971,7 @@ module.exports = {
   getIncomingCaregiverBookings,
   confirmCaregiverBooking,
   rejectCaregiverBooking,
+  cancelBooking,
+  updateBookingStatus,
   getBookingById,
 };
