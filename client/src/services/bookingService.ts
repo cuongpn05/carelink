@@ -60,7 +60,6 @@ export interface Booking {
   paymentMethod: 'CASH' | 'BANK_TRANSFER';
   serviceArea: string;
   serviceAddress: string;
-  serviceArea?: string;
   note?: string;
   confirmedAt?: string | null;
   customerNotificationReadAt?: string | null;
@@ -228,6 +227,40 @@ export const rejectCaregiverBooking = async (bookingId: string): Promise<Booking
   const response = await requestBookingApi<Booking>(path, { method: 'PATCH' });
   if (!isBooking(response.data)) {
     throw new Error(`API PATCH ${path} trả về lịch đã từ chối không hợp lệ.`);
+  }
+  return response.data;
+};
+
+export const getMyBookings = async (): Promise<Booking[]> => {
+  const response = await requestBookingApi<Booking[]>('/bookings/mine');
+  if (!Array.isArray(response.data) || !response.data.every(isBooking)) {
+    throw new Error('API GET /bookings/mine trả về danh sách lịch đặt không hợp lệ.');
+  }
+  return response.data;
+};
+
+export const cancelBooking = async (
+  bookingId: string,
+  reason: string,
+): Promise<ApiResponse<{ booking: Booking; currentReputationScore: number }>> => {
+  const path = `/bookings/${encodeURIComponent(bookingId)}/cancel`;
+  return requestBookingApi<{ booking: Booking; currentReputationScore: number }>(path, {
+    method: 'PATCH',
+    body: { reason },
+  });
+};
+
+export const updateBookingStatus = async (
+  bookingId: string,
+  status: BookingStatus,
+): Promise<Booking> => {
+  const path = `/bookings/${encodeURIComponent(bookingId)}/status`;
+  const response = await requestBookingApi<Booking>(path, {
+    method: 'PATCH',
+    body: { status },
+  });
+  if (!isBooking(response.data)) {
+    throw new Error(`API PATCH ${path} trả về lịch đã cập nhật không hợp lệ.`);
   }
   return response.data;
 };
