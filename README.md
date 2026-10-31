@@ -56,10 +56,59 @@ Gói `HOURLY` nhận `durationValue` là 2, 4, 6, 8, 10 hoặc 12 giờ. Gói
 người chăm sóc, tự tính `endTime` và `totalPrice`; không gửi giá hoặc giờ kết
 thúc từ client. Tháng được tính là 30 ngày.
 
+Lịch mới luôn được tạo với trạng thái `PENDING`. Chỉ caregiver được gắn với
+lịch mới có thể xác nhận hoặc từ chối yêu cầu đó.
+
 ### Lấy lịch của tôi
 
 - `GET /api/bookings/mine` — lịch mà tài khoản hiện tại đặt hoặc nhận.
+- `GET /api/bookings/customer` — danh sách lịch của khách hàng đang đăng nhập.
+- `GET /api/bookings/notifications` — thông báo caregiver đã xác nhận lịch.
+- `PATCH /api/bookings/notifications/:id/read` — đánh dấu thông báo đã đọc.
 - `GET /api/bookings/:id` — chi tiết một lịch mà tài khoản hiện tại tham gia.
+
+Khách hàng mở mục **Lịch và thông báo của tôi** hoặc truy cập `/bookings` để
+xem lịch, trạng thái và thông báo xác nhận. Khi ứng dụng đang mở, chuông thông
+báo sẽ tự kiểm tra cập nhật định kỳ; thông báo đã xác nhận vẫn được lưu để xem
+lại sau khi đăng nhập.
+
+### Khu vực người chăm sóc
+
+Người chăm sóc đã được duyệt mở **Khu vực Đối tác** trên thanh điều hướng để vào
+`/caregiver/bookings`. Trang này gọi:
+
+- `GET /api/bookings/incoming` — lấy lịch khách đặt cho người chăm sóc đang đăng nhập.
+- `PATCH /api/bookings/:id/confirm` — chuyển lịch thuộc caregiver từ `PENDING`
+  sang `CONFIRMED`.
+- `PATCH /api/bookings/:id/reject` — caregiver từ chối lịch `PENDING`, chuyển sang
+  `CANCELLED` và tạo thông báo cho khách hàng.
+
+API chỉ cho phép chủ lịch là người chăm sóc đã được duyệt xác nhận hoặc từ chối;
+các lịch đã xử lý hoặc thuộc tài khoản khác không thể cập nhật. API danh sách
+trả về tất cả trạng thái booking gắn với caregiver, bao gồm cả các booking cũ
+lưu caregiver bằng profile ID. Nhiều yêu cầu `PENDING`
+có thể cùng khung giờ để caregiver lựa chọn. Tuy nhiên, không thể tạo lịch trùng
+với lịch đã `CONFIRMED`/`IN_PROGRESS`; nếu một yêu cầu trùng giờ khác đã được
+xác nhận trước, yêu cầu còn lại sẽ không xác nhận được. Trang lịch của caregiver
+tự tải danh sách mới mỗi 15 giây và báo khi có lịch mới; có thể bấm **Tải lại**
+để cập nhật ngay.
+
+Để debug phía client, mở DevTools của trình duyệt:
+
+- Tab **Network** → lọc `incoming` để xem request, HTTP status và JSON response.
+- Tab **Console** → lọc `[booking API]` để xem URL, phương thức, status hoặc lỗi.
+- Trong Console của trang caregiver, lọc `[caregiver bookings]` để xem tổng số
+  lịch API trả về và số lượng theo trạng thái.
+- Khi `NODE_ENV=development`, response của `GET /api/bookings/incoming` có thêm
+  `debug` gồm database/collection đang truy vấn, các caregiver ID được tìm và
+  caregiver ID của booking tìm thấy. So sánh `debug.searchedCaregiverIds` với
+  `caregiverId` của booking trong database để phát hiện lệch database hoặc ID.
+- Trang caregiver hiển thị endpoint và thời gian tải thành công gần nhất ngay
+  dưới số lượng lịch.
+
+API incoming tìm booking theo account ID, caregiver profile ID và user ID từ
+tất cả hồ sơ caregiver đã duyệt gắn với tài khoản hiện tại. API không lọc theo
+trạng thái, nên trang hiển thị lịch chờ, đã xác nhận, đã từ chối và lịch cũ.
 
 Mọi phản hồi đều có dạng `{ "success": true, "message": "...", "data": ... }`.
 

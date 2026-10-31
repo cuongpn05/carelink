@@ -55,7 +55,11 @@ const verifyToken = async (req, res, next) => {
 
     // Lấy thông tin hồ sơ User và CaregiverProfile nếu có
     const userProfile = await User.findOne({ accountId: account._id });
-    const caregiverProfile = await CaregiverProfile.findOne({ accountId: account._id });
+    const caregiverProfileConditions = [{ accountId: account._id }];
+    if (userProfile) caregiverProfileConditions.push({ userId: userProfile._id });
+    const caregiverProfile = await CaregiverProfile.findOne({
+      $or: caregiverProfileConditions,
+    });
 
     // Gắn thông tin vào request
     req.account = account;
@@ -136,4 +140,3 @@ module.exports = {
   checkAccountActive,
   authorizeRoles,
 };
-

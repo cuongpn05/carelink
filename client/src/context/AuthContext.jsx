@@ -3,7 +3,8 @@ import axiosClient from '../api/axiosClient';
 
 /**
  * @typedef {{ role?: string, _id?: string, status?: string, reputationScore?: number }} AuthAccount
- * @typedef {{ account: AuthAccount|null, user: object|null, caregiverProfile: object|null, accessToken: string|null, isAuthenticated: boolean, loading: boolean, saveAuthData: Function, logout: Function, updateCaregiverProfile: Function, refreshAuthProfile: Function }} AuthContextValue
+ * @typedef {{ approvalStatus?: string, verificationStatus?: string, _id?: string, accountId?: string, userId?: string }} AuthCaregiverProfile
+ * @typedef {{ account: AuthAccount|null, user: object|null, caregiverProfile: AuthCaregiverProfile|null, accessToken: string|null, isAuthenticated: boolean, loading: boolean, saveAuthData: Function, logout: Function, updateCaregiverProfile: Function, refreshAuthProfile: Function }} AuthContextValue
  */
 
 const AuthContext = createContext(/** @type {AuthContextValue|null} */ (null));

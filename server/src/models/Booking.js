@@ -34,6 +34,13 @@ const bookingSchema = new mongoose.Schema(
       index: true,
     },
 
+    caregiverProfileId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'CaregiverProfile',
+      default: null,
+      index: true,
+    },
+
     bookingType: {
       type: String,
       enum: ['DIRECT', 'OPEN_POST'],
@@ -131,6 +138,21 @@ const bookingSchema = new mongoose.Schema(
       ],
       default: 'PENDING',
       index: true,
+    },
+
+    confirmedAt: {
+      type: Date,
+      default: null,
+    },
+
+    caregiverRejectedAt: {
+      type: Date,
+      default: null,
+    },
+
+    customerNotificationReadAt: {
+      type: Date,
+      default: null,
     },
 
     // Cờ đánh dấu cho chức năng "Đánh giá sau dịch vụ"

@@ -154,6 +154,12 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
     setBookingFormOpen(true);
   };
 
+  const handleBookAnother = () => {
+    setCreatedBooking(null);
+    setBookingError('');
+    setBookingFormOpen(true);
+  };
+
   const handlePackageChange = (nextPackage: BookingPackage) => {
     setPackageType(nextPackage);
     setDurationValue(nextPackage === 'HOURLY' ? 2 : 1);
@@ -275,10 +281,18 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
               <h3 id="booking-form-title" className="modal-section-title">Thông tin đặt lịch</h3>
               {createdBooking ? (
                 <div className="booking-success" role="status">
-                  <h4>Đặt lịch thành công</h4>
+                  <h4>Đã gửi yêu cầu đặt lịch</h4>
+                  <p>Người chăm sóc cần xác nhận trước khi lịch được chấp nhận.</p>
                   <p>Thời gian: {formatBookingDate(createdBooking.startTime)} – {formatBookingDate(createdBooking.endTime)}</p>
                   <p>Tổng phí: <strong>{formatPrice(createdBooking.totalPrice)}</strong></p>
                   <p>Thanh toán: {createdBooking.paymentMethod === 'CASH' ? 'Tiền mặt' : 'Chuyển khoản'}</p>
+                  <button
+                    type="button"
+                    className="btn-modal-book"
+                    onClick={handleBookAnother}
+                  >
+                    Đặt thêm lịch khác
+                  </button>
                 </div>
               ) : (
                 <form className="booking-form" onSubmit={handleBookingSubmit}>
@@ -449,14 +463,14 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
               type="button"
               className="btn-modal-book"
               onClick={handleBookNow}
-              disabled={detailLoading || availablePackages.length === 0 || bookingLoading || Boolean(createdBooking)}
+              disabled={detailLoading || availablePackages.length === 0 || bookingLoading}
             >
               <Calendar size={18} />
               <span>
                 {!isAuthenticated
                   ? 'Đăng nhập để đặt lịch'
                   : account?.role === 'CUSTOMER'
-                    ? createdBooking ? 'Đã đặt lịch thành công' : 'Đặt lịch chăm sóc ngay'
+                    ? createdBooking ? 'Đặt lịch khác' : 'Đặt lịch chăm sóc ngay'
                     : 'Chỉ khách hàng được đặt lịch'}
               </span>
             </button>

@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import carelinkLogo from '../assets/images/carelink-logo.png';
+import toast from 'react-hot-toast';
+import { getBookingNotifications } from '../services/bookingService';
 import {
+  Bell,
   HeartHandshake,
   Shield,
   ShieldAlert,
@@ -15,16 +18,71 @@ import {
 } from 'lucide-react';
 
 export const Navbar = () => {
-  const { account, user, isAuthenticated, logout } = useAuth();
+  const { account, user, caregiverProfile, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const knownCustomerId = useRef(null);
+  const knownNotificationIds = useRef(null);
+  const isApprovedCaregiver =
+    caregiverProfile?.approvalStatus === 'APPROVED' ||
+    caregiverProfile?.verificationStatus === 'VERIFIED';
+
+  const refreshNotifications = useCallback(async () => {
+    if (!isAuthenticated || account?.role !== 'CUSTOMER') {
+      setUnreadNotifications(0);
+      knownCustomerId.current = null;
+      knownNotificationIds.current = null;
+      return;
+    }
+
+    const customerId = String(account?._id || '');
+    if (knownCustomerId.current !== customerId) {
+      knownCustomerId.current = customerId;
+      knownNotificationIds.current = null;
+    }
+
+    try {
+      const notifications = await getBookingNotifications();
+      const currentIds = new Set(notifications.map((notification) => notification.bookingId));
+
+      if (knownNotificationIds.current) {
+        notifications
+          .filter((notification) => !knownNotificationIds.current.has(notification.bookingId))
+          .forEach((notification) => toast.success(notification.message));
+      }
+
+      knownNotificationIds.current = currentIds;
+      setUnreadNotifications(notifications.filter((notification) => !notification.isRead).length);
+    } catch (error) {
+      console.error('Không thể cập nhật thông báo lịch đặt:', error);
+    }
+  }, [account?._id, account?.role, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || account?.role !== 'CUSTOMER') {
+      setUnreadNotifications(0);
+      knownCustomerId.current = null;
+      knownNotificationIds.current = null;
+      return undefined;
+    }
+
+    void refreshNotifications();
+    const intervalId = window.setInterval(() => {
+      void refreshNotifications();
+    }, 20000);
+
+    return () => window.clearInterval(intervalId);
+  }, [account?.role, isAuthenticated, refreshNotifications]);
 
   // Xử lý nút "Trở thành đối tác"
   const handleBecomeCaregiverClick = () => {
     if (!isAuthenticated) {
       // Chưa đăng nhập -> Chuyển sang /auth và giữ param redirect
       navigate('/auth?redirect=/become-caregiver');
+    } else if (isApprovedCaregiver || account?.role === 'CAREGIVER') {
+      navigate('/caregiver/bookings');
     } else {
       // Đã đăng nhập -> Chuyển thẳng sang trang đăng ký đối tác
       navigate('/become-caregiver');
@@ -199,6 +257,50 @@ export const Navbar = () => {
 
         {/* Right Section Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {isAuthenticated && account?.role === 'CUSTOMER' && (
+            <button
+              type="button"
+              onClick={() => navigate('/bookings')}
+              aria-label={`Thông báo lịch đặt${unreadNotifications ? `, ${unreadNotifications} chưa đọc` : ''}`}
+              title="Thông báo và lịch của tôi"
+              style={{
+                position: 'relative',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '50%',
+                backgroundColor: '#fff',
+                color: '#334155',
+                cursor: 'pointer',
+              }}
+            >
+              <Bell size={19} />
+              {unreadNotifications > 0 && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-5px',
+                    minWidth: '18px',
+                    height: '18px',
+                    padding: '0 4px',
+                    borderRadius: '999px',
+                    backgroundColor: '#ef4444',
+                    color: '#fff',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    lineHeight: '18px',
+                  }}
+                >
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </span>
+              )}
+            </button>
+          )}
+
           {/* Nút Trở thành đối tác (Luôn hiển thị nổi bật) */}
           <button
             type="button"
@@ -228,7 +330,7 @@ export const Navbar = () => {
           >
             <HeartHandshake size={16} />
             <span>
-              {account?.role === 'CAREGIVER'
+              {isApprovedCaregiver || account?.role === 'CAREGIVER'
                 ? 'Khu vực Đối tác'
                 : 'Trở thành đối tác'}
             </span>
@@ -310,7 +412,7 @@ export const Navbar = () => {
                     {user?.fullName || account?.email?.split('@')[0]}
                   </div>
                   <div style={{ fontSize: '11px', color: '#64748b' }}>
-                    {account?.role === 'CAREGIVER'
+                    {isApprovedCaregiver || account?.role === 'CAREGIVER'
                       ? 'Cộng tác viên'
                       : account?.role === 'ADMIN'
                       ? 'Quản trị viên'
@@ -364,7 +466,7 @@ export const Navbar = () => {
                     type="button"
                     onClick={() => {
                       setDropdownOpen(false);
-                      navigate('/become-caregiver');
+                      navigate(isApprovedCaregiver ? '/caregiver/bookings' : '/become-caregiver');
                     }}
                     style={{
                       width: '100%',
@@ -385,8 +487,38 @@ export const Navbar = () => {
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
                     <HeartHandshake size={16} className="text-blue-600" />
-                    <span>Hồ sơ Cộng tác viên</span>
+                    <span>{isApprovedCaregiver ? 'Lịch khách đặt' : 'Hồ sơ Cộng tác viên'}</span>
                   </button>
+
+                  {account?.role === 'CUSTOMER' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate('/bookings');
+                      }}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        color: '#334155',
+                        fontSize: '13.5px',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    >
+                      <Bell size={16} className="text-blue-600" />
+                      <span>Lịch và thông báo của tôi</span>
+                    </button>
+                  )}
 
                   <button
                     type="button"
@@ -444,4 +576,3 @@ export const Navbar = () => {
 };
 
 export default Navbar;
-
