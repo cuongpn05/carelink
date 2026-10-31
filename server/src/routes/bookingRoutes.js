@@ -4,6 +4,12 @@ const router = express.Router();
 const {
   createBooking,
   getMyBookings,
+  getCustomerBookings,
+  getCustomerBookingNotifications,
+  markCustomerBookingNotificationRead,
+  getIncomingCaregiverBookings,
+  confirmCaregiverBooking,
+  rejectCaregiverBooking,
   getBookingById,
   cancelBooking,
   updateBookingStatus,
@@ -18,11 +24,17 @@ router.use(verifyToken, checkAccountActive);
 
 // Tạo lịch đặt (Chỉ dành cho vai trò CUSTOMER)
 router.post('/', authorizeRoles('CUSTOMER'), createBooking);
-
-// Lấy danh sách lịch đặt của tài khoản hiện tại (Khách hàng hoặc CTV)
+router.get('/incoming', getIncomingCaregiverBookings);
+router.patch('/:id/confirm', confirmCaregiverBooking);
+router.patch('/:id/reject', rejectCaregiverBooking);
 router.get('/mine', getMyBookings);
-
-// Lấy chi tiết lịch đặt
+router.get('/customer', authorizeRoles('CUSTOMER'), getCustomerBookings);
+router.get('/notifications', authorizeRoles('CUSTOMER'), getCustomerBookingNotifications);
+router.patch(
+  '/notifications/:id/read',
+  authorizeRoles('CUSTOMER'),
+  markCustomerBookingNotificationRead,
+);
 router.get('/:id', getBookingById);
 
 // Hủy lịch theo quy tắc & phạt uy tín
