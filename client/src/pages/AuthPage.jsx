@@ -41,7 +41,7 @@ export const AuthPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [suspendedWarning, setSuspendedWarning] = useState('');
   const [countdown, setCountdown] = useState(0);
-
+  
   // Nếu đã đăng nhập thì tự động chuyển hướng về trang chủ hoặc redirect
   useEffect(() => {
     if (isAuthenticated) {
@@ -85,7 +85,7 @@ export const AuthPage = () => {
       if (res.success) {
         toast.success(res.message || 'Mã OTP đã được gửi tới email!');
         // Chuyển sang bước nhập OTP và bắt đầu đếm ngược 60s
-        setStep('VERIFY_OTP');
+                setStep('VERIFY_OTP');
         setCountdown(60);
       }
     } catch (err) {
@@ -141,7 +141,7 @@ export const AuthPage = () => {
 
       if (res.success) {
         toast.success('Mã OTP mới đã được gửi tới email của bạn!');
-        setCountdown(60);
+                setCountdown(60);
       }
     } catch (err) {
       const msg = err.response?.data?.message || 'Không thể gửi lại mã OTP. Vui lòng thử lại.';
@@ -375,6 +375,7 @@ export const AuthPage = () => {
         {/* ======================================================== */}
         {step === 'REGISTER' && (
           <form onSubmit={handleRegisterSubmit}>
+            
             <div style={{ marginBottom: '16px' }}>
               <label
                 style={{
