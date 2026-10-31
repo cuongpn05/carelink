@@ -5,6 +5,7 @@ const Booking = require('./Booking');
 const Review = require('./Review');
 const ReputationLog = require('./ReputationLog');
 const ServiceCategory = require('./ServiceCategory');
+const PendingRegistration = require('./PendingRegistration');
 
 module.exports = {
   Account,
@@ -14,4 +15,5 @@ module.exports = {
   Review,
   ReputationLog,
   ServiceCategory,
+  PendingRegistration,
 };

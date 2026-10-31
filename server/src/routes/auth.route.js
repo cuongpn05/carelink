@@ -10,6 +10,7 @@ const {
   registerCaregiver,
   getMe,
   refreshToken,
+  approveCaregiver,
 } = require('../controllers/auth.controller');
 
 const {
@@ -30,7 +31,7 @@ router.post('/logout', verifyToken, logout);
 // Lấy thông tin tài khoản đang đăng nhập
 router.get('/me', verifyToken, getMe);
 
-// Luồng Đăng ký trở thành Cộng tác viên (Caregiver)
+// Luồng Đăng ký trở thành Đối tác Caregiver (Nộp hồ sơ chờ phỏng vấn)
 router.post(
   '/register-caregiver',
   verifyToken,
@@ -38,5 +39,7 @@ router.post(
   registerCaregiver
 );
 
-module.exports = router;
+// Phê duyệt hồ sơ đối tác Caregiver (Sau khi phỏng vấn thành công)
+router.patch('/approve-caregiver/:caregiverProfileId', approveCaregiver);
 
+module.exports = router;
