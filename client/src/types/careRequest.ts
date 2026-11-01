@@ -114,3 +114,4 @@ export interface CareRequestNotification {
   isRead: boolean;
   caregiver?: CaregiverSummary | null;
 }
+

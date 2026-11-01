@@ -815,3 +815,4 @@ export const CaregiverMarketplacePage: React.FC = () => {
 };
 
 export default CaregiverMarketplacePage;
+

@@ -48,3 +48,4 @@ router.patch('/:id/cancel', authorizeRoles('CUSTOMER'), cancelCareRequest);
 router.patch('/:id/status', updateCareRequestStatus);
 
 module.exports = router;
+

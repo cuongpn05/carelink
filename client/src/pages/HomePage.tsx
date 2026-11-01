@@ -410,49 +410,7 @@ export const HomePage: React.FC = () => {
           </button>
         </section>
 
-        {/* 6. Section: Người chăm sóc nổi bật */}
-        <section className="home-section" aria-label="Người chăm sóc nổi bật">
-          <div className="home-section-header">
-            <h2 className="home-section-title">Người chăm sóc nổi bật</h2>
-            <Link to="/caregivers" className="home-section-link">
-              <span>Xem tất cả</span>
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-
-          <div className="featured-caregivers-grid">
-            {featuredCaregivers.map((cg) => (
-              <div key={cg.id} className="caregiver-custom-card">
-                <div className="caregiver-card-top">
-                  <img
-                    src={cg.avatar}
-                    alt={cg.name}
-                    className="caregiver-avatar-round"
-                  />
-                  <div className="caregiver-info-box">
-                    <h3 className="caregiver-card-name">{cg.name}</h3>
-                    <p className="caregiver-card-role">{cg.title}</p>
-                    <div className="caregiver-card-exp">
-                      <Clock size={13} className="text-slate-400" />
-                      <span>Kinh nghiệm: {cg.experienceYears} năm</span>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  className="caregiver-detail-pill-btn"
-                  onClick={() => setSelectedCaregiver(cg)}
-                >
-                  <span>Xem chi tiết</span>
-                  <ArrowRight size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 7. Section: Quy trình sử dụng CareLink */}
+        {/* 6. Section: Quy trình sử dụng CareLink (Được đưa lên trên Người chăm sóc nổi bật) */}
         <section className="workflow-section" aria-label="Quy trình sử dụng">
           <div className="home-section-header">
             <h2 className="home-section-title">Quy trình sử dụng CareLink</h2>
@@ -499,6 +457,48 @@ export const HomePage: React.FC = () => {
               <h4 className="workflow-step-title">3. Xác nhận dịch vụ</h4>
               <p className="workflow-step-desc">Bắt đầu chăm sóc</p>
             </div>
+          </div>
+        </section>
+
+        {/* 7. Section: Người chăm sóc nổi bật */}
+        <section className="home-section" aria-label="Người chăm sóc nổi bật">
+          <div className="home-section-header">
+            <h2 className="home-section-title">Người chăm sóc nổi bật</h2>
+            <Link to="/caregivers" className="home-section-link">
+              <span>Xem tất cả</span>
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <div className="featured-caregivers-grid">
+            {featuredCaregivers.map((cg) => (
+              <div key={cg.id} className="caregiver-custom-card">
+                <div className="caregiver-card-top">
+                  <img
+                    src={cg.avatar}
+                    alt={cg.name}
+                    className="caregiver-avatar-round"
+                  />
+                  <div className="caregiver-info-box">
+                    <h3 className="caregiver-card-name">{cg.name}</h3>
+                    <p className="caregiver-card-role">{cg.title}</p>
+                    <div className="caregiver-card-exp">
+                      <Clock size={13} className="text-slate-400" />
+                      <span>Kinh nghiệm: {cg.experienceYears} năm</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="caregiver-detail-pill-btn"
+                  onClick={() => setSelectedCaregiver(cg)}
+                >
+                  <span>Xem chi tiết</span>
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            ))}
           </div>
         </section>
       </main>
