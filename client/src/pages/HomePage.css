@@ -14,7 +14,7 @@
 }
 
 /* ==========================================================================
-   Hero Banner matching exact screenshot & balanced web proportions
+   Hero Banner matching exact reference image & full desktop scale
    ========================================================================== */
 .home-hero-section {
   position: relative;
@@ -22,8 +22,8 @@
   margin: 0;
   padding: 0;
   background-color: #f0f7fe;
-  min-height: 380px;
-  height: clamp(380px, 32vw, 450px);
+  min-height: 520px;
+  height: clamp(520px, 42vw, 590px);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -46,17 +46,17 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1240px;
+  max-width: 1280px;
   height: 100%;
   margin: 0 auto;
-  padding: 0 32px 28px;
+  padding: 0 32px 32px;
   display: flex;
   align-items: center;
 }
 
 .home-hero-content {
-  max-width: 450px;
-  padding: 20px 0 28px;
+  max-width: 580px;
+  padding: 36px 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -65,74 +65,74 @@
 .home-hero-tag {
   display: inline-flex;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 20px;
   background-color: #e0f2fe;
-  color: #0284c7;
-  font-size: 11px;
+  color: #0369a1;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  padding: 5px 14px;
+  letter-spacing: 0.6px;
+  padding: 7px 18px;
   border-radius: 9999px;
 }
 
 .home-hero-heading {
-  font-size: clamp(28px, 2.5vw, 36px);
+  font-size: clamp(38px, 3.4vw, 48px);
   font-weight: 800;
-  line-height: 1.2;
-  color: #0c365a;
-  letter-spacing: -0.6px;
-  margin: 0 0 12px 0;
+  line-height: 1.16;
+  color: #0d2847;
+  letter-spacing: -1.2px;
+  margin-bottom: 20px;
 }
 
 .home-hero-heading-highlight {
-  color: #0c365a;
+  color: #0d2847;
 }
 
 .home-hero-subtitle {
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 16.5px;
+  line-height: 1.6;
   color: #475569;
-  max-width: 395px;
-  margin: 0 0 20px 0;
+  max-width: 480px;
+  margin-bottom: 34px;
 }
 
 .home-hero-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 22px;
+  gap: 16px;
+  margin-bottom: 34px;
   flex-wrap: wrap;
 }
 
 .hero-btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 11px 24px;
+  gap: 10px;
+  padding: 14px 30px;
   background-color: #2563eb;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 15.5px;
   font-weight: 600;
   border-radius: 9999px;
   text-decoration: none;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.28);
 }
 
 .hero-btn-primary:hover {
   background-color: #1d4ed8;
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.38);
 }
 
 .hero-btn-secondary {
   display: inline-flex;
   align-items: center;
-  padding: 11px 24px;
+  padding: 14px 28px;
   background-color: #ffffff;
-  border: 1px solid #bfdbfe;
+  border: 1.5px solid #bfdbfe;
   color: #2563eb;
-  font-size: 14px;
+  font-size: 15.5px;
   font-weight: 600;
   border-radius: 9999px;
   text-decoration: none;
@@ -149,16 +149,16 @@
 .home-hero-features {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
 .home-feature-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  gap: 8px;
+  font-size: 14.5px;
+  font-weight: 600;
   color: #334155;
 }
 
@@ -172,8 +172,8 @@
    1. Floating Search Bar (Card Pill) Overlapping Banner
    ========================================================================== */
 .floating-search-bar-container {
-  margin-top: -38px;
-  margin-bottom: 48px;
+  margin-top: -46px;
+  margin-bottom: 50px;
   position: relative;
   z-index: 20;
 }
@@ -634,17 +634,17 @@
    ========================================================================== */
 @media (max-width: 1024px) {
   .home-hero-section {
-    min-height: 360px;
+    min-height: 480px;
     height: auto;
-    padding: 24px 0 36px;
+    padding: 30px 0;
   }
 
   .home-hero-heading {
-    font-size: 30px;
+    font-size: 34px;
   }
 
   .home-hero-inner {
-    padding: 0 20px 24px;
+    padding: 20px;
   }
 
   .home-hero-bg-visual {
