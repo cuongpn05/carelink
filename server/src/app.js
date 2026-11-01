@@ -12,6 +12,7 @@ const authRoutes = require('./routes/auth.route');
 const userRoutes = require('./routes/user.route');
 const caregiverRoutes = require('./routes/caregiverRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
+const careRequestRoutes = require('./routes/careRequestRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -43,6 +44,10 @@ app.use('/api/v1/user', userRoutes);
 app.use('/api/caregivers', caregiverRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
+
+// Care Request Marketplace Routes
+app.use('/api/care-requests', careRequestRoutes);
+app.use('/api/v1/care-requests', careRequestRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

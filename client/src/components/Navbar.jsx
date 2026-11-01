@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import carelinkLogo from '../assets/images/carelink-logo.png';
 import toast from 'react-hot-toast';
 import { getBookingNotifications } from '../services/bookingService';
+import { getCareRequestNotifications } from '../services/careRequestService';
 import {
   Bell,
   HeartHandshake,
@@ -16,6 +17,9 @@ import {
   ChevronDown,
   Menu,
   X,
+  FileText,
+  PlusCircle,
+  Briefcase,
 } from 'lucide-react';
 
 export const Navbar = () => {
@@ -45,19 +49,35 @@ export const Navbar = () => {
     }
 
     try {
-      const notifications = await getBookingNotifications();
-      const currentIds = new Set(notifications.map((notification) => notification.bookingId));
+      const [bookingRes, requestRes] = await Promise.allSettled([
+        getBookingNotifications(),
+        getCareRequestNotifications(),
+      ]);
+
+      const bookingNotifs = bookingRes.status === 'fulfilled' ? bookingRes.value : [];
+      const requestNotifs = requestRes.status === 'fulfilled' ? requestRes.value : [];
+
+      const currentIds = new Set([
+        ...bookingNotifs.map((n) => `b_${n.bookingId}`),
+        ...requestNotifs.map((n) => `r_${n.requestId}`),
+      ]);
 
       if (knownNotificationIds.current) {
-        notifications
-          .filter((notification) => !knownNotificationIds.current.has(notification.bookingId))
-          .forEach((notification) => toast.success(notification.message));
+        requestNotifs
+          .filter((n) => !knownNotificationIds.current.has(`r_${n.requestId}`) && !n.isRead)
+          .forEach((n) => toast.success(n.message, { duration: 6000 }));
+
+        bookingNotifs
+          .filter((n) => !knownNotificationIds.current.has(`b_${n.bookingId}`) && !n.isRead)
+          .forEach((n) => toast.success(n.message));
       }
 
       knownNotificationIds.current = currentIds;
-      setUnreadNotifications(notifications.filter((notification) => !notification.isRead).length);
+      const unreadB = bookingNotifs.filter((n) => !n.isRead).length;
+      const unreadR = requestNotifs.filter((n) => !n.isRead).length;
+      setUnreadNotifications(unreadB + unreadR);
     } catch (error) {
-      console.error('Không thể cập nhật thông báo lịch đặt:', error);
+      console.error('Không thể cập nhật thông báo:', error);
     }
   }, [account?._id, account?.role, isAuthenticated]);
 
@@ -257,38 +277,72 @@ export const Navbar = () => {
             Người chăm sóc
           </NavLink>
           {isAuthenticated && account?.role === 'CUSTOMER' && (
-            <NavLink
-              to="/bookings"
-              style={({ isActive }) => ({
-                fontSize: '15px',
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? '#1d4ed8' : '#475569',
-                backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                padding: '8px 16px',
-                borderRadius: '9999px',
-                textDecoration: 'none',
-                transition: 'all 0.2s ease',
-              })}
-            >
-              Lịch đã đặt
-            </NavLink>
+            <>
+              <NavLink
+                to="/my-care-requests"
+                style={({ isActive }) => ({
+                  fontSize: '15px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#1d4ed8' : '#475569',
+                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                  padding: '8px 16px',
+                  borderRadius: '9999px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                })}
+              >
+                Yêu cầu của tôi
+              </NavLink>
+              <NavLink
+                to="/bookings"
+                style={({ isActive }) => ({
+                  fontSize: '15px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#1d4ed8' : '#475569',
+                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                  padding: '8px 16px',
+                  borderRadius: '9999px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                })}
+              >
+                Lịch đã đặt
+              </NavLink>
+            </>
           )}
-          {isAuthenticated && account?.role === 'CAREGIVER' && (
-            <NavLink
-              to="/caregiver/bookings"
-              style={({ isActive }) => ({
-                fontSize: '15px',
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? '#1d4ed8' : '#475569',
-                backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                padding: '8px 16px',
-                borderRadius: '9999px',
-                textDecoration: 'none',
-                transition: 'all 0.2s ease',
-              })}
-            >
-              Lịch nhận việc
-            </NavLink>
+          {isAuthenticated && (account?.role === 'CAREGIVER' || isApprovedCaregiver) && (
+            <>
+              <NavLink
+                to="/caregiver/marketplace"
+                style={({ isActive }) => ({
+                  fontSize: '15px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#1d4ed8' : '#475569',
+                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                  padding: '8px 16px',
+                  borderRadius: '9999px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                })}
+              >
+                Yêu cầu phù hợp
+              </NavLink>
+              <NavLink
+                to="/caregiver/bookings"
+                style={({ isActive }) => ({
+                  fontSize: '15px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#1d4ed8' : '#475569',
+                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                  padding: '8px 16px',
+                  borderRadius: '9999px',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                })}
+              >
+                Lịch nhận việc
+              </NavLink>
+            </>
           )}
         </nav>
 
@@ -503,64 +557,149 @@ export const Navbar = () => {
                     <span>Xem profile & Điểm uy tín</span>
                   </button>
 
-                  {isApprovedCaregiver && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        navigate('/caregiver/bookings');
-                      }}
-                      style={{
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        border: 'none',
-                        backgroundColor: 'transparent',
-                        color: '#334155',
-                        fontSize: '13.5px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                    >
-                      <Calendar size={16} className="text-emerald-600" />
-                      <span>Lịch khách đặt</span>
-                    </button>
+                  {(isApprovedCaregiver || account?.role === 'CAREGIVER') && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          navigate('/caregiver/marketplace');
+                        }}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: '#334155',
+                          fontSize: '13.5px',
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <Briefcase size={16} className="text-blue-600" />
+                        <span>Yêu cầu phù hợp (Chợ việc)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          navigate('/caregiver/bookings');
+                        }}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: '#334155',
+                          fontSize: '13.5px',
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <Calendar size={16} className="text-emerald-600" />
+                        <span>Lịch khách đặt</span>
+                      </button>
+                    </>
                   )}
 
                   {account?.role === 'CUSTOMER' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        navigate('/bookings');
-                      }}
-                      style={{
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        border: 'none',
-                        backgroundColor: 'transparent',
-                        color: '#334155',
-                        fontSize: '13.5px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                    >
-                      <Bell size={16} className="text-blue-600" />
-                      <span>Lịch và thông báo của tôi</span>
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          navigate('/my-care-requests');
+                        }}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: '#334155',
+                          fontSize: '13.5px',
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <FileText size={16} className="text-blue-600" />
+                        <span>Yêu cầu chăm sóc của tôi</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          navigate('/post-care-request');
+                        }}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: '#334155',
+                          fontSize: '13.5px',
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <PlusCircle size={16} className="text-emerald-600" />
+                        <span>Đăng yêu cầu mới</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          navigate('/bookings');
+                        }}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: '#334155',
+                          fontSize: '13.5px',
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <Bell size={16} className="text-blue-600" />
+                        <span>Lịch và thông báo của tôi</span>
+                      </button>
+                    </>
                   )}
 
                   <button
@@ -675,38 +814,72 @@ export const Navbar = () => {
             Người chăm sóc
           </NavLink>
           {isAuthenticated && account?.role === 'CUSTOMER' && (
-            <NavLink
-              to="/bookings"
-              onClick={() => setMobileMenuOpen(false)}
-              style={({ isActive }) => ({
-                fontSize: '15px',
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? '#1d4ed8' : '#334155',
-                backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                padding: '10px 14px',
-                borderRadius: '8px',
-                textDecoration: 'none',
-              })}
-            >
-              Lịch đã đặt
-            </NavLink>
+            <>
+              <NavLink
+                to="/my-care-requests"
+                onClick={() => setMobileMenuOpen(false)}
+                style={({ isActive }) => ({
+                  fontSize: '15px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#1d4ed8' : '#334155',
+                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                })}
+              >
+                Yêu cầu của tôi
+              </NavLink>
+              <NavLink
+                to="/bookings"
+                onClick={() => setMobileMenuOpen(false)}
+                style={({ isActive }) => ({
+                  fontSize: '15px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#1d4ed8' : '#334155',
+                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                })}
+              >
+                Lịch đã đặt
+              </NavLink>
+            </>
           )}
-          {isAuthenticated && account?.role === 'CAREGIVER' && (
-            <NavLink
-              to="/caregiver/bookings"
-              onClick={() => setMobileMenuOpen(false)}
-              style={({ isActive }) => ({
-                fontSize: '15px',
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? '#1d4ed8' : '#334155',
-                backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                padding: '10px 14px',
-                borderRadius: '8px',
-                textDecoration: 'none',
-              })}
-            >
-              Lịch nhận việc
-            </NavLink>
+          {isAuthenticated && (account?.role === 'CAREGIVER' || isApprovedCaregiver) && (
+            <>
+              <NavLink
+                to="/caregiver/marketplace"
+                onClick={() => setMobileMenuOpen(false)}
+                style={({ isActive }) => ({
+                  fontSize: '15px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#1d4ed8' : '#334155',
+                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                })}
+              >
+                Yêu cầu phù hợp
+              </NavLink>
+              <NavLink
+                to="/caregiver/bookings"
+                onClick={() => setMobileMenuOpen(false)}
+                style={({ isActive }) => ({
+                  fontSize: '15px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#1d4ed8' : '#334155',
+                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                })}
+              >
+                Lịch nhận việc
+              </NavLink>
+            </>
           )}
         </div>
       )}

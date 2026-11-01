@@ -12,6 +12,9 @@ import { CaregiverBookingsPage } from './pages/CaregiverBookingsPage';
 import { MyBookingsPage } from './pages/MyBookingsPage';
 import ProfilePage from './pages/ProfilePage';
 import BookingsPage from './pages/BookingsPage';
+import MyCareRequestsPage from './pages/MyCareRequestsPage';
+import CaregiverMarketplacePage from './pages/CaregiverMarketplacePage';
+import PostCareRequestPage from './pages/PostCareRequestPage';
 
 // Scroll to top on route change
 const ScrollToTop: React.FC = () => {
@@ -45,6 +48,10 @@ const App: React.FC = () => {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/become-caregiver" element={<BecomeCaregiverPage />} />
           <Route path="/caregiver/bookings" element={<CaregiverBookingsPage />} />
+          <Route path="/caregiver/marketplace" element={<CaregiverMarketplacePage />} />
+          <Route path="/care-requests" element={<CaregiverMarketplacePage />} />
+          <Route path="/my-care-requests" element={<MyCareRequestsPage />} />
+          <Route path="/post-care-request" element={<PostCareRequestPage />} />
           <Route path="/my-bookings" element={<MyBookingsPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/caregivers" element={<CaregiversPage />} />

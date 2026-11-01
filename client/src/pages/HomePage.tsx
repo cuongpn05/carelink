@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { Footer } from '../components/Footer/Footer';
 import { CaregiverDetailModal } from '../components/Modal/CaregiverDetailModal';
+import { PostCareRequestModal } from '../components/PostCareRequestModal';
 import { getCaregivers } from '../services/caregiverService';
 import { Caregiver } from '../types';
 import heroBg from '../assets/hero-bg.png';
@@ -107,6 +108,7 @@ export const HomePage: React.FC = () => {
   const [selectedCaregiver, setSelectedCaregiver] = useState<Caregiver | null>(null);
   const [featuredCaregivers, setFeaturedCaregivers] = useState<Caregiver[]>(SCREENSHOT_DEFAULT_CAREGIVERS);
   const [loadingCaregivers, setLoadingCaregivers] = useState(false);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   // Load real caregivers if available
   useEffect(() => {
@@ -397,10 +399,15 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          <Link to="/caregivers" className="post-request-btn">
+          <button
+            type="button"
+            className="post-request-btn"
+            onClick={() => setIsPostModalOpen(true)}
+            style={{ cursor: 'pointer', border: 'none' }}
+          >
             <span>Đăng yêu cầu</span>
             <ArrowRight size={16} />
-          </Link>
+          </button>
         </section>
 
         {/* 6. Section: Người chăm sóc nổi bật */}
@@ -503,6 +510,12 @@ export const HomePage: React.FC = () => {
       <CaregiverDetailModal
         caregiver={selectedCaregiver}
         onClose={() => setSelectedCaregiver(null)}
+      />
+
+      {/* 10. Post Care Request Modal */}
+      <PostCareRequestModal
+        isOpen={isPostModalOpen}
+        onClose={() => setIsPostModalOpen(false)}
       />
     </div>
   );
