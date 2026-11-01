@@ -113,7 +113,8 @@ export const Navbar = () => {
     return (
       <div
         className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${badgeClass}`}
-        title={`Điểm uy tín tài khoản: ${score}/100. Điểm này bị trừ khi hủy lịch hẹn nhiều lần.`}
+        title={`Điểm uy tín tài khoản: ${score}/100. Bấm để xem chi tiết hồ sơ & lịch sử uy tín.`}
+        onClick={() => navigate('/profile')}
         style={{
           display: 'inline-flex',
           alignItems: 'center',
@@ -123,7 +124,7 @@ export const Navbar = () => {
           fontSize: '12px',
           fontWeight: 600,
           border: '1px solid',
-          cursor: 'help',
+          cursor: 'pointer',
         }}
       >
         {icon}
