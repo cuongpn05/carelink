@@ -183,7 +183,7 @@ export const HomePage: React.FC = () => {
             <div className="home-hero-actions">
               <Link to="/caregivers" className="hero-btn-primary">
                 <span>Tìm người chăm sóc</span>
-                <ArrowRight size={17} />
+                <ArrowRight size={18} />
               </Link>
               <Link to="/services" className="hero-btn-secondary">
                 <span>Khám phá dịch vụ</span>
@@ -192,15 +192,15 @@ export const HomePage: React.FC = () => {
 
             <div className="home-hero-features">
               <div className="home-feature-item">
-                <CheckCircle2 size={18} className="feature-check-icon" />
+                <CheckCircle2 size={19} className="feature-check-icon" />
                 <span>Đặt lịch thuận tiện</span>
               </div>
               <div className="home-feature-item">
-                <CheckCircle2 size={18} className="feature-check-icon" />
+                <CheckCircle2 size={19} className="feature-check-icon" />
                 <span>Thông tin rõ ràng</span>
               </div>
               <div className="home-feature-item">
-                <CheckCircle2 size={18} className="feature-check-icon" />
+                <CheckCircle2 size={19} className="feature-check-icon" />
                 <span>Chăm sóc tận tâm</span>
               </div>
             </div>
@@ -216,7 +216,7 @@ export const HomePage: React.FC = () => {
             {/* Field 1: Loại chăm sóc */}
             <div className="search-field-item">
               <div className="search-field-icon">
-                <Heart size={20} fill="#2563eb" color="#2563eb" />
+                <Heart size={22} fill="#2563eb" color="#2563eb" />
               </div>
               <div className="search-field-texts">
                 <span className="search-field-label">Loại chăm sóc</span>
@@ -233,7 +233,7 @@ export const HomePage: React.FC = () => {
                     <option value="home-care">Chăm sóc tại nhà</option>
                     <option value="post-treatment-care">Chăm sóc sau điều trị</option>
                   </select>
-                  <ChevronDown size={15} className="search-chevron-icon" />
+                  <ChevronDown size={16} className="search-chevron-icon" />
                 </div>
               </div>
             </div>
@@ -243,7 +243,7 @@ export const HomePage: React.FC = () => {
             {/* Field 2: Địa điểm */}
             <div className="search-field-item">
               <div className="search-field-icon">
-                <MapPin size={20} />
+                <MapPin size={22} />
               </div>
               <div className="search-field-texts">
                 <span className="search-field-label">Địa điểm</span>
@@ -259,7 +259,7 @@ export const HomePage: React.FC = () => {
                     <option value="Hà Nội">Hà Nội</option>
                     <option value="Đà Nẵng">Đà Nẵng</option>
                   </select>
-                  <ChevronDown size={15} className="search-chevron-icon" />
+                  <ChevronDown size={16} className="search-chevron-icon" />
                 </div>
               </div>
             </div>
@@ -269,7 +269,7 @@ export const HomePage: React.FC = () => {
             {/* Field 3: Thời gian */}
             <div className="search-field-item">
               <div className="search-field-icon">
-                <Calendar size={20} />
+                <Calendar size={22} />
               </div>
               <div className="search-field-texts">
                 <span className="search-field-label">Thời gian</span>
@@ -286,14 +286,14 @@ export const HomePage: React.FC = () => {
                     <option value="weekly">Theo tuần</option>
                     <option value="monthly">Theo tháng</option>
                   </select>
-                  <ChevronDown size={15} className="search-chevron-icon" />
+                  <ChevronDown size={16} className="search-chevron-icon" />
                 </div>
               </div>
             </div>
 
             {/* Submit Button */}
             <button type="submit" className="search-submit-btn">
-              <Search size={18} />
+              <Search size={19} />
               <span>Tìm kiếm</span>
             </button>
           </form>
@@ -387,7 +387,7 @@ export const HomePage: React.FC = () => {
         <section className="post-request-banner" aria-label="Đăng yêu cầu chăm sóc ngay">
           <div className="post-request-left">
             <div className="post-request-icon-box">
-              <FileCheck2 size={26} />
+              <FileCheck2 size={28} />
             </div>
             <div>
               <h3 className="post-request-title">Đăng yêu cầu chăm sóc ngay</h3>
@@ -399,7 +399,7 @@ export const HomePage: React.FC = () => {
 
           <Link to="/caregivers" className="post-request-btn">
             <span>Đăng yêu cầu</span>
-            <ArrowRight size={15} />
+            <ArrowRight size={16} />
           </Link>
         </section>
 

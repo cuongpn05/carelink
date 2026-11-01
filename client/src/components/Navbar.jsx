@@ -146,9 +146,10 @@ export const Navbar = () => {
     >
       <div
         style={{
-          maxWidth: '1440px',
+          maxWidth: '1580px',
+          width: '92%',
           margin: '0 auto',
-          padding: '0 24px',
+          padding: '0 16px',
           height: '74px',
           display: 'flex',
           alignItems: 'center',

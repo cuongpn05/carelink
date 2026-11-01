@@ -1,20 +1,23 @@
-/* HomePage.css - Modern, Clean Healthcare Redesign matching exact screenshot */
+/* HomePage.css - Modern, Spacious, Responsive Healthcare Layout */
 
 .home-page-container {
   min-height: 100vh;
   background-color: #f8fafc;
   color: #0f172a;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  width: 100%;
 }
 
+/* 1. Main Content Wrapper: Expanded to 1560px on Desktop, 92% width */
 .home-content-wrapper {
-  max-width: 1240px;
+  width: 92%;
+  max-width: 1560px;
   margin: 0 auto;
-  padding: 0 24px 80px;
+  padding: 0 0 90px;
 }
 
 /* ==========================================================================
-   Hero Banner matching exact reference image & full desktop scale
+   2. Hero Banner: Grand, spacious, and proportionate
    ========================================================================== */
 .home-hero-section {
   position: relative;
@@ -22,8 +25,8 @@
   margin: 0;
   padding: 0;
   background-color: #f0f7fe;
-  min-height: 520px;
-  height: clamp(520px, 42vw, 590px);
+  min-height: 560px;
+  height: clamp(540px, 38vw, 620px);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -45,18 +48,18 @@
 .home-hero-inner {
   position: relative;
   z-index: 2;
-  width: 100%;
-  max-width: 1280px;
+  width: 92%;
+  max-width: 1560px;
   height: 100%;
   margin: 0 auto;
-  padding: 0 32px 32px;
+  padding: 0 0 40px;
   display: flex;
   align-items: center;
 }
 
 .home-hero-content {
-  max-width: 580px;
-  padding: 36px 0;
+  max-width: 680px;
+  padding: 40px 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -65,7 +68,7 @@
 .home-hero-tag {
   display: inline-flex;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
   background-color: #e0f2fe;
   color: #0369a1;
   font-size: 12px;
@@ -76,12 +79,12 @@
 }
 
 .home-hero-heading {
-  font-size: clamp(38px, 3.4vw, 48px);
+  font-size: clamp(38px, 3.4vw, 52px);
   font-weight: 800;
-  line-height: 1.16;
+  line-height: 1.18;
   color: #0d2847;
   letter-spacing: -1.2px;
-  margin-bottom: 20px;
+  margin: 0 0 20px 0;
 }
 
 .home-hero-heading-highlight {
@@ -89,18 +92,18 @@
 }
 
 .home-hero-subtitle {
-  font-size: 16.5px;
+  font-size: 17px;
   line-height: 1.6;
   color: #475569;
-  max-width: 480px;
-  margin-bottom: 34px;
+  max-width: 520px;
+  margin: 0 0 34px 0;
 }
 
 .home-hero-actions {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 34px;
+  margin-bottom: 36px;
   flex-wrap: wrap;
 }
 
@@ -108,11 +111,11 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 30px;
+  padding: 15px 34px;
   background-color: #2563eb;
   color: #ffffff;
-  font-size: 15.5px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   border-radius: 9999px;
   text-decoration: none;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -128,11 +131,11 @@
 .hero-btn-secondary {
   display: inline-flex;
   align-items: center;
-  padding: 14px 28px;
+  padding: 15px 30px;
   background-color: #ffffff;
   border: 1.5px solid #bfdbfe;
   color: #2563eb;
-  font-size: 15.5px;
+  font-size: 16px;
   font-weight: 600;
   border-radius: 9999px;
   text-decoration: none;
@@ -149,7 +152,7 @@
 .home-hero-features {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 28px;
   flex-wrap: wrap;
 }
 
@@ -157,7 +160,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 600;
   color: #334155;
 }
@@ -169,25 +172,27 @@
 }
 
 /* ==========================================================================
-   1. Floating Search Bar (Card Pill) Overlapping Banner
+   3. Floating Search Bar: Expanded full width with generous spacing
    ========================================================================== */
 .floating-search-bar-container {
   margin-top: -46px;
-  margin-bottom: 50px;
+  margin-bottom: 56px;
   position: relative;
   z-index: 20;
+  width: 100%;
 }
 
 .floating-search-bar {
   background-color: #ffffff;
   border: 1px solid #dbeafe;
   border-radius: 9999px;
-  padding: 14px 20px 14px 32px;
-  box-shadow: 0 16px 40px -8px rgba(15, 23, 42, 0.1), 0 4px 14px -2px rgba(15, 23, 42, 0.05);
+  padding: 16px 24px 16px 36px;
+  box-shadow: 0 18px 46px -8px rgba(15, 23, 42, 0.12), 0 4px 16px -2px rgba(15, 23, 42, 0.05);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
+  width: 100%;
   transition: all 0.2s ease;
 }
 
@@ -199,15 +204,16 @@
 .search-field-item {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 16px;
   flex: 1;
   position: relative;
   cursor: pointer;
+  min-width: 0;
 }
 
 .search-field-icon {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background-color: #eff6ff;
   color: #2563eb;
@@ -225,7 +231,7 @@
 }
 
 .search-field-label {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #64748b;
   margin-bottom: 3px;
@@ -243,9 +249,9 @@
   -webkit-appearance: none;
   border: none;
   background: transparent;
-  padding: 0 22px 0 0;
+  padding: 0 24px 0 0;
   margin: 0;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #0f172a;
   cursor: pointer;
@@ -267,7 +273,7 @@
 
 .search-divider {
   width: 1px;
-  height: 42px;
+  height: 44px;
   background-color: #e2e8f0;
   flex-shrink: 0;
 }
@@ -279,9 +285,9 @@
   background-color: #1d4ed8;
   color: #ffffff;
   border: none;
-  padding: 15px 36px;
+  padding: 16px 42px;
   border-radius: 9999px;
-  font-size: 15.5px;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -303,22 +309,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 22px;
+  margin-bottom: 26px;
 }
 
 .home-section-title {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
   color: #0f172a;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.5px;
   margin: 0;
 }
 
 .home-section-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  gap: 8px;
+  font-size: 15.5px;
   font-weight: 700;
   color: #2563eb;
   text-decoration: none;
@@ -327,45 +333,45 @@
 
 .home-section-link:hover {
   color: #1d4ed8;
-  gap: 9px;
+  gap: 11px;
 }
 
 /* ==========================================================================
-   2. Service Categories Cards (4 in a row)
+   4. Service Categories: 4 evenly distributed columns, larger cards
    ========================================================================== */
 .services-category-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-  margin-bottom: 45px;
+  gap: 24px;
+  margin-bottom: 56px;
 }
 
 .service-cat-card {
   background-color: #f0f7fe;
   border: 1px solid transparent;
-  border-radius: 18px;
-  padding: 26px 16px;
+  border-radius: 20px;
+  padding: 34px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 14px;
+  gap: 16px;
   cursor: pointer;
   transition: all 0.25s ease;
-  min-height: 145px;
+  min-height: 170px;
 }
 
 .service-cat-card:hover {
   background-color: #e4f1fd;
   border-color: #bfdbfe;
   transform: translateY(-4px);
-  box-shadow: 0 10px 24px -4px rgba(37, 99, 235, 0.08);
+  box-shadow: 0 12px 28px -4px rgba(37, 99, 235, 0.1);
 }
 
 .service-cat-icon-wrapper {
-  width: 58px;
-  height: 58px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -378,58 +384,58 @@
 }
 
 .service-cat-title {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   color: #1e293b;
   margin: 0;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 /* ==========================================================================
-   3. Call to Action Banner "Đăng yêu cầu chăm sóc ngay" (Positioned ABOVE Featured)
+   5. Call to Action Banner "Đăng yêu cầu chăm sóc ngay"
    ========================================================================== */
 .post-request-banner {
   background: #edf5fe;
   border: 1px solid #c7ddfb;
-  border-radius: 20px;
-  padding: 24px 34px;
+  border-radius: 22px;
+  padding: 28px 44px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 50px;
+  gap: 28px;
+  margin-bottom: 56px;
   box-shadow: 0 4px 16px rgba(37, 99, 235, 0.04);
 }
 
 .post-request-left {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 22px;
 }
 
 .post-request-icon-box {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
   background-color: #ffffff;
   border: 1.5px solid #bfdbfe;
   color: #2563eb;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
   flex-shrink: 0;
 }
 
 .post-request-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: #0f172a;
   margin: 0 0 4px 0;
 }
 
 .post-request-subtitle {
-  font-size: 14px;
+  font-size: 15px;
   color: #475569;
   margin: 0;
 }
@@ -437,12 +443,12 @@
 .post-request-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 13px 28px;
+  gap: 9px;
+  padding: 15px 34px;
   border-radius: 9999px;
   background-color: #1d4ed8;
   color: #ffffff;
-  font-size: 14.5px;
+  font-size: 15.5px;
   font-weight: 700;
   border: none;
   cursor: pointer;
@@ -456,52 +462,53 @@
 .post-request-btn:hover {
   background-color: #1e40af;
   transform: translateY(-1px);
-  gap: 11px;
-  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.32);
+  gap: 12px;
+  box-shadow: 0 6px 18px rgba(29, 78, 216, 0.35);
 }
 
 /* ==========================================================================
-   4. Featured Caregivers Section (3 in a row)
+   6. Featured Caregivers Section (3 wide columns)
    ========================================================================== */
 .featured-caregivers-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-  margin-bottom: 50px;
+  gap: 26px;
+  margin-bottom: 56px;
 }
 
 .caregiver-custom-card {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 20px 22px;
+  border-radius: 22px;
+  padding: 26px 28px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   transition: all 0.25s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-height: 200px;
 }
 
 .caregiver-custom-card:hover {
   border-color: #bfdbfe;
-  box-shadow: 0 12px 28px -4px rgba(37, 99, 235, 0.08);
+  box-shadow: 0 14px 32px -4px rgba(37, 99, 235, 0.1);
   transform: translateY(-3px);
 }
 
 .caregiver-card-top {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: 18px;
+  margin-bottom: 22px;
 }
 
 .caregiver-avatar-round {
-  width: 72px;
-  height: 72px;
+  width: 82px;
+  height: 82px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2.5px solid #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   flex-shrink: 0;
 }
 
@@ -511,19 +518,19 @@
 }
 
 .caregiver-card-name {
-  font-size: 16.5px;
+  font-size: 18px;
   font-weight: 800;
   color: #0f172a;
-  margin: 0 0 3px 0;
+  margin: 0 0 4px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .caregiver-card-role {
-  font-size: 13.5px;
+  font-size: 14.5px;
   color: #64748b;
-  margin: 0 0 6px 0;
+  margin: 0 0 7px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -532,26 +539,26 @@
 .caregiver-card-exp {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12.5px;
+  gap: 6px;
+  font-size: 13.5px;
   color: #64748b;
   font-weight: 500;
 }
 
 .caregiver-detail-pill-btn {
   width: 100%;
-  padding: 10px 0;
+  padding: 12px 0;
   border: 1.5px solid #dbeafe;
-  border-radius: 12px;
+  border-radius: 14px;
   background-color: #ffffff;
   color: #2563eb;
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.2s ease;
 }
 
@@ -559,25 +566,25 @@
   background-color: #eff6ff;
   border-color: #2563eb;
   color: #1d4ed8;
-  gap: 9px;
+  gap: 11px;
 }
 
 /* ==========================================================================
-   5. Quy trình sử dụng CareLink (Flowchart 3 steps)
+   7. Quy trình sử dụng CareLink (Flowchart 3 steps)
    ========================================================================== */
 .workflow-section {
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
 .workflow-steps-box {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 36px 48px;
+  border-radius: 22px;
+  padding: 44px 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 32px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
@@ -590,8 +597,8 @@
 }
 
 .workflow-step-icon {
-  width: 52px;
-  height: 52px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   background-color: #eff6ff;
   border: 1.5px solid #bfdbfe;
@@ -599,7 +606,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   transition: transform 0.2s ease;
 }
 
@@ -609,14 +616,14 @@
 }
 
 .workflow-step-title {
-  font-size: 15.5px;
+  font-size: 17px;
   font-weight: 700;
   color: #0f172a;
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
 }
 
 .workflow-step-desc {
-  font-size: 13px;
+  font-size: 14px;
   color: #64748b;
   margin: 0;
 }
@@ -630,8 +637,16 @@
 }
 
 /* ==========================================================================
-   Responsive Breakpoints
+   8. Responsive Breakpoints
    ========================================================================== */
+@media (max-width: 1400px) {
+  .home-content-wrapper,
+  .home-hero-inner {
+    width: 94%;
+    max-width: 1340px;
+  }
+}
+
 @media (max-width: 1024px) {
   .home-hero-section {
     min-height: 480px;
@@ -639,12 +654,13 @@
     padding: 30px 0;
   }
 
-  .home-hero-heading {
-    font-size: 34px;
+  .home-hero-inner {
+    width: 94%;
+    padding: 20px;
   }
 
-  .home-hero-inner {
-    padding: 20px;
+  .home-hero-heading {
+    font-size: 34px;
   }
 
   .home-hero-bg-visual {
@@ -653,16 +669,19 @@
 
   .services-category-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
   }
 
   .featured-caregivers-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 
   .floating-search-bar {
     border-radius: 20px;
     flex-wrap: wrap;
-    padding: 18px;
+    padding: 20px;
+    gap: 16px;
   }
 
   .search-divider {
@@ -679,7 +698,8 @@
   }
 
   .workflow-steps-box {
-    padding: 28px 24px;
+    padding: 32px 24px;
+    gap: 20px;
   }
 }
 
@@ -691,8 +711,9 @@
   }
 
   .home-hero-inner {
+    width: 100%;
     flex-direction: column;
-    padding: 0 18px;
+    padding: 0 16px;
   }
 
   .home-hero-bg-visual {
@@ -732,6 +753,7 @@
   }
 
   .home-content-wrapper {
+    width: 100%;
     padding: 0 16px 60px;
   }
 
@@ -750,7 +772,7 @@
   .post-request-banner {
     flex-direction: column;
     align-items: flex-start;
-    padding: 20px;
+    padding: 22px;
   }
 
   .post-request-btn {
