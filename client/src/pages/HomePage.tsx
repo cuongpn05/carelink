@@ -20,6 +20,8 @@ import {
   FileText,
   ShieldCheck,
   ChevronRight,
+  CheckCircle2,
+  ChevronDown,
 } from 'lucide-react';
 import './HomePage.css';
 
@@ -154,34 +156,53 @@ export const HomePage: React.FC = () => {
       {/* 1. Header Navigation */}
       <Navbar />
 
-      {/* 2. Top Hero Banner matching exact screenshot */}
+      {/* 2. Top Hero Banner matching exact dimensions and copy */}
       <section className="home-hero-section" aria-label="Giới thiệu CareLink">
         {/* Background Visual: Nurse and elderly lady */}
         <img
           src={heroBg}
-          alt="CareLink - Kết nối bạn với người chăm sóc đáng tin cậy"
+          alt="CareLink - Sức khỏe của bạn, chúng tôi quan tâm."
           className="home-hero-bg-visual"
         />
 
         <div className="home-hero-inner">
           <div className="home-hero-content">
-            <div className="home-hero-brand">CareLink</div>
+            <div className="home-hero-tag">
+              <span>CHĂM SÓC TẬN TÂM • KẾT NỐI YÊU THƯƠNG</span>
+            </div>
+
             <h1 className="home-hero-heading">
-              Kết nối bạn với <br />
-              <span className="home-hero-heading-blue">người chăm sóc đáng tin cậy</span>
+              Sức khỏe của bạn, <br />
+              <span className="home-hero-heading-highlight">chúng tôi quan tâm.</span>
             </h1>
+
             <p className="home-hero-subtitle">
-              Dịch vụ chăm sóc chuyên nghiệp, tận tâm ngay tại nhà.
+              Kết nối với người chăm sóc phù hợp để bạn và gia đình an tâm hơn mỗi ngày.
             </p>
 
             <div className="home-hero-actions">
               <Link to="/caregivers" className="hero-btn-primary">
                 <span>Tìm người chăm sóc</span>
-                <ArrowRight size={16} />
+                <ArrowRight size={17} />
               </Link>
               <Link to="/services" className="hero-btn-secondary">
                 <span>Khám phá dịch vụ</span>
               </Link>
+            </div>
+
+            <div className="home-hero-features">
+              <div className="home-feature-item">
+                <CheckCircle2 size={18} className="feature-check-icon" />
+                <span>Đặt lịch thuận tiện</span>
+              </div>
+              <div className="home-feature-item">
+                <CheckCircle2 size={18} className="feature-check-icon" />
+                <span>Thông tin rõ ràng</span>
+              </div>
+              <div className="home-feature-item">
+                <CheckCircle2 size={18} className="feature-check-icon" />
+                <span>Chăm sóc tận tâm</span>
+              </div>
             </div>
           </div>
         </div>
@@ -189,28 +210,31 @@ export const HomePage: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="home-content-wrapper">
-        {/* 3. Floating Search / Filter Bar (Overlapping Hero Banner) */}
+        {/* 3. Floating Search / Filter Bar (Enlarged & Overlapping Hero Banner) */}
         <section className="floating-search-bar-container" aria-label="Bộ lọc tìm kiếm nhanh">
           <form onSubmit={handleSearchSubmit} className="floating-search-bar">
             {/* Field 1: Loại chăm sóc */}
             <div className="search-field-item">
               <div className="search-field-icon">
-                <Heart size={18} fill="#2563eb" color="#2563eb" />
+                <Heart size={20} fill="#2563eb" color="#2563eb" />
               </div>
               <div className="search-field-texts">
                 <span className="search-field-label">Loại chăm sóc</span>
-                <select
-                  aria-label="Chọn loại chăm sóc"
-                  className="search-field-select"
-                  value={selectedService}
-                  onChange={(e) => setSelectedService(e.target.value)}
-                >
-                  <option value="all">Tất cả dịch vụ</option>
-                  <option value="elderly-care">Chăm sóc người cao tuổi</option>
-                  <option value="child-care">Chăm sóc trẻ em</option>
-                  <option value="home-care">Chăm sóc tại nhà</option>
-                  <option value="post-treatment-care">Chăm sóc sau điều trị</option>
-                </select>
+                <div className="search-select-wrapper">
+                  <select
+                    aria-label="Chọn loại chăm sóc"
+                    className="search-field-select"
+                    value={selectedService}
+                    onChange={(e) => setSelectedService(e.target.value)}
+                  >
+                    <option value="all">Tất cả dịch vụ</option>
+                    <option value="elderly-care">Chăm sóc người cao tuổi</option>
+                    <option value="child-care">Chăm sóc trẻ em</option>
+                    <option value="home-care">Chăm sóc tại nhà</option>
+                    <option value="post-treatment-care">Chăm sóc sau điều trị</option>
+                  </select>
+                  <ChevronDown size={15} className="search-chevron-icon" />
+                </div>
               </div>
             </div>
 
@@ -219,21 +243,24 @@ export const HomePage: React.FC = () => {
             {/* Field 2: Địa điểm */}
             <div className="search-field-item">
               <div className="search-field-icon">
-                <MapPin size={18} />
+                <MapPin size={20} />
               </div>
               <div className="search-field-texts">
                 <span className="search-field-label">Địa điểm</span>
-                <select
-                  aria-label="Chọn địa điểm"
-                  className="search-field-select"
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                >
-                  <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-                  <option value="Cần Thơ">Cần Thơ</option>
-                  <option value="Hà Nội">Hà Nội</option>
-                  <option value="Đà Nẵng">Đà Nẵng</option>
-                </select>
+                <div className="search-select-wrapper">
+                  <select
+                    aria-label="Chọn địa điểm"
+                    className="search-field-select"
+                    value={selectedLocation}
+                    onChange={(e) => setSelectedLocation(e.target.value)}
+                  >
+                    <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                    <option value="Cần Thơ">Cần Thơ</option>
+                    <option value="Hà Nội">Hà Nội</option>
+                    <option value="Đà Nẵng">Đà Nẵng</option>
+                  </select>
+                  <ChevronDown size={15} className="search-chevron-icon" />
+                </div>
               </div>
             </div>
 
@@ -242,28 +269,31 @@ export const HomePage: React.FC = () => {
             {/* Field 3: Thời gian */}
             <div className="search-field-item">
               <div className="search-field-icon">
-                <Calendar size={18} />
+                <Calendar size={20} />
               </div>
               <div className="search-field-texts">
                 <span className="search-field-label">Thời gian</span>
-                <select
-                  aria-label="Chọn thời gian"
-                  className="search-field-select"
-                  value={selectedTime}
-                  onChange={(e) => setSelectedTime(e.target.value)}
-                >
-                  <option value="all">Chọn thời gian</option>
-                  <option value="hourly">Theo ca giờ</option>
-                  <option value="daily">Theo ngày (24h)</option>
-                  <option value="weekly">Theo tuần</option>
-                  <option value="monthly">Theo tháng</option>
-                </select>
+                <div className="search-select-wrapper">
+                  <select
+                    aria-label="Chọn thời gian"
+                    className="search-field-select"
+                    value={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                  >
+                    <option value="all">Chọn thời gian</option>
+                    <option value="hourly">Theo ca giờ</option>
+                    <option value="daily">Theo ngày (24h)</option>
+                    <option value="weekly">Theo tuần</option>
+                    <option value="monthly">Theo tháng</option>
+                  </select>
+                  <ChevronDown size={15} className="search-chevron-icon" />
+                </div>
               </div>
             </div>
 
             {/* Submit Button */}
             <button type="submit" className="search-submit-btn">
-              <Search size={17} />
+              <Search size={18} />
               <span>Tìm kiếm</span>
             </button>
           </form>
@@ -353,7 +383,27 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* 5. Section: Người chăm sóc nổi bật */}
+        {/* 5. Section: Call to action banner "Đăng yêu cầu chăm sóc ngay" (Positioned ABOVE Featured Caregivers) */}
+        <section className="post-request-banner" aria-label="Đăng yêu cầu chăm sóc ngay">
+          <div className="post-request-left">
+            <div className="post-request-icon-box">
+              <FileCheck2 size={26} />
+            </div>
+            <div>
+              <h3 className="post-request-title">Đăng yêu cầu chăm sóc ngay</h3>
+              <p className="post-request-subtitle">
+                Mô tả nhu cầu của bạn, chúng tôi sẽ giúp bạn tìm người phù hợp nhất!
+              </p>
+            </div>
+          </div>
+
+          <Link to="/caregivers" className="post-request-btn">
+            <span>Đăng yêu cầu</span>
+            <ArrowRight size={15} />
+          </Link>
+        </section>
+
+        {/* 6. Section: Người chăm sóc nổi bật */}
         <section className="home-section" aria-label="Người chăm sóc nổi bật">
           <div className="home-section-header">
             <h2 className="home-section-title">Người chăm sóc nổi bật</h2>
@@ -393,26 +443,6 @@ export const HomePage: React.FC = () => {
               </div>
             ))}
           </div>
-        </section>
-
-        {/* 6. Section: Call to action banner "Đăng yêu cầu chăm sóc ngay" */}
-        <section className="post-request-banner" aria-label="Đăng yêu cầu">
-          <div className="post-request-left">
-            <div className="post-request-icon-box">
-              <FileCheck2 size={26} />
-            </div>
-            <div>
-              <h3 className="post-request-title">Đăng yêu cầu chăm sóc ngay</h3>
-              <p className="post-request-subtitle">
-                Mô tả nhu cầu của bạn, chúng tôi sẽ giúp bạn tìm người phù hợp nhất!
-              </p>
-            </div>
-          </div>
-
-          <Link to="/caregivers" className="post-request-btn">
-            <span>Đăng yêu cầu</span>
-            <ArrowRight size={15} />
-          </Link>
         </section>
 
         {/* 7. Section: Quy trình sử dụng CareLink */}
