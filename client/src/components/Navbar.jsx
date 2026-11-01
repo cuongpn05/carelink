@@ -244,17 +244,6 @@ export const Navbar = () => {
           >
             Người chăm sóc
           </NavLink>
-          <NavLink
-            to="/about"
-            style={({ isActive }) => ({
-              fontSize: '15px',
-              fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#2563eb' : '#475569',
-              textDecoration: 'none',
-            })}
-          >
-            Về chúng tôi
-          </NavLink>
         </nav>
 
         {/* Right Section Actions */}
@@ -440,30 +429,6 @@ export const Navbar = () => {
                     zIndex: 100,
                   }}
                 >
-                  <div
-                    style={{
-                      padding: '10px 12px',
-                      borderBottom: '1px solid #f1f5f9',
-                      marginBottom: '6px',
-                    }}
-                  >
-                    <div style={{ fontSize: '13px', color: '#64748b' }}>
-                      Đăng nhập dưới email:
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '13.5px',
-                        fontWeight: 600,
-                        color: '#0f172a',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {account?.email}
-                    </div>
-                  </div>
-
                   <button
                     type="button"
                     onClick={() => {
