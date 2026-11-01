@@ -14,63 +14,128 @@
 }
 
 /* ==========================================================================
-   Hero Top Section with subtle background
+   Hero Banner matching exact screenshot
    ========================================================================== */
-.home-hero-header {
+.home-hero-section {
   position: relative;
-  background: linear-gradient(180deg, #e0f0fe 0%, #edf5ff 60%, #f8fafc 100%);
-  padding: 40px 24px 70px;
-  text-align: center;
+  width: 100%;
+  background-color: #edf5fe;
+  min-height: 460px;
   overflow: hidden;
+  display: flex;
+  align-items: center;
 }
 
-.home-hero-header-inner {
-  max-width: 900px;
-  margin: 0 auto;
+.home-hero-bg-visual {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.home-hero-inner {
   position: relative;
   z-index: 2;
-}
-
-.home-hero-pill-badge {
-  display: inline-flex;
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 56px 24px 84px;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  border-radius: 9999px;
-  background-color: #ffffff;
-  color: #0284c7;
-  font-size: 13px;
-  font-weight: 700;
-  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.1);
-  margin-bottom: 16px;
 }
 
-.home-hero-headline {
-  font-size: clamp(32px, 3.5vw, 44px);
+.home-hero-content {
+  max-width: 560px;
+}
+
+.home-hero-brand {
+  font-size: 26px;
   font-weight: 800;
   color: #0f172a;
-  line-height: 1.25;
-  letter-spacing: -0.8px;
-  margin: 0 0 14px;
+  letter-spacing: -0.5px;
+  margin: 0 0 10px 0;
 }
 
-.home-hero-headline span {
+.home-hero-heading {
+  font-size: clamp(34px, 3.4vw, 44px);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+  margin: 0 0 16px 0;
+}
+
+.home-hero-heading-blue {
   color: #2563eb;
 }
 
-.home-hero-desc {
-  font-size: 16px;
+.home-hero-subtitle {
+  font-size: 16.5px;
   color: #475569;
   line-height: 1.6;
-  max-width: 600px;
-  margin: 0 auto;
+  margin: 0 0 28px 0;
+}
+
+.home-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.hero-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 26px;
+  border-radius: 9999px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+  transition: all 0.2s ease;
+}
+
+.hero-btn-primary:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  gap: 11px;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+}
+
+.hero-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 26px;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  color: #334155;
+  border: 1.5px solid #cbd5e1;
+  font-size: 14.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.hero-btn-secondary:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 /* ==========================================================================
-   1. Floating Search Bar (Card Pill)
+   1. Floating Search Bar (Card Pill) Overlapping Banner
    ========================================================================== */
 .floating-search-bar-container {
-  margin-top: -42px;
+  margin-top: -38px;
   margin-bottom: 48px;
   position: relative;
   z-index: 20;
@@ -508,6 +573,14 @@
    Responsive Breakpoints
    ========================================================================== */
 @media (max-width: 1024px) {
+  .home-hero-inner {
+    padding: 40px 20px 60px;
+  }
+
+  .home-hero-bg-visual {
+    opacity: 0.25;
+  }
+
   .services-category-grid {
     grid-template-columns: repeat(2, 1fr);
   }

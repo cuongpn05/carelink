@@ -5,7 +5,7 @@ import { Footer } from '../components/Footer/Footer';
 import { CaregiverDetailModal } from '../components/Modal/CaregiverDetailModal';
 import { getCaregivers } from '../services/caregiverService';
 import { Caregiver } from '../types';
-import toast from 'react-hot-toast';
+import heroBg from '../assets/hero-bg.png';
 import {
   Heart,
   MapPin,
@@ -14,7 +14,6 @@ import {
   ArrowRight,
   Clock,
   Home,
-  Baby,
   Plus,
   Users,
   FileCheck2,
@@ -124,7 +123,6 @@ export const HomePage: React.FC = () => {
           setFeaturedCaregivers(result.caregivers.slice(0, 3));
         }
       } catch (err) {
-        // Fallback to the screenshot default caregivers gracefully
         console.warn('Using default featured caregivers:', err);
       } finally {
         if (active) setLoadingCaregivers(false);
@@ -156,25 +154,42 @@ export const HomePage: React.FC = () => {
       {/* 1. Header Navigation */}
       <Navbar />
 
-      {/* 2. Sleek Top Hero Header */}
-      <header className="home-hero-header">
-        <div className="home-hero-header-inner">
-          <div className="home-hero-pill-badge">
-            <Heart size={14} className="text-blue-600" />
-            <span>NỀN TẢNG KẾT NỐI NGƯỜI CHĂM SÓC UY TÍN #1</span>
+      {/* 2. Top Hero Banner matching exact screenshot */}
+      <section className="home-hero-section" aria-label="Giới thiệu CareLink">
+        {/* Background Visual: Nurse and elderly lady */}
+        <img
+          src={heroBg}
+          alt="CareLink - Kết nối bạn với người chăm sóc đáng tin cậy"
+          className="home-hero-bg-visual"
+        />
+
+        <div className="home-hero-inner">
+          <div className="home-hero-content">
+            <div className="home-hero-brand">CareLink</div>
+            <h1 className="home-hero-heading">
+              Kết nối bạn với <br />
+              <span className="home-hero-heading-blue">người chăm sóc đáng tin cậy</span>
+            </h1>
+            <p className="home-hero-subtitle">
+              Dịch vụ chăm sóc chuyên nghiệp, tận tâm ngay tại nhà.
+            </p>
+
+            <div className="home-hero-actions">
+              <Link to="/caregivers" className="hero-btn-primary">
+                <span>Tìm người chăm sóc</span>
+                <ArrowRight size={16} />
+              </Link>
+              <Link to="/services" className="hero-btn-secondary">
+                <span>Khám phá dịch vụ</span>
+              </Link>
+            </div>
           </div>
-          <h1 className="home-hero-headline">
-            Chăm sóc tận tâm, <span>kết nối an tâm</span> cho gia đình bạn
-          </h1>
-          <p className="home-hero-desc">
-            Tìm kiếm và đặt lịch người chăm sóc người cao tuổi, trẻ nhỏ, bệnh nhân chuyên nghiệp, minh bạch điểm uy tín.
-          </p>
         </div>
-      </header>
+      </section>
 
       {/* Main Content Area */}
       <main className="home-content-wrapper">
-        {/* 3. Floating Search / Filter Bar */}
+        {/* 3. Floating Search / Filter Bar (Overlapping Hero Banner) */}
         <section className="floating-search-bar-container" aria-label="Bộ lọc tìm kiếm nhanh">
           <form onSubmit={handleSearchSubmit} className="floating-search-bar">
             {/* Field 1: Loại chăm sóc */}
