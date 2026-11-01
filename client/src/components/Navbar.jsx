@@ -468,7 +468,7 @@ export const Navbar = () => {
                     type="button"
                     onClick={() => {
                       setDropdownOpen(false);
-                      navigate(isApprovedCaregiver ? '/caregiver/bookings' : '/become-caregiver');
+                      navigate('/profile');
                     }}
                     style={{
                       width: '100%',
@@ -479,18 +479,48 @@ export const Navbar = () => {
                       borderRadius: '8px',
                       border: 'none',
                       backgroundColor: 'transparent',
-                      color: '#334155',
+                      color: '#0f172a',
                       fontSize: '13.5px',
-                      fontWeight: 500,
+                      fontWeight: 600,
                       cursor: 'pointer',
                       textAlign: 'left',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f9')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
-                    <HeartHandshake size={16} className="text-blue-600" />
-                    <span>{isApprovedCaregiver ? 'Lịch khách đặt' : 'Hồ sơ Cộng tác viên'}</span>
+                    <UserIcon size={16} className="text-blue-600" />
+                    <span>Xem profile & Điểm uy tín</span>
                   </button>
+
+                  {isApprovedCaregiver && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate('/caregiver/bookings');
+                      }}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        color: '#334155',
+                        fontSize: '13.5px',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    >
+                      <Calendar size={16} className="text-emerald-600" />
+                      <span>Lịch khách đặt</span>
+                    </button>
+                  )}
 
                   {account?.role === 'CUSTOMER' && (
                     <button
