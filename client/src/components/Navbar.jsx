@@ -146,7 +146,7 @@ export const Navbar = () => {
     >
       <div
         style={{
-          maxWidth: '1580px',
+          maxWidth: '1560px',
           width: '92%',
           margin: '0 auto',
           padding: '0 16px',
@@ -206,7 +206,7 @@ export const Navbar = () => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '28px',
+            gap: '8px',
           }}
           className="hidden lg:flex"
         >
@@ -216,9 +216,12 @@ export const Navbar = () => {
             style={({ isActive }) => ({
               fontSize: '15px',
               fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#2563eb' : '#475569',
+              color: isActive ? '#1d4ed8' : '#475569',
+              backgroundColor: isActive ? '#eff6ff' : 'transparent',
+              padding: '8px 16px',
+              borderRadius: '9999px',
               textDecoration: 'none',
-              transition: 'color 0.2s',
+              transition: 'all 0.2s ease',
             })}
           >
             Trang chủ
@@ -228,8 +231,12 @@ export const Navbar = () => {
             style={({ isActive }) => ({
               fontSize: '15px',
               fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#2563eb' : '#475569',
+              color: isActive ? '#1d4ed8' : '#475569',
+              backgroundColor: isActive ? '#eff6ff' : 'transparent',
+              padding: '8px 16px',
+              borderRadius: '9999px',
               textDecoration: 'none',
+              transition: 'all 0.2s ease',
             })}
           >
             Dịch vụ
@@ -239,12 +246,50 @@ export const Navbar = () => {
             style={({ isActive }) => ({
               fontSize: '15px',
               fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#2563eb' : '#475569',
+              color: isActive ? '#1d4ed8' : '#475569',
+              backgroundColor: isActive ? '#eff6ff' : 'transparent',
+              padding: '8px 16px',
+              borderRadius: '9999px',
               textDecoration: 'none',
+              transition: 'all 0.2s ease',
             })}
           >
             Người chăm sóc
           </NavLink>
+          {isAuthenticated && account?.role === 'CUSTOMER' && (
+            <NavLink
+              to="/bookings"
+              style={({ isActive }) => ({
+                fontSize: '15px',
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? '#1d4ed8' : '#475569',
+                backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                padding: '8px 16px',
+                borderRadius: '9999px',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+              })}
+            >
+              Lịch đã đặt
+            </NavLink>
+          )}
+          {isAuthenticated && account?.role === 'CAREGIVER' && (
+            <NavLink
+              to="/caregiver/bookings"
+              style={({ isActive }) => ({
+                fontSize: '15px',
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? '#1d4ed8' : '#475569',
+                backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                padding: '8px 16px',
+                borderRadius: '9999px',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+              })}
+            >
+              Lịch nhận việc
+            </NavLink>
+          )}
         </nav>
 
         {/* Right Section Actions */}
@@ -569,6 +614,102 @@ export const Navbar = () => {
           </button>
         </div>
       </div>
+
+      {/* Mobile Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div
+          style={{
+            borderTop: '1px solid #e2e8f0',
+            backgroundColor: '#ffffff',
+            padding: '16px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+          }}
+          className="lg:hidden"
+        >
+          <NavLink
+            to="/"
+            end
+            onClick={() => setMobileMenuOpen(false)}
+            style={({ isActive }) => ({
+              fontSize: '15px',
+              fontWeight: isActive ? 700 : 500,
+              color: isActive ? '#1d4ed8' : '#334155',
+              backgroundColor: isActive ? '#eff6ff' : 'transparent',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+            })}
+          >
+            Trang chủ
+          </NavLink>
+          <NavLink
+            to="/services"
+            onClick={() => setMobileMenuOpen(false)}
+            style={({ isActive }) => ({
+              fontSize: '15px',
+              fontWeight: isActive ? 700 : 500,
+              color: isActive ? '#1d4ed8' : '#334155',
+              backgroundColor: isActive ? '#eff6ff' : 'transparent',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+            })}
+          >
+            Dịch vụ
+          </NavLink>
+          <NavLink
+            to="/caregivers"
+            onClick={() => setMobileMenuOpen(false)}
+            style={({ isActive }) => ({
+              fontSize: '15px',
+              fontWeight: isActive ? 700 : 500,
+              color: isActive ? '#1d4ed8' : '#334155',
+              backgroundColor: isActive ? '#eff6ff' : 'transparent',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+            })}
+          >
+            Người chăm sóc
+          </NavLink>
+          {isAuthenticated && account?.role === 'CUSTOMER' && (
+            <NavLink
+              to="/bookings"
+              onClick={() => setMobileMenuOpen(false)}
+              style={({ isActive }) => ({
+                fontSize: '15px',
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? '#1d4ed8' : '#334155',
+                backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+              })}
+            >
+              Lịch đã đặt
+            </NavLink>
+          )}
+          {isAuthenticated && account?.role === 'CAREGIVER' && (
+            <NavLink
+              to="/caregiver/bookings"
+              onClick={() => setMobileMenuOpen(false)}
+              style={({ isActive }) => ({
+                fontSize: '15px',
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? '#1d4ed8' : '#334155',
+                backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+              })}
+            >
+              Lịch nhận việc
+            </NavLink>
+          )}
+        </div>
+      )}
     </header>
   );
 };

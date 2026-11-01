@@ -299,7 +299,7 @@ export const BookingsPage = () => {
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', color: '#0f172a' }}>
       <Navbar />
 
-      <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 20px 80px' }}>
+      <main style={{ maxWidth: '1560px', width: '92%', margin: '0 auto', padding: '32px 0 80px' }}>
         {/* Header Section */}
         <div
           style={{

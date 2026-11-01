@@ -227,7 +227,7 @@ export const ProfilePage = () => {
       {/* Header Navbar */}
       <Navbar />
 
-      <main style={{ maxWidth: '1080px', margin: '36px auto', padding: '0 20px' }}>
+      <main style={{ maxWidth: '1200px', width: '92%', margin: '36px auto', padding: '0 0 60px' }}>
         {/* BANNER THÔNG TIN TỔNG QUAN & ĐIỂM UY TÍN */}
         <div
           style={{

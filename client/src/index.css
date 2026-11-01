@@ -40,12 +40,12 @@ button {
 
 /* Centered content container for Sections below the Hero Banner and Navbar */
 .container {
-  width: 100%;
+  width: 92%;
   max-width: var(--max-width);
   margin-left: auto;
   margin-right: auto;
-  padding-left: 32px;
-  padding-right: 32px;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* Badge tags */
@@ -124,6 +124,7 @@ button {
 
 @media (max-width: 768px) {
   .container {
+    width: 100%;
     padding-left: 18px;
     padding-right: 18px;
   }
