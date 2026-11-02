@@ -1,0 +1,150 @@
+.caregiver-header {
+  position: relative;
+  z-index: 1;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.caregiver-header-inner {
+  width: 92%;
+  max-width: 1560px;
+  min-height: 70px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.caregiver-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #0f172a;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.caregiver-brand-logo {
+  display: block;
+  width: auto;
+  height: 42px;
+  object-fit: contain;
+}
+
+.caregiver-brand-caption {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.caregiver-nav,
+.caregiver-account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.caregiver-nav-link,
+.caregiver-profile-link,
+.caregiver-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 9px;
+  color: #475569;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.caregiver-profile-link {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.caregiver-profile-link:hover,
+.caregiver-profile-link.active {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.caregiver-profile-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.caregiver-nav-link:hover,
+.caregiver-nav-link.active {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.caregiver-account {
+  padding-left: 16px;
+  border-left: 1px solid #e2e8f0;
+}
+
+.caregiver-account-name {
+  max-width: 180px;
+  overflow: hidden;
+  color: #334155;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.caregiver-logout {
+  cursor: pointer;
+}
+
+.caregiver-logout:hover {
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+@media (max-width: 640px) {
+  .caregiver-header-inner {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 16px;
+    padding: 12px 0;
+  }
+
+  .caregiver-brand {
+    margin-right: auto;
+  }
+
+  .caregiver-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .caregiver-account {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .caregiver-account-name {
+    display: none;
+  }
+
+  .caregiver-nav-link,
+  .caregiver-profile-link,
+  .caregiver-logout {
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+}

@@ -131,6 +131,16 @@ export const getMyCareRequests = async (
 };
 
 /**
+ * Caregiver: Lấy các yêu cầu chăm sóc mình đã tiếp nhận.
+ */
+export const getMyAcceptedCareRequests = async (): Promise<CareRequestItem[]> => {
+  const res = await requestCareRequestApi<CareRequestItem[]>(
+    '/care-requests/caregiver/mine'
+  );
+  return res.data;
+};
+
+/**
  * 3. Caregiver Marketplace: Lấy bảng tin yêu cầu đang mở (Status: OPEN)
  */
 export const getOpenCareRequests = async (
@@ -197,7 +207,22 @@ export const acceptCareRequest = async (
 };
 
 /**
- * 6. Customer: Hủy yêu cầu (khi chưa được tiếp nhận)
+ * 6. Caregiver: Từ chối yêu cầu cho riêng mình
+ */
+export const declineCareRequest = async (
+  id: string
+): Promise<CareRequestItem> => {
+  const res = await requestCareRequestApi<CareRequestItem>(
+    `/care-requests/${encodeURIComponent(id)}/decline`,
+    {
+      method: 'PATCH',
+    }
+  );
+  return res.data;
+};
+
+/**
+ * 7. Customer: Hủy yêu cầu (khi chưa được tiếp nhận)
  */
 export const cancelCareRequest = async (
   id: string,
@@ -214,7 +239,7 @@ export const cancelCareRequest = async (
 };
 
 /**
- * 7. Cập nhật tiến độ: IN_PROGRESS | COMPLETED
+ * 8. Cập nhật tiến độ: IN_PROGRESS | COMPLETED
  */
 export const updateCareRequestStatus = async (
   id: string,
@@ -231,7 +256,7 @@ export const updateCareRequestStatus = async (
 };
 
 /**
- * 8. Customer: Lấy thông báo khi có Caregiver nhận việc
+ * 9. Customer: Lấy thông báo khi có Caregiver nhận việc
  */
 export const getCareRequestNotifications = async (): Promise<
   CareRequestNotification[]
@@ -243,7 +268,7 @@ export const getCareRequestNotifications = async (): Promise<
 };
 
 /**
- * 9. Đánh dấu đã đọc thông báo
+ * 10. Đánh dấu đã đọc thông báo
  */
 export const markCareRequestNotificationRead = async (
   id: string
@@ -255,4 +280,3 @@ export const markCareRequestNotificationRead = async (
     }
   );
 };
-

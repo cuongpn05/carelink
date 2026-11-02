@@ -143,6 +143,11 @@ const careRequestSchema = new mongoose.Schema(
       index: true,
     },
 
+    declinedCaregiverIds: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Accounts' }],
+      default: [],
+    },
+
     acceptedAt: {
       type: Date,
       default: null,

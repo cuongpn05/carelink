@@ -4,9 +4,11 @@ const router = express.Router();
 const {
   createCareRequest,
   getMyCareRequests,
+  getMyAcceptedCareRequests,
   getOpenCareRequests,
   getCareRequestById,
   acceptCareRequest,
+  declineCareRequest,
   cancelCareRequest,
   updateCareRequestStatus,
   getCustomerCareRequestNotifications,
@@ -27,6 +29,7 @@ router.post('/', authorizeRoles('CUSTOMER'), createCareRequest);
 
 // 2. Customer: Lấy danh sách yêu cầu của bản thân
 router.get('/mine', authorizeRoles('CUSTOMER'), getMyCareRequests);
+router.get('/caregiver/mine', authorizeRoles('CAREGIVER'), getMyAcceptedCareRequests);
 
 // 3. Customer: Lấy thông báo khi có Caregiver nhận việc
 router.get('/notifications', authorizeRoles('CUSTOMER'), getCustomerCareRequestNotifications);
@@ -40,6 +43,7 @@ router.get('/:id', getCareRequestById);
 
 // 6. Caregiver: Tiếp nhận yêu cầu chăm sóc (Atomic conditional update)
 router.patch('/:id/accept', authorizeRoles('CAREGIVER'), acceptCareRequest);
+router.patch('/:id/decline', authorizeRoles('CAREGIVER'), declineCareRequest);
 
 // 7. Customer: Hủy yêu cầu khi còn trạng thái OPEN
 router.patch('/:id/cancel', authorizeRoles('CUSTOMER'), cancelCareRequest);
@@ -48,4 +52,3 @@ router.patch('/:id/cancel', authorizeRoles('CUSTOMER'), cancelCareRequest);
 router.patch('/:id/status', updateCareRequestStatus);
 
 module.exports = router;
-
