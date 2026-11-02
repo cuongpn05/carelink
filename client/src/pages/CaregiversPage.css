@@ -1,91 +1,53 @@
+.caregivers-page-layout {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.caregivers-page {
+  flex: 1;
+}
+
 .caregivers-page-heading {
-  padding: 56px 0 42px;
+  padding: 44px 0 36px;
   background:
-    radial-gradient(ellipse at 86% 0%, rgba(14, 165, 233, 0.1), transparent 34%),
+    radial-gradient(ellipse at 86% 0%, rgba(14, 165, 233, 0.08), transparent 34%),
     linear-gradient(135deg, #f8fbff 0%, #f1f8fb 100%);
   border-bottom: 1px solid var(--border-light);
 }
 
 .caregivers-page-heading .container {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 430px);
-  gap: 48px;
-  align-items: end;
+  display: flex;
+  flex-direction: column;
 }
 
 .caregivers-page-copy h1 {
   max-width: 700px;
-  margin-top: 16px;
+  margin-top: 14px;
   color: var(--text-primary);
-  font-size: 38px;
+  font-size: 34px;
   font-weight: 800;
-  line-height: 1.18;
+  line-height: 1.22;
 }
 
 .caregivers-page-copy p {
-  max-width: 600px;
-  margin-top: 12px;
+  max-width: 650px;
+  margin-top: 10px;
   color: var(--text-secondary);
-  font-size: 16px;
-}
-
-.caregiver-search {
-  display: flex;
-  min-width: 0;
-  height: 54px;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 6px 6px 16px;
-  background: #fff;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  color: var(--text-muted);
-}
-
-.caregiver-search input {
-  width: 100%;
-  min-width: 0;
-  height: 100%;
-  border: 0;
-  outline: 0;
-  color: var(--text-primary);
-  background: transparent;
-  font: inherit;
-}
-
-.caregiver-search input::placeholder {
-  color: var(--text-light);
-}
-
-.caregiver-search button,
-.caregivers-state-error button {
-  min-height: 40px;
-  padding: 0 17px;
-  border-radius: 7px;
-  background: var(--primary);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
-  transition: background-color 0.2s ease;
-}
-
-.caregiver-search button:hover,
-.caregivers-state-error button:hover {
-  background: var(--primary-hover);
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 .caregivers-filter-section {
-  padding: 28px 0;
+  padding: 24px 0 28px;
   background: #fff;
   border-bottom: 1px solid var(--border-light);
 }
 
 .caregivers-filter-form {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 20px;
   align-items: end;
 }
 
@@ -105,11 +67,13 @@
   width: 100%;
   height: 44px;
   border: 1px solid var(--border-light);
-  border-radius: 7px;
+  border-radius: 8px;
   background: #fff;
   color: var(--text-primary);
   font: inherit;
   font-weight: 500;
+  font-size: 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .caregiver-filter-field input,
@@ -117,6 +81,25 @@
   min-width: 0;
   padding: 0 12px;
   outline: none;
+}
+
+.caregiver-filter-field select {
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.caregiver-filter-field optgroup {
+  font-weight: 700;
+  color: var(--color-primary-800, #1e3a8a);
+  background: #f8fafc;
+  padding: 6px 0;
+}
+
+.caregiver-filter-field option {
+  font-weight: 400;
+  color: var(--text-primary);
+  background: #fff;
+  padding: 4px 8px;
 }
 
 .caregiver-filter-field input:focus,
@@ -134,8 +117,8 @@
 .caregiver-filter-input-wrap {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 0 11px;
+  gap: 8px;
+  padding: 0 12px;
   color: var(--text-muted);
 }
 
@@ -156,7 +139,7 @@
   flex: 0 0 auto;
   color: var(--text-muted);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -165,7 +148,8 @@
   min-height: 44px;
   grid-column: 1 / -1;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  margin-top: 4px;
 }
 
 .caregiver-filter-submit,
@@ -175,20 +159,24 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0 16px;
-  border-radius: 7px;
+  padding: 0 18px;
+  border-radius: 8px;
   font-size: 14px;
-  font-weight: 700;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .caregiver-filter-submit {
+  border: none;
   background: var(--primary);
   color: #fff;
 }
 
 .caregiver-filter-submit:hover {
   background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(29, 78, 216, 0.2);
 }
 
 .caregiver-filter-reset {
@@ -200,17 +188,19 @@
 .caregiver-filter-reset:hover {
   border-color: var(--text-light);
   background: var(--bg-subtle);
+  color: var(--text-primary);
 }
 
 .caregiver-filter-error {
   grid-column: 1 / -1;
   color: #b42318;
   font-size: 13px;
+  font-weight: 600;
 }
 
 .caregivers-results {
   min-height: 360px;
-  padding: 38px 0 56px;
+  padding: 36px 0 56px;
   background: var(--bg-main);
 }
 
@@ -224,7 +214,7 @@
 
 .caregivers-results-heading h2 {
   color: var(--text-primary);
-  font-size: 23px;
+  font-size: 22px;
   font-weight: 800;
 }
 
@@ -242,12 +232,6 @@
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
-}
-
-.caregivers-filter-note {
-  margin: -8px 0 18px;
-  color: var(--text-muted);
-  font-size: 13px;
 }
 
 .caregivers-state {
@@ -268,6 +252,22 @@
   color: #b42318;
 }
 
+.caregivers-state-error button {
+  min-height: 38px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 7px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.caregivers-state-error button:hover {
+  background: var(--primary-hover);
+}
+
 .caregivers-pagination {
   display: flex;
   justify-content: center;
@@ -284,13 +284,20 @@
   min-height: 40px;
   align-items: center;
   gap: 6px;
-  padding: 0 12px;
+  padding: 0 14px;
   border: 1px solid var(--border-light);
   border-radius: 7px;
   background: #fff;
   color: var(--primary);
   font-size: 14px;
   font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.caregivers-pagination button:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: var(--bg-subtle);
 }
 
 .caregivers-pagination button:disabled {
@@ -309,52 +316,54 @@
 }
 
 .caregivers-page .caregivers-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-@media (max-width: 850px) {
-  .caregivers-page-heading .container {
-    grid-template-columns: 1fr;
-    gap: 26px;
+@media (max-width: 960px) {
+  .caregivers-filter-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .caregivers-filter-form {
+  .caregivers-page .caregivers-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 680px) {
   .caregivers-page-heading {
-    padding: 38px 0 30px;
+    padding: 32px 0 24px;
   }
 
   .caregivers-page-copy h1 {
-    font-size: 30px;
+    font-size: 26px;
   }
 
   .caregivers-filter-section {
-    padding: 22px 0;
+    padding: 18px 0;
   }
 
   .caregivers-filter-form {
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 12px;
   }
 
-  .caregiver-filter-actions,
-  .caregiver-filter-error {
-    grid-column: auto;
+  .caregiver-filter-actions {
+    grid-column: 1 / -1;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .caregiver-filter-actions > button {
-    flex: 1;
+    width: 100%;
   }
 
   .caregivers-page .caregivers-grid {
     grid-template-columns: 1fr;
   }
 
-  .caregivers-results-heading h2 {
-    font-size: 20px;
+  .caregivers-results-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }
