@@ -527,7 +527,34 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* 6. Section: Người chăm sóc nổi bật */}
+        {/* 6. Banner CTA: Bạn đang cần người chăm sóc? (Nằm ngay trên Người chăm sóc nổi bật) */}
+        <section className="home-banner-cta-container" aria-label="Đăng yêu cầu chăm sóc">
+          <div className="home-banner-cta-card">
+            <div className="home-banner-cta-left">
+              <div className="home-banner-cta-icon-box">
+                <HeartHandshake size={30} strokeWidth={2.2} />
+              </div>
+              <div>
+                <h3 className="home-banner-cta-title">Bạn đang cần người chăm sóc?</h3>
+                <p className="home-banner-cta-subtitle">
+                  Hãy chia sẻ nhu cầu của bạn để CareLink kết nối với người chăm sóc phù hợp.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="home-banner-cta-btn"
+              onClick={() => setIsPostModalOpen(true)}
+            >
+              <Pencil size={16} />
+              <span>Đăng yêu cầu chăm sóc</span>
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        </section>
+
+        {/* 7. Section: Người chăm sóc nổi bật */}
         <section className="home-section" aria-label="Người chăm sóc nổi bật">
           <div className="home-section-header">
             <div>
@@ -597,7 +624,7 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* 7. Section: CÂU HỎI THƯỜNG GẶP - Những câu hỏi thường gặp */}
+        {/* 8. Section: CÂU HỎI THƯỜNG GẶP - Những câu hỏi thường gặp */}
         <section className="faq-section" aria-label="Những câu hỏi thường gặp">
           <div className="section-title-wrap">
             <span className="section-pill-tag">CÂU HỎI THƯỜNG GẶP</span>
@@ -629,33 +656,6 @@ export const HomePage: React.FC = () => {
                 </div>
               );
             })}
-          </div>
-        </section>
-
-        {/* 8. Section: Pre-Footer CTA: Bạn đang cần người chăm sóc? */}
-        <section className="home-banner-cta-container" aria-label="Đăng yêu cầu chăm sóc">
-          <div className="home-banner-cta-card">
-            <div className="home-banner-cta-left">
-              <div className="home-banner-cta-icon-box">
-                <HeartHandshake size={32} />
-              </div>
-              <div>
-                <h3 className="home-banner-cta-title">Bạn đang cần người chăm sóc?</h3>
-                <p className="home-banner-cta-subtitle">
-                  Hãy chia sẻ nhu cầu của bạn để CareLink kết nối với người chăm sóc phù hợp.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="home-banner-cta-btn"
-              onClick={() => setIsPostModalOpen(true)}
-            >
-              <Pencil size={16} />
-              <span>Đăng yêu cầu chăm sóc</span>
-              <ArrowRight size={16} />
-            </button>
           </div>
         </section>
       </main>
