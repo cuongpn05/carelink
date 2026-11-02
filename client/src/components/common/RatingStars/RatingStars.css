@@ -1,0 +1,24 @@
+.cds-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  color: var(--text-body);
+}
+
+.cds-rating-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--color-warm-amber);
+}
+
+.cds-rating-score {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-main);
+}
+
+.cds-rating-count {
+  color: var(--text-muted);
+}
