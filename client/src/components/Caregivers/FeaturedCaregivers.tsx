@@ -68,7 +68,11 @@ export const FeaturedCaregivers: React.FC<FeaturedCaregiversProps> = ({
                   <img
                     src={cg.avatar}
                     alt={cg.name}
-                    className="caregiver-avatar"
+                    className="caregiver-avatar-img caregiver-avatar"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80';
+                    }}
                   />
                   {cg.isAvailable && (
                     <span

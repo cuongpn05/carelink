@@ -266,7 +266,8 @@
   margin-bottom: 16px;
 }
 
-.caregiver-avatar {
+.caregiver-assigned-box .caregiver-assigned-avatar,
+.caregiver-assigned-box .caregiver-avatar {
   width: 44px;
   height: 44px;
   border-radius: 50%;

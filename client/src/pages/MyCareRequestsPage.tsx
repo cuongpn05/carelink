@@ -319,7 +319,7 @@ export const MyCareRequestsPage: React.FC = () => {
                             'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=150&q=80'
                           }
                           alt={item.acceptedCaregiver.fullName}
-                          className="caregiver-avatar"
+                          className="caregiver-assigned-avatar"
                         />
                         <div className="caregiver-info">
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
