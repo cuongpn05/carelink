@@ -1,6 +1,7 @@
 const {
   createCareRequest,
   acceptCareRequest,
+  declineCareRequest,
   cancelCareRequest,
   updateCareRequestStatus,
 } = require('./careRequestController');
@@ -169,6 +170,64 @@ describe('CareRequest Controller Unit Tests', () => {
         expect.objectContaining({
           success: false,
           message: expect.stringContaining('chưa tạo hồ sơ người chăm sóc'),
+        })
+      );
+    });
+  });
+
+  describe('declineCareRequest', () => {
+    it('declines an open request only for the current caregiver', async () => {
+      const requestId = '507f1f77bcf86cd799439011';
+      const caregiverId = 'caregiver_123';
+      const declinedRequest = {
+        _id: requestId,
+        status: 'OPEN',
+        declinedCaregiverIds: [caregiverId],
+      };
+
+      mockReq = {
+        params: { id: requestId },
+        account: { _id: caregiverId, role: 'CAREGIVER' },
+      };
+      CareRequest.findOneAndUpdate.mockResolvedValue(declinedRequest);
+
+      await declineCareRequest(mockReq, mockRes);
+
+      expect(CareRequest.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: requestId, status: 'OPEN' },
+        { $addToSet: { declinedCaregiverIds: caregiverId } },
+        { new: true }
+      );
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: declinedRequest,
+        })
+      );
+    });
+
+    it('returns 409 when the request is no longer open', async () => {
+      const requestId = '507f1f77bcf86cd799439011';
+      mockReq = {
+        params: { id: requestId },
+        account: { _id: 'caregiver_123', role: 'CAREGIVER' },
+      };
+      CareRequest.findOneAndUpdate.mockResolvedValue(null);
+      CareRequest.findById.mockReturnValue({
+        lean: jest.fn().mockResolvedValue({
+          _id: requestId,
+          status: 'ACCEPTED',
+        }),
+      });
+
+      await declineCareRequest(mockReq, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(409);
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          currentStatus: 'ACCEPTED',
         })
       );
     });

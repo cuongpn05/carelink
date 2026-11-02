@@ -245,6 +245,37 @@ const getMyCareRequests = async (req, res) => {
 };
 
 /**
+ * Caregiver: Lấy các yêu cầu chăm sóc đã nhận của chính mình.
+ */
+const getMyAcceptedCareRequests = async (req, res) => {
+  try {
+    const caregiverId = req.account._id;
+    const requests = await CareRequest.find({
+      acceptedCaregiverId: caregiverId,
+      status: { $in: ['ACCEPTED', 'IN_PROGRESS', 'COMPLETED'] },
+    })
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    const enrichedList = await Promise.all(
+      requests.map((request) => enrichCareRequest(request, caregiverId))
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: enrichedList,
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy yêu cầu chăm sóc đã nhận:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Lỗi máy chủ khi lấy yêu cầu chăm sóc đã nhận.',
+      error: error.message,
+    });
+  }
+};
+
+/**
  * 3. Caregiver Marketplace: Bảng tin các yêu cầu OPEN dành cho Caregiver
  */
 const getOpenCareRequests = async (req, res) => {
@@ -261,6 +292,10 @@ const getOpenCareRequests = async (req, res) => {
     } = req.query;
 
     const query = { status: 'OPEN' };
+
+    if (req.account?.role === 'CAREGIVER') {
+      query.declinedCaregiverIds = { $ne: req.account._id };
+    }
 
     if (serviceCategory && serviceCategory !== 'ALL') {
       query.serviceCategory = serviceCategory;
@@ -283,10 +318,14 @@ const getOpenCareRequests = async (req, res) => {
     if (keyword) {
       const escaped = keyword.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
+        { serviceCategory: new RegExp(escaped, 'i') },
         { title: new RegExp(escaped, 'i') },
         { description: new RegExp(escaped, 'i') },
         { 'location.address': new RegExp(escaped, 'i') },
         { 'location.area': new RegExp(escaped, 'i') },
+        { 'recipient.name': new RegExp(escaped, 'i') },
+        { 'recipient.conditionNotes': new RegExp(escaped, 'i') },
+        { specialRequirements: new RegExp(escaped, 'i') },
       ];
     }
 
@@ -453,6 +492,58 @@ const acceptCareRequest = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Lỗi máy chủ khi tiếp nhận yêu cầu.',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Caregiver: Từ chối yêu cầu cho riêng mình, không đóng yêu cầu với caregiver khác.
+ */
+const declineCareRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const caregiverAccountId = req.account._id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mã yêu cầu không hợp lệ.',
+      });
+    }
+
+    const declinedRequest = await CareRequest.findOneAndUpdate(
+      { _id: id, status: 'OPEN' },
+      { $addToSet: { declinedCaregiverIds: caregiverAccountId } },
+      { new: true }
+    );
+
+    if (!declinedRequest) {
+      const existing = await CareRequest.findById(id).lean();
+      if (!existing) {
+        return res.status(404).json({
+          success: false,
+          message: 'Yêu cầu chăm sóc không tồn tại.',
+        });
+      }
+
+      return res.status(409).json({
+        success: false,
+        message: 'Yêu cầu chăm sóc này đã được tiếp nhận hoặc không còn mở.',
+        currentStatus: existing.status,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Đã từ chối yêu cầu chăm sóc.',
+      data: declinedRequest,
+    });
+  } catch (error) {
+    console.error('Lỗi khi từ chối yêu cầu chăm sóc:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Lỗi máy chủ khi từ chối yêu cầu.',
       error: error.message,
     });
   }
@@ -675,9 +766,11 @@ const markCustomerCareRequestNotificationRead = async (req, res) => {
 module.exports = {
   createCareRequest,
   getMyCareRequests,
+  getMyAcceptedCareRequests,
   getOpenCareRequests,
   getCareRequestById,
   acceptCareRequest,
+  declineCareRequest,
   cancelCareRequest,
   updateCareRequestStatus,
   getCustomerCareRequestNotifications,

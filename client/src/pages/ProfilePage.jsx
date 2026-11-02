@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosClient from '../api/axiosClient';
 import { Navbar } from '../components/Navbar';
+import { CaregiverHeader } from '../components/CaregiverHeader';
 import toast from 'react-hot-toast';
 import {
   User,
@@ -224,8 +225,7 @@ export const ProfilePage = () => {
 
   return (
     <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      {/* Header Navbar */}
-      <Navbar />
+      {account?.role === 'CAREGIVER' ? <CaregiverHeader /> : <Navbar />}
 
       <main style={{ maxWidth: '1200px', width: '92%', margin: '36px auto', padding: '0 0 60px' }}>
         {/* BANNER THÔNG TIN TỔNG QUAN & ĐIỂM UY TÍN */}

@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Navbar } from '../components/Navbar';
+import { CaregiverHeader } from '../components/CaregiverHeader';
 import {
   getOpenCareRequests,
   acceptCareRequest,
+  declineCareRequest,
 } from '../services/careRequestService';
 import {
   CareRequestItem,
@@ -15,11 +16,9 @@ import toast from 'react-hot-toast';
 import './CaregiverMarketplacePage.css';
 import {
   Search,
-  Filter,
   MapPin,
   Calendar,
   Clock,
-  DollarSign,
   Heart,
   Baby,
   Home,
@@ -30,8 +29,8 @@ import {
   AlertCircle,
   ArrowRight,
   Sparkles,
-  Phone,
   RotateCcw,
+  X,
 } from 'lucide-react';
 
 const CATEGORIES: {
@@ -75,18 +74,24 @@ const AREAS = [
 ];
 
 export const CaregiverMarketplacePage: React.FC = () => {
-  const { isAuthenticated, account, caregiverProfile } = useAuth();
+  const {
+    isAuthenticated,
+    account,
+    loading: authLoading,
+  } = useAuth();
   const navigate = useNavigate();
 
   const [requests, setRequests] = useState<CareRequestItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const latestRequestId = useRef(0);
 
   // Filters State
   const [category, setCategory] = useState<CareServiceCategory | 'ALL'>('ALL');
   const [area, setArea] = useState<string>('ALL');
   const [budgetRange, setBudgetRange] = useState<string>('ALL');
   const [frequency, setFrequency] = useState<CareFrequency | 'ALL'>('ALL');
+  const [searchInput, setSearchInput] = useState<string>('');
   const [keyword, setKeyword] = useState<string>('');
 
   // Selected Detail Modal
@@ -94,9 +99,13 @@ export const CaregiverMarketplacePage: React.FC = () => {
 
   // Confirmation Modal
   const [confirmItem, setConfirmItem] = useState<CareRequestItem | null>(null);
-  const [accepting, setAccepting] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'accept' | 'decline'>('accept');
+  const [submittingDecision, setSubmittingDecision] = useState(false);
 
   const fetchRequests = useCallback(async () => {
+    const requestId = latestRequestId.current + 1;
+    latestRequestId.current = requestId;
+
     try {
       setLoading(true);
 
@@ -124,67 +133,120 @@ export const CaregiverMarketplacePage: React.FC = () => {
         keyword: keyword.trim() || undefined,
       });
 
-      setRequests(res.requests);
-      setTotalCount(res.total);
+      if (requestId === latestRequestId.current) {
+        setRequests(res.requests);
+        setTotalCount(res.total);
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Không thể tải danh sách yêu cầu.';
-      toast.error(msg);
+      if (requestId === latestRequestId.current) {
+        const msg = err instanceof Error ? err.message : 'Không thể tải danh sách yêu cầu.';
+        toast.error(msg);
+      }
     } finally {
-      setLoading(false);
+      if (requestId === latestRequestId.current) {
+        setLoading(false);
+      }
     }
   }, [category, area, budgetRange, frequency, keyword]);
 
   useEffect(() => {
-    fetchRequests();
-  }, [fetchRequests]);
+    if (!authLoading && !isAuthenticated) {
+      navigate('/auth?redirect=/caregiver/marketplace', { replace: true });
+      return;
+    }
+
+    if (!authLoading && account?.role !== 'CAREGIVER') {
+      navigate('/', { replace: true });
+    }
+  }, [account?.role, authLoading, isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && account?.role === 'CAREGIVER') {
+      void fetchRequests();
+    }
+  }, [account?.role, authLoading, fetchRequests, isAuthenticated]);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setKeyword(searchInput.trim());
+    }, 350);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchInput]);
+
+  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setKeyword(searchInput.trim());
+  };
 
   const handleResetFilters = () => {
     setCategory('ALL');
     setArea('ALL');
     setBudgetRange('ALL');
     setFrequency('ALL');
+    setSearchInput('');
     setKeyword('');
   };
 
-  const handleInitiateAccept = (item: CareRequestItem) => {
+  const activeFilterCount = [
+    category !== 'ALL',
+    area !== 'ALL',
+    budgetRange !== 'ALL',
+    frequency !== 'ALL',
+    keyword.length > 0,
+  ].filter(Boolean).length;
+
+  const handleInitiateDecision = (
+    item: CareRequestItem,
+    action: 'accept' | 'decline'
+  ) => {
     if (!isAuthenticated) {
-      toast.error('Vui lòng đăng nhập với tài khoản Người chăm sóc để tiếp nhận việc!');
+      toast.error('Vui lòng đăng nhập với tài khoản Người chăm sóc để chọn yêu cầu.');
       navigate('/auth?redirect=/caregiver/marketplace');
       return;
     }
 
     if (account?.role === 'CUSTOMER') {
-      toast.error('Bạn đang đăng nhập tài khoản Khách hàng. Vui lòng đăng ký đối tác Người chăm sóc để nhận việc.');
+      toast.error('Bạn đang đăng nhập tài khoản Khách hàng. Vui lòng đăng nhập bằng tài khoản Người chăm sóc.');
       return;
     }
 
+    setConfirmAction(action);
     setConfirmItem(item);
   };
 
-  const handleConfirmAccept = async () => {
+  const handleConfirmDecision = async () => {
     if (!confirmItem) return;
-    setAccepting(true);
+    setSubmittingDecision(true);
     try {
-      await acceptCareRequest(confirmItem._id);
-      toast.success(
-        'Chúc mừng! Bạn đã tiếp nhận yêu cầu chăm sóc thành công. Khách hàng đã nhận được thông tin của bạn!'
-      );
+      if (confirmAction === 'accept') {
+        await acceptCareRequest(confirmItem._id);
+        toast.success(
+          'Chúc mừng! Bạn đã tiếp nhận yêu cầu chăm sóc thành công. Khách hàng đã nhận được thông tin của bạn!'
+        );
+      } else {
+        await declineCareRequest(confirmItem._id);
+        toast.success('Đã từ chối yêu cầu. Yêu cầu vẫn được hiển thị với người chăm sóc khác.');
+      }
+
       setConfirmItem(null);
       setDetailItem(null);
-      fetchRequests();
-      navigate('/caregiver/bookings');
+      await fetchRequests();
+      if (confirmAction === 'accept') {
+        navigate('/caregiver/bookings');
+      }
     } catch (err: unknown) {
       const errorObj = err as { status?: number; message?: string };
       if (errorObj?.status === 409) {
-        toast.error('Rất tiếc! Yêu cầu này vừa được người chăm sóc khác tiếp nhận.');
+        toast.error('Yêu cầu này vừa được người khác tiếp nhận hoặc không còn mở.');
       } else {
-        toast.error(errorObj?.message || 'Tiếp nhận yêu cầu thất bại.');
+        toast.error(errorObj?.message || 'Không thể cập nhật lựa chọn của bạn.');
       }
       setConfirmItem(null);
       setDetailItem(null);
-      fetchRequests();
+      await fetchRequests();
     } finally {
-      setAccepting(false);
+      setSubmittingDecision(false);
     }
   };
 
@@ -219,7 +281,11 @@ export const CaregiverMarketplacePage: React.FC = () => {
 
   return (
     <div className="marketplace-page">
-      <Navbar />
+      {authLoading ? (
+        <div className="caregiver-access-loading">Đang kiểm tra tài khoản...</div>
+      ) : isAuthenticated && account?.role === 'CAREGIVER' ? (
+        <>
+          <CaregiverHeader />
 
       {/* Hero Header */}
       <section className="marketplace-hero">
@@ -252,67 +318,98 @@ export const CaregiverMarketplacePage: React.FC = () => {
       <main className="marketplace-container">
         {/* Filter Card */}
         <div className="marketplace-filter-card">
-          <div className="filter-row-top">
-            {/* Search Input */}
-            <div className="filter-input-box">
-              <Search size={18} />
-              <input
-                type="text"
-                placeholder="Tìm theo tiêu đề, địa chỉ, tình trạng sức khỏe..."
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-              />
+          <div className="marketplace-filter-heading">
+            <div>
+              <span className="marketplace-filter-eyebrow">TÌM CÔNG VIỆC PHÙ HỢP</span>
+              <h2>Tìm yêu cầu chăm sóc</h2>
+              <p>Tìm theo nhu cầu, khu vực hoặc thông tin người cần chăm sóc.</p>
             </div>
+            <span className="marketplace-filter-count">
+              {activeFilterCount > 0 ? `${activeFilterCount} bộ lọc đang dùng` : 'Tất cả yêu cầu'}
+            </span>
+          </div>
 
-            {/* Area Filter */}
-            <select
-              className="filter-select"
-              value={area}
-              onChange={(e) => setArea(e.target.value)}
-            >
-              <option value="ALL">Khu vực: Tất cả</option>
-              {AREAS.filter((a) => a !== 'ALL').map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
+          <div className="filter-row-top">
+            <form className="filter-search-form" onSubmit={handleSearch} role="search">
+              <div className="filter-input-box">
+                <Search size={18} aria-hidden="true" />
+                <input
+                  type="text"
+                  aria-label="Tìm yêu cầu chăm sóc"
+                  placeholder="Ví dụ: chăm sóc người cao tuổi, Ninh Kiều..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                />
+                {searchInput && (
+                  <button
+                    type="button"
+                    className="filter-search-clear"
+                    aria-label="Xóa từ khóa tìm kiếm"
+                    onClick={() => setSearchInput('')}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              <button type="submit" className="filter-search-submit">
+                <Search size={16} />
+                <span>Tìm kiếm</span>
+              </button>
+            </form>
 
-            {/* Budget Filter */}
-            <select
-              className="filter-select"
-              value={budgetRange}
-              onChange={(e) => setBudgetRange(e.target.value)}
-            >
-              <option value="ALL">Ngân sách: Tất cả</option>
-              <option value="UNDER_300K">Dưới 300.000đ</option>
-              <option value="300K_500K">300.000đ - 500.000đ</option>
-              <option value="500K_1M">500.000đ - 1.000.000đ</option>
-              <option value="ABOVE_1M">Trên 1.000.000đ</option>
-            </select>
+            <div className="marketplace-filter-controls">
+              <label className="marketplace-filter-control">
+                <span>Khu vực</span>
+                <select
+                  className="filter-select"
+                  value={area}
+                  onChange={(e) => setArea(e.target.value)}
+                >
+                  <option value="ALL">Tất cả khu vực</option>
+                  {AREAS.filter((a) => a !== 'ALL').map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              </label>
 
-            {/* Frequency Filter */}
-            <select
-              className="filter-select"
-              value={frequency}
-              onChange={(e) => setFrequency(e.target.value as CareFrequency | 'ALL')}
-            >
-              <option value="ALL">Tần suất: Tất cả</option>
-              <option value="DAILY">Hàng ngày</option>
-              <option value="WEEKDAYS">Thứ 2 - Thứ 6</option>
-              <option value="WEEKLY">Hàng tuần</option>
-              <option value="ONE_TIME">Một lần duy nhất</option>
-            </select>
+              <label className="marketplace-filter-control">
+                <span>Ngân sách</span>
+                <select
+                  className="filter-select"
+                  value={budgetRange}
+                  onChange={(e) => setBudgetRange(e.target.value)}
+                >
+                  <option value="ALL">Mọi mức giá</option>
+                  <option value="UNDER_300K">Dưới 300.000đ</option>
+                  <option value="300K_500K">300.000đ - 500.000đ</option>
+                  <option value="500K_1M">500.000đ - 1.000.000đ</option>
+                  <option value="ABOVE_1M">Trên 1.000.000đ</option>
+                </select>
+              </label>
 
-            {/* Reset Button */}
+              <label className="marketplace-filter-control">
+                <span>Lịch chăm sóc</span>
+                <select
+                  className="filter-select"
+                  value={frequency}
+                  onChange={(e) => setFrequency(e.target.value as CareFrequency | 'ALL')}
+                >
+                  <option value="ALL">Mọi lịch</option>
+                  <option value="DAILY">Hàng ngày</option>
+                  <option value="WEEKDAYS">Thứ 2 - Thứ 6</option>
+                  <option value="WEEKLY">Hàng tuần</option>
+                  <option value="ONE_TIME">Một lần duy nhất</option>
+                </select>
+              </label>
+            </div>
             <button
               type="button"
               className="filter-reset-btn"
               onClick={handleResetFilters}
-              title="Đặt lại bộ lọc"
+              disabled={activeFilterCount === 0 && !searchInput}
             >
-              <RotateCcw size={14} style={{ display: 'inline', marginRight: '6px' }} />
-              Đặt lại
+              <RotateCcw size={14} />
+              <span>Xóa bộ lọc</span>
             </button>
           </div>
 
@@ -335,7 +432,8 @@ export const CaregiverMarketplacePage: React.FC = () => {
         {/* List Header Count */}
         <div className="marketplace-list-header">
           <div className="result-count">
-            Đang hiển thị <span>{totalCount}</span> yêu cầu chăm sóc đang mở
+            Tìm thấy <span>{totalCount}</span> yêu cầu chăm sóc
+            {keyword && <> cho “{keyword}”</>}
           </div>
         </div>
 
@@ -692,7 +790,7 @@ export const CaregiverMarketplacePage: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => handleInitiateAccept(detailItem)}
+                onClick={() => handleInitiateDecision(detailItem, 'accept')}
                 style={{
                   padding: '11px 26px',
                   borderRadius: '10px',
@@ -710,6 +808,22 @@ export const CaregiverMarketplacePage: React.FC = () => {
               >
                 <CheckCircle2 size={18} />
                 Tiếp nhận yêu cầu này
+              </button>
+              <button
+                type="button"
+                onClick={() => handleInitiateDecision(detailItem, 'decline')}
+                style={{
+                  padding: '11px 20px',
+                  borderRadius: '10px',
+                  border: '1px solid #fecaca',
+                  background: '#fff',
+                  color: '#b91c1c',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Từ chối yêu cầu
               </button>
             </div>
           </div>
@@ -749,33 +863,45 @@ export const CaregiverMarketplacePage: React.FC = () => {
                   width: '44px',
                   height: '44px',
                   borderRadius: '50%',
-                  backgroundColor: '#eff6ff',
-                  color: '#2563eb',
+                  backgroundColor: confirmAction === 'accept' ? '#eff6ff' : '#fef2f2',
+                  color: confirmAction === 'accept' ? '#2563eb' : '#dc2626',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <CheckCircle2 size={24} />
+                {confirmAction === 'accept' ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
               </div>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>
-                Xác nhận tiếp nhận yêu cầu?
+                {confirmAction === 'accept'
+                  ? 'Xác nhận tiếp nhận yêu cầu?'
+                  : 'Xác nhận từ chối yêu cầu?'}
               </h3>
             </div>
 
             <p style={{ fontSize: '14px', color: '#475569', lineHeight: 1.6, margin: '0 0 16px' }}>
-              Bạn đang nhận công việc: <strong>"{confirmItem.title}"</strong>.
-              <br />
-              Ngân sách: <strong>{formatVND(confirmItem.expectedBudget)}</strong> tại {confirmItem.location.area}.
-              <br />
-              Sau khi xác nhận, hệ thống sẽ kết nối trực tiếp bạn với khách hàng và cung cấp số điện thoại liên lạc.
+              {confirmAction === 'accept' ? (
+                <>
+                  Bạn đang nhận công việc: <strong>"{confirmItem.title}"</strong>.
+                  <br />
+                  Ngân sách: <strong>{formatVND(confirmItem.expectedBudget)}</strong> tại {confirmItem.location.area}.
+                  <br />
+                  Sau khi xác nhận, hệ thống sẽ kết nối trực tiếp bạn với khách hàng và cung cấp số điện thoại liên lạc.
+                </>
+              ) : (
+                <>
+                  Bạn không nhận công việc: <strong>"{confirmItem.title}"</strong>.
+                  <br />
+                  Yêu cầu sẽ không còn xuất hiện trong bảng tin của bạn nhưng vẫn mở cho người chăm sóc khác.
+                </>
+              )}
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button
                 type="button"
                 onClick={() => setConfirmItem(null)}
-                disabled={accepting}
+                disabled={submittingDecision}
                 style={{
                   padding: '10px 18px',
                   borderRadius: '10px',
@@ -790,29 +916,36 @@ export const CaregiverMarketplacePage: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={handleConfirmAccept}
-                disabled={accepting}
+                onClick={handleConfirmDecision}
+                disabled={submittingDecision}
                 style={{
                   padding: '10px 22px',
                   borderRadius: '10px',
                   border: 'none',
-                  backgroundColor: '#2563eb',
+                  backgroundColor: confirmAction === 'accept' ? '#2563eb' : '#dc2626',
                   color: '#fff',
                   fontSize: '13.5px',
                   fontWeight: 700,
-                  cursor: accepting ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                  cursor: submittingDecision ? 'not-allowed' : 'pointer',
+                  boxShadow: confirmAction === 'accept'
+                    ? '0 4px 12px rgba(37, 99, 235, 0.25)'
+                    : '0 4px 12px rgba(220, 38, 38, 0.2)',
                 }}
               >
-                {accepting ? 'Đang tiếp nhận...' : 'Đồng ý tiếp nhận'}
+                {submittingDecision
+                  ? 'Đang cập nhật...'
+                  : confirmAction === 'accept'
+                  ? 'Đồng ý tiếp nhận'
+                  : 'Xác nhận từ chối'}
               </button>
             </div>
           </div>
         </div>
       )}
+        </>
+      ) : null}
     </div>
   );
 };
 
 export default CaregiverMarketplacePage;
-

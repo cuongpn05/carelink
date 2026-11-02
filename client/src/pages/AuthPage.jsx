@@ -16,15 +16,32 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
+const getPostLoginUrl = (account, requestedUrl) => {
+  if (account?.role === 'CAREGIVER') {
+    const caregiverRoutes = ['/caregiver/', '/care-requests'];
+    const requestedCaregiverRoute = caregiverRoutes.some((route) =>
+      requestedUrl?.startsWith(route)
+    );
+
+    return requestedCaregiverRoute ? requestedUrl : '/caregiver/marketplace';
+  }
+
+  if (requestedUrl) {
+    return requestedUrl;
+  }
+
+  return '/';
+};
+
 export const AuthPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { saveAuthData, isAuthenticated } = useAuth();
+  const { account, saveAuthData, isAuthenticated } = useAuth();
 
   // Đọc query parameters (mode: login/register, redirect URL)
   const queryParams = new URLSearchParams(location.search);
   const initialMode = queryParams.get('mode') === 'register' ? 'REGISTER' : 'LOGIN';
-  const redirectUrl = queryParams.get('redirect') || '/';
+  const redirectUrl = queryParams.get('redirect');
 
   // State quản lý luồng 3 bước: 'LOGIN' | 'REGISTER' | 'VERIFY_OTP'
   const [step, setStep] = useState(initialMode);
@@ -45,9 +62,9 @@ export const AuthPage = () => {
   // Nếu đã đăng nhập thì tự động chuyển hướng về trang chủ hoặc redirect
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(redirectUrl, { replace: true });
+      navigate(getPostLoginUrl(account, redirectUrl), { replace: true });
     }
-  }, [isAuthenticated, navigate, redirectUrl]);
+  }, [account, isAuthenticated, navigate, redirectUrl]);
 
   // Bộ đếm ngược 60 giây khi gửi mã OTP
   useEffect(() => {
@@ -117,7 +134,7 @@ export const AuthPage = () => {
       if (res.success && res.data) {
         toast.success('Xác thực tài khoản thành công!');
         saveAuthData(res.data);
-        navigate(redirectUrl, { replace: true });
+        navigate(getPostLoginUrl(res.data.account, redirectUrl), { replace: true });
       }
     } catch (err) {
       const msg = err.response?.data?.message || 'Mã OTP không hợp lệ hoặc đã hết hạn.';
@@ -181,13 +198,13 @@ export const AuthPage = () => {
           toast.error(warnText, { duration: 6000 });
           // Vẫn cho phép điều hướng sau 2 giây để người dùng đọc cảnh báo
           setTimeout(() => {
-            navigate(redirectUrl, { replace: true });
+            navigate(getPostLoginUrl(res.data.account, redirectUrl), { replace: true });
           }, 2000);
           return;
         }
 
         toast.success('Đăng nhập thành công!');
-        navigate(redirectUrl, { replace: true });
+        navigate(getPostLoginUrl(res.data.account, redirectUrl), { replace: true });
       }
     } catch (err) {
       const resData = err.response?.data;
@@ -819,4 +836,3 @@ export const AuthPage = () => {
 };
 
 export default AuthPage;
-

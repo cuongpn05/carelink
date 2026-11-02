@@ -242,9 +242,19 @@ export const getMyBookings = async (): Promise<Booking[]> => {
 export const cancelBooking = async (
   bookingId: string,
   reason: string,
-): Promise<ApiResponse<{ booking: Booking; currentReputationScore: number }>> => {
+): Promise<ApiResponse<{
+  booking: Booking;
+  currentReputationScore: number;
+  caregiverCancellationCount: number | null;
+  penaltyPointsDeducted: number;
+}>> => {
   const path = `/bookings/${encodeURIComponent(bookingId)}/cancel`;
-  return requestBookingApi<{ booking: Booking; currentReputationScore: number }>(path, {
+  return requestBookingApi<{
+    booking: Booking;
+    currentReputationScore: number;
+    caregiverCancellationCount: number | null;
+    penaltyPointsDeducted: number;
+  }>(path, {
     method: 'PATCH',
     body: { reason },
   });

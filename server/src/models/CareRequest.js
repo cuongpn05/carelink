@@ -137,6 +137,11 @@ const careRequestSchema = new mongoose.Schema(
       index: true,
     },
 
+    declinedCaregiverIds: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Accounts' }],
+      default: [],
+    },
+
     acceptedAt: {
       type: Date,
       default: null,
@@ -179,4 +184,3 @@ careRequestSchema.index({ acceptedCaregiverId: 1, status: 1 });
 const CareRequest = mongoose.models.CareRequest || mongoose.model('CareRequest', careRequestSchema);
 
 module.exports = CareRequest;
-

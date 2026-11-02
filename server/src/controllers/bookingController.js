@@ -762,14 +762,27 @@ const cancelBooking = async (req, res) => {
       });
     }
 
+    let caregiverCancellationCount = null;
+    if (req.account.role === 'CAREGIVER' && requestedBooking.status === 'CONFIRMED') {
+      caregiverCancellationCount = (await Booking.countDocuments({
+        status: 'CANCELLED',
+        confirmedAt: { $ne: null },
+        'cancellationInfo.cancelledBy': req.account._id,
+        'cancellationInfo.cancelledByRole': 'CAREGIVER',
+      })) + 1;
+    }
+
     const hoursUntilStart =
       (new Date(requestedBooking.startTime).getTime() - Date.now()) / (60 * 60 * 1000);
     let penaltyPoints = 0;
     if (requestedBooking.status === 'CONFIRMED') {
-      penaltyPoints =
-        req.account.role === 'CAREGIVER'
-          ? (hoursUntilStart < 12 ? 15 : 5)
-          : (hoursUntilStart < 2 ? 15 : 5);
+      if (req.account.role === 'CAREGIVER') {
+        if (caregiverCancellationCount > 2) {
+          penaltyPoints = hoursUntilStart < 12 ? 15 : 5;
+        }
+      } else {
+        penaltyPoints = hoursUntilStart < 2 ? 15 : 5;
+      }
     }
 
     const now = new Date();
@@ -828,6 +841,8 @@ const cancelBooking = async (req, res) => {
       data: {
         booking: await enrichBooking(booking, req.account._id),
         currentReputationScore,
+        caregiverCancellationCount,
+        penaltyPointsDeducted: penaltyPoints,
       },
     });
   } catch (error) {
