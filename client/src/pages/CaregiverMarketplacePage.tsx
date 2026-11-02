@@ -257,6 +257,21 @@ export const CaregiverMarketplacePage: React.FC = () => {
     }).format(num);
   };
 
+  const formatBudgetDisplay = (amount: number, unit?: string) => {
+    const formatted = formatVND(amount);
+    switch (unit) {
+      case 'PER_HOUR':
+        return `${formatted} / giờ`;
+      case 'PER_MONTH':
+        return `${formatted} / tháng`;
+      case 'TOTAL':
+        return `${formatted} (Trọn gói)`;
+      case 'PER_DAY':
+      default:
+        return `${formatted} / ngày`;
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
@@ -516,14 +531,19 @@ export const CaregiverMarketplacePage: React.FC = () => {
                       <div className="mp-info-line">
                         <User size={14} />
                         <span>
-                          <strong>{item.recipient.name}</strong> ({item.recipient.age} tuổi •{' '}
-                          {item.recipient.gender === 'MALE' ? 'Nam' : 'Nữ'})
+                          <strong>{item.recipient.age} tuổi</strong>
+                          {item.recipient.gender && item.recipient.gender !== 'OTHER'
+                            ? ` • ${item.recipient.gender === 'MALE' ? 'Nam' : 'Nữ'}`
+                            : ''}
+                          {item.recipient.name && !['Người thân', 'Người cao tuổi', 'Bé', 'Người cần chăm sóc'].includes(item.recipient.name)
+                            ? ` (${item.recipient.name})`
+                            : ''}
                         </span>
                       </div>
                       <div className="mp-info-line">
                         <MapPin size={14} />
                         <span>
-                          {item.location.area}, {item.location.city}
+                          {item.location.area}, {item.location.city || 'Cần Thơ'}
                         </span>
                       </div>
                       <div className="mp-info-line">
@@ -562,7 +582,7 @@ export const CaregiverMarketplacePage: React.FC = () => {
                   <div className="mp-card-footer">
                     <div className="mp-budget-group">
                       <span className="mp-budget-lbl">Ngân sách dự kiến</span>
-                      <span className="mp-budget-val">{formatVND(item.expectedBudget)}</span>
+                      <span className="mp-budget-val">{formatBudgetDisplay(item.expectedBudget, item.budgetUnit)}</span>
                     </div>
 
                     <button
@@ -667,13 +687,14 @@ export const CaregiverMarketplacePage: React.FC = () => {
               }}
             >
               <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
-                Người được chăm sóc:
+                Đối tượng cần chăm sóc:
               </h4>
-              <div>Họ tên: <strong>{detailItem.recipient.name}</strong></div>
               <div>
-                Tuổi: {detailItem.recipient.age} • Giới tính:{' '}
-                {detailItem.recipient.gender === 'MALE' ? 'Nam' : 'Nữ'} • Mối quan hệ:{' '}
-                {detailItem.recipient.relationship}
+                Độ tuổi: <strong>{detailItem.recipient.age} tuổi</strong> • Giới tính:{' '}
+                {detailItem.recipient.gender === 'MALE' ? 'Nam' : detailItem.recipient.gender === 'FEMALE' ? 'Nữ' : 'Không yêu cầu'}
+                {detailItem.recipient.name && !['Người thân', 'Người cao tuổi', 'Bé', 'Người cần chăm sóc'].includes(detailItem.recipient.name)
+                  ? ` • ${detailItem.recipient.name}`
+                  : ''}
               </div>
               {detailItem.recipient.conditionNotes && (
                 <div style={{ color: '#b45309', fontWeight: 500 }}>
@@ -699,9 +720,11 @@ export const CaregiverMarketplacePage: React.FC = () => {
                 Lịch trình & Địa điểm làm việc:
               </h4>
               <div>
-                Địa chỉ: {detailItem.location.address}, {detailItem.location.area},{' '}
-                {detailItem.location.city}
+                Khu vực: {detailItem.location.area}, {detailItem.location.city || 'Cần Thơ'}
               </div>
+              {detailItem.location.address && detailItem.location.address !== detailItem.location.area && (
+                <div>Địa chỉ chi tiết: {detailItem.location.address}</div>
+              )}
               <div>
                 Thời gian: Từ {formatDate(detailItem.schedule.startDate)}
                 {detailItem.schedule.endDate ? ` đến ${formatDate(detailItem.schedule.endDate)}` : ''}
@@ -713,7 +736,7 @@ export const CaregiverMarketplacePage: React.FC = () => {
               <div>
                 Ngân sách dự kiến:{' '}
                 <strong style={{ fontSize: '16px', color: '#16a34a' }}>
-                  {formatVND(detailItem.expectedBudget)}
+                  {formatBudgetDisplay(detailItem.expectedBudget, detailItem.budgetUnit)}
                 </strong>
               </div>
             </div>

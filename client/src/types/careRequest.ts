@@ -13,18 +13,20 @@ export type CareRequestStatus =
 
 export type CareFrequency = 'ONE_TIME' | 'DAILY' | 'WEEKDAYS' | 'WEEKLY';
 
+export type CareBudgetUnit = 'PER_DAY' | 'PER_HOUR' | 'PER_MONTH' | 'TOTAL';
+
 export interface CareRecipient {
-  name: string;
   age: number;
-  gender: 'MALE' | 'FEMALE' | 'OTHER';
-  relationship: string;
+  name?: string;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  relationship?: string;
   conditionNotes?: string;
 }
 
 export interface CareLocation {
-  address: string;
   area: string;
   city?: string;
+  address?: string;
 }
 
 export interface CareSchedule {
@@ -67,6 +69,7 @@ export interface CareRequestItem {
   location: CareLocation;
   schedule: CareSchedule;
   expectedBudget: number;
+  budgetUnit?: CareBudgetUnit;
   specialRequirements: string[];
   status: CareRequestStatus;
   acceptedCaregiverId?: string | null;
@@ -82,10 +85,20 @@ export interface CareRequestItem {
 
 export interface CreateCareRequestDto {
   serviceCategory: CareServiceCategory;
-  title: string;
+  title?: string;
   description: string;
-  recipient: CareRecipient;
-  location: CareLocation;
+  recipient: {
+    age: number;
+    gender?: 'MALE' | 'FEMALE' | 'OTHER';
+    name?: string;
+    relationship?: string;
+    conditionNotes?: string;
+  };
+  location: {
+    area: string;
+    city?: string;
+    address?: string;
+  };
   schedule: {
     startDate: string;
     endDate?: string | null;
@@ -94,6 +107,7 @@ export interface CreateCareRequestDto {
     frequency: CareFrequency;
   };
   expectedBudget: number;
+  budgetUnit?: CareBudgetUnit;
   specialRequirements?: string[];
 }
 
@@ -114,4 +128,3 @@ export interface CareRequestNotification {
   isRead: boolean;
   caregiver?: CaregiverSummary | null;
 }
-

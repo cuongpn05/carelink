@@ -58,10 +58,10 @@
 /* Avatar container */
 .caregiver-avatar-container {
   position: relative;
-  width: 120px;
-  height: 132px;
+  width: 112px;
+  height: 122px;
   flex-shrink: 0;
-  border-radius: 18px;
+  border-radius: 16px;
   overflow: hidden;
   background-color: #f1f5f9;
 }
@@ -75,6 +75,8 @@
   transition: transform 0.3s ease;
 }
 
+.caregiver-card:hover .caregiver-avatar-container img,
+.caregiver-card:hover .caregiver-avatar-img,
 .caregiver-card:hover .caregiver-avatar {
   transform: scale(1.05);
 }
@@ -83,19 +85,20 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   background-color: #ffffff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  z-index: 2;
 }
 
 .available-dot {
-  width: 7.5px;
-  height: 7.5px;
+  width: 8px;
+  height: 8px;
   background-color: #22c55e;
   border-radius: 50%;
 }
@@ -210,5 +213,21 @@
 @media (max-width: 720px) {
   .caregivers-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .caregiver-card {
+    padding: 16px;
+  }
+
+  .caregiver-card-inner {
+    gap: 14px;
+  }
+
+  .caregiver-avatar-container {
+    width: 96px;
+    height: 104px;
+    border-radius: 14px;
   }
 }

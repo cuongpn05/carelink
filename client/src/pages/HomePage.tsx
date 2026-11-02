@@ -4,29 +4,34 @@ import Navbar from '../components/Navbar';
 import { Footer } from '../components/Footer/Footer';
 import { CaregiverDetailModal } from '../components/Modal/CaregiverDetailModal';
 import { PostCareRequestModal } from '../components/PostCareRequestModal';
+import { RatingStars } from '../components/common';
 import { getCaregivers } from '../services/caregiverService';
 import { Caregiver } from '../types';
 import heroBg from '../assets/hero-bg.png';
+import homeCareImg from '../assets/services/home-care.jpg';
+import elderlyCareImg from '../assets/services/elderly-care.jpg';
+import postTreatmentCareImg from '../assets/services/post-treatment-care.jpg';
+import childCareImg from '../assets/services/child-care.jpg';
 import {
-  Heart,
-  MapPin,
-  Calendar,
-  Search,
   ArrowRight,
   Clock,
   Home,
-  Plus,
   Users,
-  FileCheck2,
-  FileText,
-  ShieldCheck,
-  ChevronRight,
   CheckCircle2,
   ChevronDown,
+  Baby,
+  HeartHandshake,
+  Activity,
+  Pencil,
+  Check,
+  Search,
+  MapPin,
+  ShieldCheck,
+  Headphones,
 } from 'lucide-react';
 import './HomePage.css';
 
-// Default mock caregivers matching exact names and roles from the user's design image
+// Default mock caregivers matching exact names and roles from the verified caregiver catalog
 const SCREENSHOT_DEFAULT_CAREGIVERS: Caregiver[] = [
   {
     id: 'cg-mai-01',
@@ -96,19 +101,59 @@ const SCREENSHOT_DEFAULT_CAREGIVERS: Caregiver[] = [
   },
 ];
 
+interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+const FAQ_ITEMS: FaqItem[] = [
+  {
+    id: 'faq-1',
+    question: 'Tôi có thể chọn người chăm sóc không?',
+    answer:
+      'Có. Bạn hoàn toàn có thể chủ động xem xét hồ sơ, kinh nghiệm, kỹ năng và đánh giá của từng caregiver để chọn người phù hợp nhất, hoặc đăng yêu cầu để CareLink kết nối caregiver phù hợp với nhu cầu của bạn.',
+  },
+  {
+    id: 'faq-2',
+    question: 'Tôi có thể thay đổi lịch chăm sóc không?',
+    answer:
+      'Có. Bạn có thể linh hoạt điều chỉnh ngày, khung giờ hoặc hủy lịch hẹn trước thời gian bắt đầu ca chăm sóc thông qua mục Quản lý yêu cầu hoặc trao đổi trực tiếp với người chăm sóc.',
+  },
+  {
+    id: 'faq-3',
+    question: 'Chi phí chăm sóc được tính như thế nào?',
+    answer:
+      'Chi phí được tính minh bạch theo giờ (từ 90.000đ - 150.000đ/giờ), theo ngày hoặc theo gói dịch vụ chăm sóc dài hạn. Mọi mức giá đều hiển thị công khai trên hồ sơ và không có phụ phí ẩn.',
+  },
+  {
+    id: 'faq-4',
+    question: 'Làm thế nào để đăng yêu cầu?',
+    answer:
+      'Bạn chỉ cần nhấn nút "Đăng yêu cầu chăm sóc", chọn loại dịch vụ, độ tuổi người được chăm sóc, thời gian và khu vực. Yêu cầu sẽ được gửi tới các caregiver phù hợp để họ tiếp nhận và liên hệ với bạn.',
+  },
+];
+
+const formatVND = (amount?: number) => {
+  if (!amount) return 'Liên hệ';
+  return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+};
+
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
-
-  // Search states
-  const [selectedService, setSelectedService] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('TP. Hồ Chí Minh');
-  const [selectedTime, setSelectedTime] = useState('all');
 
   // Caregiver states
   const [selectedCaregiver, setSelectedCaregiver] = useState<Caregiver | null>(null);
   const [featuredCaregivers, setFeaturedCaregivers] = useState<Caregiver[]>(SCREENSHOT_DEFAULT_CAREGIVERS);
   const [loadingCaregivers, setLoadingCaregivers] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+
+  // FAQ accordion state
+  const [openFaqId, setOpenFaqId] = useState<string | null>(null);
+
+  const toggleFaq = (id: string) => {
+    setOpenFaqId((prev) => (prev === id ? null : id));
+  };
 
   // Load real caregivers if available
   useEffect(() => {
@@ -139,16 +184,6 @@ export const HomePage: React.FC = () => {
     };
   }, []);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const params = new URLSearchParams();
-    if (selectedService !== 'all') params.append('service', selectedService);
-    if (selectedLocation) params.append('area', selectedLocation);
-    if (selectedTime !== 'all') params.append('time', selectedTime);
-
-    navigate(`/caregivers?${params.toString()}`);
-  };
-
   const handleSelectCategory = (categoryId: string) => {
     navigate(`/caregivers?service=${categoryId}`);
   };
@@ -158,9 +193,9 @@ export const HomePage: React.FC = () => {
       {/* 1. Header Navigation */}
       <Navbar />
 
-      {/* 2. Top Hero Banner matching exact dimensions and copy */}
+      {/* 2. Top Hero Banner */}
       <section className="home-hero-section" aria-label="Giới thiệu CareLink">
-        {/* Background Visual: Nurse and elderly lady */}
+        {/* Background Visual */}
         <img
           src={heroBg}
           alt="CareLink - Sức khỏe của bạn, chúng tôi quan tâm."
@@ -212,260 +247,219 @@ export const HomePage: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="home-content-wrapper">
-        {/* 3. Floating Search / Filter Bar (Enlarged & Overlapping Hero Banner) */}
-        <section className="floating-search-bar-container" aria-label="Bộ lọc tìm kiếm nhanh">
-          <form onSubmit={handleSearchSubmit} className="floating-search-bar">
-            {/* Field 1: Loại chăm sóc */}
-            <div className="search-field-item">
-              <div className="search-field-icon">
-                <Heart size={22} fill="#2563eb" color="#2563eb" />
-              </div>
-              <div className="search-field-texts">
-                <span className="search-field-label">Loại chăm sóc</span>
-                <div className="search-select-wrapper">
-                  <select
-                    aria-label="Chọn loại chăm sóc"
-                    className="search-field-select"
-                    value={selectedService}
-                    onChange={(e) => setSelectedService(e.target.value)}
-                  >
-                    <option value="all">Tất cả dịch vụ</option>
-                    <option value="elderly-care">Chăm sóc người cao tuổi</option>
-                    <option value="child-care">Chăm sóc trẻ em</option>
-                    <option value="home-care">Chăm sóc tại nhà</option>
-                    <option value="post-treatment-care">Chăm sóc sau điều trị</option>
-                  </select>
-                  <ChevronDown size={16} className="search-chevron-icon" />
-                </div>
-              </div>
-            </div>
-
-            <div className="search-divider" />
-
-            {/* Field 2: Địa điểm */}
-            <div className="search-field-item">
-              <div className="search-field-icon">
-                <MapPin size={22} />
-              </div>
-              <div className="search-field-texts">
-                <span className="search-field-label">Địa điểm</span>
-                <div className="search-select-wrapper">
-                  <select
-                    aria-label="Chọn địa điểm"
-                    className="search-field-select"
-                    value={selectedLocation}
-                    onChange={(e) => setSelectedLocation(e.target.value)}
-                  >
-                    <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-                    <option value="Cần Thơ">Cần Thơ</option>
-                    <option value="Hà Nội">Hà Nội</option>
-                    <option value="Đà Nẵng">Đà Nẵng</option>
-                  </select>
-                  <ChevronDown size={16} className="search-chevron-icon" />
-                </div>
-              </div>
-            </div>
-
-            <div className="search-divider" />
-
-            {/* Field 3: Thời gian */}
-            <div className="search-field-item">
-              <div className="search-field-icon">
-                <Calendar size={22} />
-              </div>
-              <div className="search-field-texts">
-                <span className="search-field-label">Thời gian</span>
-                <div className="search-select-wrapper">
-                  <select
-                    aria-label="Chọn thời gian"
-                    className="search-field-select"
-                    value={selectedTime}
-                    onChange={(e) => setSelectedTime(e.target.value)}
-                  >
-                    <option value="all">Chọn thời gian</option>
-                    <option value="hourly">Theo ca giờ</option>
-                    <option value="daily">Theo ngày (24h)</option>
-                    <option value="weekly">Theo tuần</option>
-                    <option value="monthly">Theo tháng</option>
-                  </select>
-                  <ChevronDown size={16} className="search-chevron-icon" />
-                </div>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <button type="submit" className="search-submit-btn">
-              <Search size={19} />
-              <span>Tìm kiếm</span>
-            </button>
-          </form>
-        </section>
-
-        {/* 4. Section: Danh mục dịch vụ */}
-        <section className="home-section" aria-label="Danh mục dịch vụ">
-          <div className="home-section-header">
-            <h2 className="home-section-title">Danh mục dịch vụ</h2>
-            <Link to="/services" className="home-section-link">
-              <span>Xem tất cả</span>
-              <ArrowRight size={16} />
-            </Link>
+        {/* 3. Section: DANH MỤC DỊCH VỤ - Các dịch vụ chăm sóc nổi bật */}
+        <section className="home-section" aria-label="Các dịch vụ chăm sóc nổi bật">
+          <div className="section-title-wrap">
+            <span className="section-pill-tag">DANH MỤC DỊCH VỤ</span>
+            <h2 className="section-main-heading">Các dịch vụ chăm sóc nổi bật</h2>
           </div>
 
-          <div className="services-category-grid">
-            {/* Card 1: Chăm sóc người cao tuổi */}
+          <div className="services-highlight-grid">
+            {/* Card 1: Chăm sóc tại nhà */}
             <div
-              className="service-cat-card"
-              onClick={() => handleSelectCategory('elderly-care')}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && handleSelectCategory('elderly-care')}
-            >
-              <div className="service-cat-icon-wrapper" style={{ backgroundColor: '#e0f2fe' }}>
-                <span style={{ fontSize: '28px', lineHeight: 1 }}>👵👴</span>
-              </div>
-              <h3 className="service-cat-title">
-                Chăm sóc <br /> người cao tuổi
-              </h3>
-            </div>
-
-            {/* Card 2: Chăm sóc trẻ em */}
-            <div
-              className="service-cat-card"
-              onClick={() => handleSelectCategory('child-care')}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && handleSelectCategory('child-care')}
-            >
-              <div className="service-cat-icon-wrapper" style={{ backgroundColor: '#fef3c7' }}>
-                <span style={{ fontSize: '28px', lineHeight: 1 }}>👶</span>
-              </div>
-              <h3 className="service-cat-title">Chăm sóc trẻ em</h3>
-            </div>
-
-            {/* Card 3: Chăm sóc tại nhà */}
-            <div
-              className="service-cat-card"
+              className="service-card-item"
               onClick={() => handleSelectCategory('home-care')}
               role="button"
               tabIndex={0}
+              aria-label="Chọn dịch vụ Chăm sóc tại nhà"
               onKeyDown={(e) => e.key === 'Enter' && handleSelectCategory('home-care')}
             >
-              <div className="service-cat-icon-wrapper" style={{ backgroundColor: '#e0f2fe', color: '#2563eb' }}>
-                <Home size={30} fill="#2563eb" color="#2563eb" />
+              <div className="service-card-photo-wrap">
+                <img src={homeCareImg} alt="Chăm sóc tại nhà" className="service-card-photo" />
               </div>
-              <h3 className="service-cat-title">Chăm sóc tại nhà</h3>
+              <div className="service-card-content">
+                <div className="service-card-icon-box" style={{ backgroundColor: '#eff6ff', color: '#2563eb' }}>
+                  <Home size={22} strokeWidth={2.2} />
+                </div>
+                <div className="service-card-text">
+                  <h3 className="service-card-name">Chăm sóc tại nhà</h3>
+                  <p className="service-card-desc">Hỗ trợ sinh hoạt và chăm sóc hàng ngày.</p>
+                </div>
+                <div className="service-card-arrow-btn">
+                  <ArrowRight size={16} />
+                </div>
+              </div>
             </div>
 
-            {/* Card 4: Chăm sóc sau điều trị */}
+            {/* Card 2: Chăm sóc người cao tuổi */}
             <div
-              className="service-cat-card"
+              className="service-card-item"
+              onClick={() => handleSelectCategory('elderly-care')}
+              role="button"
+              tabIndex={0}
+              aria-label="Chọn dịch vụ Chăm sóc người cao tuổi"
+              onKeyDown={(e) => e.key === 'Enter' && handleSelectCategory('elderly-care')}
+            >
+              <div className="service-card-photo-wrap">
+                <img src={elderlyCareImg} alt="Chăm sóc người cao tuổi" className="service-card-photo" />
+              </div>
+              <div className="service-card-content">
+                <div className="service-card-icon-box" style={{ backgroundColor: '#faf5ff', color: '#9333ea' }}>
+                  <Users size={22} strokeWidth={2.2} />
+                </div>
+                <div className="service-card-text">
+                  <h3 className="service-card-name">Chăm sóc người cao tuổi</h3>
+                  <p className="service-card-desc">Đồng hành và hỗ trợ người lớn tuổi.</p>
+                </div>
+                <div className="service-card-arrow-btn" style={{ borderColor: '#e9d5ff', color: '#9333ea' }}>
+                  <ArrowRight size={16} />
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Chăm sóc sau điều trị */}
+            <div
+              className="service-card-item"
               onClick={() => handleSelectCategory('post-treatment-care')}
               role="button"
               tabIndex={0}
+              aria-label="Chọn dịch vụ Chăm sóc sau điều trị"
               onKeyDown={(e) => e.key === 'Enter' && handleSelectCategory('post-treatment-care')}
             >
-              <div className="service-cat-icon-wrapper" style={{ backgroundColor: '#e0f2fe', color: '#0284c7' }}>
-                <div
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
-                    backgroundColor: '#0284c7',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#ffffff',
-                  }}
-                >
-                  <Plus size={22} strokeWidth={3} />
+              <div className="service-card-photo-wrap">
+                <img src={postTreatmentCareImg} alt="Chăm sóc sau điều trị" className="service-card-photo" />
+              </div>
+              <div className="service-card-content">
+                <div className="service-card-icon-box" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>
+                  <Activity size={22} strokeWidth={2.2} />
+                </div>
+                <div className="service-card-text">
+                  <h3 className="service-card-name">Chăm sóc sau điều trị</h3>
+                  <p className="service-card-desc">Hỗ trợ phục hồi sau xuất viện.</p>
+                </div>
+                <div className="service-card-arrow-btn" style={{ borderColor: '#bbf7d0', color: '#16a34a' }}>
+                  <ArrowRight size={16} />
                 </div>
               </div>
-              <h3 className="service-cat-title">Chăm sóc sau điều trị</h3>
             </div>
-          </div>
-        </section>
 
-        {/* 5. Section: Call to action banner "Đăng yêu cầu chăm sóc ngay" (Positioned ABOVE Featured Caregivers) */}
-        <section className="post-request-banner" aria-label="Đăng yêu cầu chăm sóc ngay">
-          <div className="post-request-left">
-            <div className="post-request-icon-box">
-              <FileCheck2 size={28} />
-            </div>
-            <div>
-              <h3 className="post-request-title">Đăng yêu cầu chăm sóc ngay</h3>
-              <p className="post-request-subtitle">
-                Mô tả nhu cầu của bạn, chúng tôi sẽ giúp bạn tìm người phù hợp nhất!
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="post-request-btn"
-            onClick={() => setIsPostModalOpen(true)}
-            style={{ cursor: 'pointer', border: 'none' }}
-          >
-            <span>Đăng yêu cầu</span>
-            <ArrowRight size={16} />
-          </button>
-        </section>
-
-        {/* 6. Section: Quy trình sử dụng CareLink (Được đưa lên trên Người chăm sóc nổi bật) */}
-        <section className="workflow-section" aria-label="Quy trình sử dụng">
-          <div className="home-section-header">
-            <h2 className="home-section-title">Quy trình sử dụng CareLink</h2>
-            <Link to="/about" className="home-section-link">
-              <span>Tìm hiểu thêm</span>
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-
-          <div className="workflow-steps-box">
-            {/* Step 1 */}
-            <div className="workflow-step-item">
-              <div className="workflow-step-icon">
-                <FileText size={24} />
+            {/* Card 4: Chăm sóc trẻ em */}
+            <div
+              className="service-card-item"
+              onClick={() => handleSelectCategory('child-care')}
+              role="button"
+              tabIndex={0}
+              aria-label="Chọn dịch vụ Chăm sóc trẻ em"
+              onKeyDown={(e) => e.key === 'Enter' && handleSelectCategory('child-care')}
+            >
+              <div className="service-card-photo-wrap">
+                <img src={childCareImg} alt="Chăm sóc trẻ em" className="service-card-photo" />
               </div>
-              <h4 className="workflow-step-title">1. Đăng yêu cầu</h4>
-              <p className="workflow-step-desc">Mô tả nhu cầu chăm sóc</p>
+              <div className="service-card-content">
+                <div className="service-card-icon-box" style={{ backgroundColor: '#fff7ed', color: '#ea580c' }}>
+                  <Baby size={22} strokeWidth={2.2} />
+                </div>
+                <div className="service-card-text">
+                  <h3 className="service-card-name">Chăm sóc trẻ em</h3>
+                  <p className="service-card-desc">Hỗ trợ chăm sóc trẻ an toàn.</p>
+                </div>
+                <div className="service-card-arrow-btn" style={{ borderColor: '#fed7aa', color: '#ea580c' }}>
+                  <ArrowRight size={16} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 4. Section: QUY TRÌNH SỬ DỤNG - Chỉ 4 bước đơn giản */}
+        <section className="workflow-section" aria-label="Quy trình sử dụng">
+          <div className="section-title-wrap">
+            <span className="section-pill-tag">QUY TRÌNH SỬ DỤNG</span>
+            <h2 className="section-main-heading">Chỉ 4 bước đơn giản</h2>
+          </div>
+
+          <div className="workflow-cards-row">
+            {/* Step 1 */}
+            <div className="workflow-card-step">
+              <div className="workflow-card-number">1</div>
+              <div className="workflow-card-icon-wrap">
+                <Search size={22} />
+              </div>
+              <h4 className="workflow-card-title">Chọn dịch vụ</h4>
+              <p className="workflow-card-desc">Lựa chọn loại chăm sóc phù hợp với nhu cầu</p>
             </div>
 
-            {/* Arrow Divider */}
-            <div className="workflow-arrow-divider" aria-hidden="true">
-              <ChevronRight size={22} />
+            <div className="workflow-card-arrow" aria-hidden="true">
+              <ArrowRight size={18} />
             </div>
 
             {/* Step 2 */}
-            <div className="workflow-step-item">
-              <div className="workflow-step-icon">
-                <Users size={24} />
+            <div className="workflow-card-step">
+              <div className="workflow-card-number">2</div>
+              <div className="workflow-card-icon-wrap">
+                <Pencil size={20} />
               </div>
-              <h4 className="workflow-step-title">2. Caregiver tiếp nhận</h4>
-              <p className="workflow-step-desc">Xem và phản hồi</p>
+              <h4 className="workflow-card-title">Đăng yêu cầu</h4>
+              <p className="workflow-card-desc">Cung cấp thông tin cần thiết</p>
             </div>
 
-            {/* Arrow Divider */}
-            <div className="workflow-arrow-divider" aria-hidden="true">
-              <ChevronRight size={22} />
+            <div className="workflow-card-arrow" aria-hidden="true">
+              <ArrowRight size={18} />
             </div>
 
             {/* Step 3 */}
-            <div className="workflow-step-item">
-              <div className="workflow-step-icon">
-                <ShieldCheck size={24} />
+            <div className="workflow-card-step">
+              <div className="workflow-card-number">3</div>
+              <div className="workflow-card-icon-wrap">
+                <Users size={22} />
               </div>
-              <h4 className="workflow-step-title">3. Xác nhận dịch vụ</h4>
-              <p className="workflow-step-desc">Bắt đầu chăm sóc</p>
+              <h4 className="workflow-card-title">Caregiver tiếp nhận</h4>
+              <p className="workflow-card-desc">Người chăm sóc phù hợp sẽ liên hệ với bạn</p>
+            </div>
+
+            <div className="workflow-card-arrow" aria-hidden="true">
+              <ArrowRight size={18} />
+            </div>
+
+            {/* Step 4 */}
+            <div className="workflow-card-step">
+              <div className="workflow-card-number">4</div>
+              <div className="workflow-card-icon-wrap">
+                <Check size={22} strokeWidth={2.6} />
+              </div>
+              <h4 className="workflow-card-title">Xác nhận dịch vụ</h4>
+              <p className="workflow-card-desc">Bắt đầu hành trình chăm sóc</p>
             </div>
           </div>
         </section>
 
-        {/* 7. Section: Người chăm sóc nổi bật */}
+        {/* 5. Banner CTA: Bạn đang cần người chăm sóc? (Nằm ngay trên Người chăm sóc nổi bật) */}
+        <section className="home-banner-cta-container" aria-label="Đăng yêu cầu chăm sóc">
+          <div className="home-banner-cta-card">
+            <div className="home-banner-cta-left">
+              <div className="home-banner-cta-icon-box">
+                <HeartHandshake size={30} strokeWidth={2.2} />
+              </div>
+              <div>
+                <h3 className="home-banner-cta-title">Bạn đang cần người chăm sóc?</h3>
+                <p className="home-banner-cta-subtitle">
+                  Hãy chia sẻ nhu cầu của bạn để CareLink kết nối với người chăm sóc phù hợp.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="home-banner-cta-btn"
+              onClick={() => setIsPostModalOpen(true)}
+            >
+              <Pencil size={16} />
+              <span>Đăng yêu cầu chăm sóc</span>
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        </section>
+
+        {/* 6. Section: Người chăm sóc nổi bật */}
         <section className="home-section" aria-label="Người chăm sóc nổi bật">
           <div className="home-section-header">
-            <h2 className="home-section-title">Người chăm sóc nổi bật</h2>
+            <div>
+              <span className="section-pill-tag">ĐỘI NGŨ CHĂM SÓC</span>
+              <h2 className="section-main-heading" style={{ marginTop: '8px' }}>Người chăm sóc nổi bật</h2>
+              <p className="home-section-subtitle">Đội ngũ điều dưỡng viên và người chăm sóc được xác thực chuyên môn cao</p>
+            </div>
             <Link to="/caregivers" className="home-section-link">
-              <span>Xem tất cả</span>
+              <span>Xem tất cả người chăm sóc</span>
               <ArrowRight size={16} />
             </Link>
           </div>
@@ -473,19 +467,43 @@ export const HomePage: React.FC = () => {
           <div className="featured-caregivers-grid">
             {featuredCaregivers.map((cg) => (
               <div key={cg.id} className="caregiver-custom-card">
-                <div className="caregiver-card-top">
-                  <img
-                    src={cg.avatar}
-                    alt={cg.name}
-                    className="caregiver-avatar-round"
-                  />
-                  <div className="caregiver-info-box">
-                    <h3 className="caregiver-card-name">{cg.name}</h3>
-                    <p className="caregiver-card-role">{cg.title}</p>
-                    <div className="caregiver-card-exp">
-                      <Clock size={13} className="text-slate-400" />
-                      <span>Kinh nghiệm: {cg.experienceYears} năm</span>
+                <div>
+                  <div className="caregiver-card-top">
+                    <img
+                      src={cg.avatar}
+                      alt={cg.name}
+                      className="caregiver-avatar-round"
+                    />
+                    <div className="caregiver-info-box">
+                      <div className="caregiver-name-row">
+                        <h3 className="caregiver-card-name">{cg.name}</h3>
+                        <span title="Đã xác thực hồ sơ" className="caregiver-verified-icon-wrap">
+                          <CheckCircle2 size={16} className="caregiver-verified-icon" />
+                        </span>
+                      </div>
+                      <p className="caregiver-card-role">{cg.title}</p>
+                      <div className="caregiver-card-rating">
+                        <RatingStars rating={cg.rating} reviewCount={cg.reviewCount} size={14} />
+                      </div>
                     </div>
+                  </div>
+
+                  <div className="caregiver-card-meta">
+                    <div className="caregiver-meta-item">
+                      <Clock size={14} className="text-slate-400" />
+                      <span>Kinh nghiệm: <strong>{cg.experienceYears} năm</strong></span>
+                    </div>
+                    <div className="caregiver-meta-item">
+                      <MapPin size={14} className="text-slate-400" />
+                      <span>{cg.location || 'TP. Hồ Chí Minh'}</span>
+                    </div>
+                  </div>
+
+                  <div className="caregiver-price-row">
+                    <span className="caregiver-price-label">Giá dịch vụ:</span>
+                    <span className="caregiver-price-val">
+                      {formatVND(cg.pricing?.hourlyRate || cg.hourlyRate)} / giờ
+                    </span>
                   </div>
                 </div>
 
@@ -494,11 +512,101 @@ export const HomePage: React.FC = () => {
                   className="caregiver-detail-pill-btn"
                   onClick={() => setSelectedCaregiver(cg)}
                 >
-                  <span>Xem chi tiết</span>
+                  <span>Xem chi tiết & Đặt lịch</span>
                   <ArrowRight size={14} />
                 </button>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* 7. Section: CÂU HỎI THƯỜNG GẶP - Những câu hỏi thường gặp */}
+        <section className="faq-section" aria-label="Những câu hỏi thường gặp">
+          <div className="section-title-wrap">
+            <span className="section-pill-tag">CÂU HỎI THƯỜNG GẶP</span>
+            <h2 className="section-main-heading">Những câu hỏi thường gặp</h2>
+          </div>
+
+          <div className="faq-grid-2col">
+            {FAQ_ITEMS.map((item) => {
+              const isOpen = openFaqId === item.id;
+              return (
+                <div key={item.id} className={`faq-card-item ${isOpen ? 'open' : ''}`}>
+                  <button
+                    type="button"
+                    className="faq-card-trigger"
+                    onClick={() => toggleFaq(item.id)}
+                    aria-expanded={isOpen}
+                  >
+                    <div className="faq-trigger-left">
+                      <div className="faq-question-icon">?</div>
+                      <span className="faq-question-text">{item.question}</span>
+                    </div>
+                    <ChevronDown size={18} className="faq-chevron" />
+                  </button>
+                  {isOpen && (
+                    <div className="faq-card-content">
+                      <p>{item.answer}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* 8. Section: VỀ CARELINK - Sứ mệnh chăm sóc sức khỏe gia đình Việt */}
+        <section className="home-section home-about-section" aria-label="Về CareLink">
+          <div className="section-title-wrap home-about-title-wrap">
+            <span className="section-pill-tag">VỀ CARELINK</span>
+            <h2 className="section-main-heading">Sứ mệnh chăm sóc sức khỏe gia đình Việt</h2>
+            <p className="home-about-desc">
+              CareLink ra đời với mục tiêu giải quyết bài toán chăm sóc người thân trong nhịp sống hiện đại. Chúng tôi ứng dụng công nghệ để kết nối các gia đình với đội ngũ người chăm sóc, điều dưỡng viên uy tín, được kiểm duyệt lý lịch và đào tạo chuyên môn bài bản.
+            </p>
+          </div>
+
+          <div className="home-about-trust-box">
+            <div className="home-about-trust-grid">
+              <div className="home-about-trust-item">
+                <div className="home-about-icon-wrap">
+                  <ShieldCheck size={22} className="home-about-icon" />
+                </div>
+                <div className="home-about-text">
+                  <h4 className="home-about-title">An toàn & Bảo mật</h4>
+                  <p className="home-about-subtitle">Thông tin cá nhân được bảo vệ tuyệt đối.</p>
+                </div>
+              </div>
+
+              <div className="home-about-trust-item">
+                <div className="home-about-icon-wrap">
+                  <Clock size={22} className="home-about-icon" />
+                </div>
+                <div className="home-about-text">
+                  <h4 className="home-about-title">Đặt lịch linh hoạt</h4>
+                  <p className="home-about-subtitle">Dễ dàng chọn thời gian phù hợp với nhu cầu.</p>
+                </div>
+              </div>
+
+              <div className="home-about-trust-item">
+                <div className="home-about-icon-wrap">
+                  <Users size={22} className="home-about-icon" />
+                </div>
+                <div className="home-about-text">
+                  <h4 className="home-about-title">Đội ngũ chuyên nghiệp</h4>
+                  <p className="home-about-subtitle">Được đào tạo và kiểm tra kỹ lưỡng.</p>
+                </div>
+              </div>
+
+              <div className="home-about-trust-item">
+                <div className="home-about-icon-wrap">
+                  <Headphones size={22} className="home-about-icon" />
+                </div>
+                <div className="home-about-text">
+                  <h4 className="home-about-title">Hỗ trợ 24/7</h4>
+                  <p className="home-about-subtitle">Luôn sẵn sàng đồng hành cùng bạn.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>

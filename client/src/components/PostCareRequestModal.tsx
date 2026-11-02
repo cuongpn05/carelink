@@ -5,6 +5,7 @@ import { createCareRequest } from '../services/careRequestService';
 import {
   CareServiceCategory,
   CareFrequency,
+  CareBudgetUnit,
   CreateCareRequestDto,
 } from '../types/careRequest';
 import toast from 'react-hot-toast';
@@ -17,11 +18,12 @@ import {
   Calendar,
   Clock,
   MapPin,
-  User,
-  DollarSign,
-  AlertCircle,
-  CheckCircle2,
   Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Check,
+  Shield,
+  Info,
 } from 'lucide-react';
 
 interface PostCareRequestModalProps {
@@ -38,40 +40,38 @@ const CATEGORIES: {
 }[] = [
   {
     id: 'elderly-care',
-    title: 'Chăm sóc người cao tuổi',
-    desc: 'Hỗ trợ sinh hoạt, nhắc thuốc, đồng hành',
+    title: 'Người cao tuổi',
+    desc: 'Hỗ trợ sinh hoạt, nhắc thuốc, trò chuyện',
     icon: <Heart size={20} className="text-blue-600" />,
   },
   {
     id: 'child-care',
-    title: 'Chăm sóc trẻ em',
-    desc: 'Trông trẻ, vui chơi, phát triển kỹ năng',
+    title: 'Trẻ em',
+    desc: 'Trông giữ, vui chơi, phát triển kỹ năng',
     icon: <Baby size={20} className="text-amber-500" />,
   },
   {
     id: 'home-care',
-    title: 'Chăm sóc tại nhà',
-    desc: 'Nấu ăn, vệ sinh phòng, chăm sóc toàn diện',
+    title: 'Tại nhà',
+    desc: 'Nấu ăn, vệ sinh phòng, chăm sóc cơ bản',
     icon: <Home size={20} className="text-emerald-500" />,
   },
   {
     id: 'post-treatment-care',
-    title: 'Chăm sóc sau điều trị',
-    desc: 'Hỗ trợ hồi phục, thay băng, tập vật lý',
+    title: 'Sau điều trị',
+    desc: 'Hỗ trợ hồi phục, thay băng, vật lý trị liệu',
     icon: <Cross size={20} className="text-rose-500" />,
   },
 ];
 
-const COMMON_REQUIREMENTS = [
-  'Có chứng chỉ điều dưỡng',
-  'Kỹ năng sơ cứu cơ bản',
-  'Biết đo huyết áp, tiểu đường',
-  'Nấu ăn dinh dưỡng',
-  'Thay băng vô trùng',
-  'Vật lý trị liệu cơ bản',
-  'Không hút thuốc',
-  'Có phương tiện đi lại',
-  'Giao tiếp nhẹ nhàng, kiên nhẫn',
+const TIME_SLOT_OPTIONS = [
+  '08:00 - 12:00 (Ca sáng)',
+  '13:00 - 17:00 (Ca chiều)',
+  '08:00 - 17:00 (Giờ hành chính)',
+  '18:00 - 21:00 (Ca tối)',
+  'Theo ca 12 tiếng',
+  'Cả ngày & đêm (24/24)',
+  'Khung giờ linh hoạt',
 ];
 
 const COMMON_AREAS = [
@@ -87,6 +87,19 @@ const COMMON_AREAS = [
   'Thủ Đức',
 ];
 
+const CITIES = ['Cần Thơ', 'TP. Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Bình Dương'];
+
+const SPECIAL_TAGS = [
+  'Có chứng chỉ điều dưỡng',
+  'Sơ cứu cơ bản',
+  'Đo huyết áp / đường huyết',
+  'Biết nấu ăn dinh dưỡng',
+  'Thay băng vô trùng',
+  'Vật lý trị liệu cơ bản',
+  'Không hút thuốc',
+  'Có xe máy đi lại',
+];
+
 export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
   isOpen,
   onClose,
@@ -96,54 +109,41 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+
+  // Group 1: Loại dịch vụ & Đối tượng
   const [category, setCategory] = useState<CareServiceCategory>('elderly-care');
-  const [title, setTitle] = useState('');
+  const [age, setAge] = useState<number | ''>(75);
+  const [gender, setGender] = useState<'FEMALE' | 'MALE' | 'OTHER'>('FEMALE');
+
+  // Group 2: Nhu cầu & Sức khỏe
   const [description, setDescription] = useState('');
 
-  // Recipient
-  const [recipientName, setRecipientName] = useState('');
-  const [recipientAge, setRecipientAge] = useState<number | ''>('');
-  const [recipientGender, setRecipientGender] = useState<'MALE' | 'FEMALE' | 'OTHER'>('FEMALE');
-  const [relationship, setRelationship] = useState('Mẹ');
-  const [conditionNotes, setConditionNotes] = useState('');
-
-  // Location
-  const [address, setAddress] = useState('');
-  const [area, setArea] = useState('Ninh Kiều');
+  // Group 3: Thời gian & Địa điểm
   const [city, setCity] = useState('Cần Thơ');
-
-  // Schedule
+  const [area, setArea] = useState('Ninh Kiều');
   const [startDate, setStartDate] = useState(
     new Date(Date.now() + 24 * 3600 * 1000).toISOString().split('T')[0]
   );
-  const [endDate, setEndDate] = useState('');
-  const [timeSlot, setTimeSlot] = useState('08:00 - 12:00 (Ca sáng)');
+  const [timeSlot, setTimeSlot] = useState(TIME_SLOT_OPTIONS[0]);
   const [dailyHours, setDailyHours] = useState(4);
   const [frequency, setFrequency] = useState<CareFrequency>('DAILY');
 
-  // Budget & Special
-  const [expectedBudget, setExpectedBudget] = useState<number | ''>(350000);
-  const [specialReqs, setSpecialReqs] = useState<string[]>([
-    'Giao tiếp nhẹ nhàng, kiên nhẫn',
-  ]);
-  const [customReq, setCustomReq] = useState('');
+  // Group 4: Ngân sách & Đơn vị tính
+  const [budget, setBudget] = useState<number | ''>(350000);
+  const [budgetUnit, setBudgetUnit] = useState<CareBudgetUnit>('PER_DAY');
+
+  // Collapsible: Thông tin bổ sung
+  const [showAdditional, setShowAdditional] = useState(false);
+  const [endDate, setEndDate] = useState('');
+  const [specificAddress, setSpecificAddress] = useState('');
+  const [specialReqs, setSpecialReqs] = useState<string[]>([]);
 
   if (!isOpen) return null;
 
-  const toggleSpecialReq = (req: string) => {
+  const toggleSpecialTag = (tag: string) => {
     setSpecialReqs((prev) =>
-      prev.includes(req) ? prev.filter((r) => r !== req) : [...prev, req]
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
-  };
-
-  const addCustomReq = (e: React.KeyboardEvent | React.MouseEvent) => {
-    if ('key' in e && e.key !== 'Enter') return;
-    e.preventDefault();
-    const trimmed = customReq.trim();
-    if (trimmed && !specialReqs.includes(trimmed)) {
-      setSpecialReqs((prev) => [...prev, trimmed]);
-      setCustomReq('');
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -157,75 +157,64 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
     }
 
     if (account?.role !== 'CUSTOMER') {
-      toast.error('Chỉ tài khoản khách hàng mới có thể đăng yêu cầu chăm sóc.');
+      toast.error('Chỉ tài khoản Khách hàng mới có thể đăng yêu cầu chăm sóc.');
       return;
     }
 
-    // Client-side validations
-    if (!title.trim()) {
-      toast.error('Vui lòng nhập tiêu đề yêu cầu.');
+    // Validation
+    if (age === '' || Number(age) < 0 || Number(age) > 130) {
+      toast.error('Vui lòng nhập độ tuổi hợp lệ (0 - 130).');
       return;
     }
+
     if (!description.trim() || description.trim().length < 10) {
-      toast.error('Vui lòng mô tả chi tiết nhu cầu chăm sóc (ít nhất 10 ký tự).');
+      toast.error('Vui lòng mô tả chi tiết nhu cầu chăm sóc (tối thiểu 10 ký tự).');
       return;
     }
-    if (!recipientName.trim()) {
-      toast.error('Vui lòng nhập tên người được chăm sóc.');
-      return;
-    }
-    if (recipientAge === '' || Number(recipientAge) < 0) {
-      toast.error('Vui lòng nhập tuổi hợp lệ.');
-      return;
-    }
-    if (!address.trim()) {
-      toast.error('Vui lòng nhập địa chỉ cụ thể.');
-      return;
-    }
+
     if (!area.trim()) {
-      toast.error('Vui lòng chọn hoặc nhập khu vực / quận.');
+      toast.error('Vui lòng chọn hoặc nhập khu vực (quận/huyện).');
       return;
     }
+
     if (!startDate) {
       toast.error('Vui lòng chọn ngày bắt đầu.');
       return;
     }
-    if (expectedBudget === '' || Number(expectedBudget) < 0) {
+
+    if (budget === '' || Number(budget) < 0) {
       toast.error('Vui lòng nhập ngân sách dự kiến.');
       return;
     }
 
     const payload: CreateCareRequestDto = {
       serviceCategory: category,
-      title: title.trim(),
       description: description.trim(),
       recipient: {
-        name: recipientName.trim(),
-        age: Number(recipientAge),
-        gender: recipientGender,
-        relationship: relationship.trim(),
-        conditionNotes: conditionNotes.trim(),
+        age: Number(age),
+        gender,
       },
       location: {
-        address: address.trim(),
-        area: area.trim(),
         city: city.trim(),
+        area: area.trim(),
+        address: specificAddress.trim() || undefined,
       },
       schedule: {
         startDate,
         endDate: endDate ? endDate : null,
-        timeSlot: timeSlot.trim(),
+        timeSlot,
         dailyHours: Number(dailyHours),
         frequency,
       },
-      expectedBudget: Number(expectedBudget),
-      specialRequirements: specialReqs,
+      expectedBudget: Number(budget),
+      budgetUnit,
+      specialRequirements: specialReqs.length > 0 ? specialReqs : undefined,
     };
 
     setLoading(true);
     try {
       await createCareRequest(payload);
-      toast.success('Đăng yêu cầu chăm sóc thành công! Yêu cầu của bạn đang mở trên bảng tin.');
+      toast.success('Đăng yêu cầu chăm sóc thành công! Yêu cầu của bạn đã sẵn sàng trên bảng tin.');
       if (onSuccess) {
         onSuccess();
       }
@@ -260,20 +249,20 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
           backgroundColor: '#ffffff',
           borderRadius: '20px',
           width: '100%',
-          maxWidth: '820px',
-          maxHeight: '90vh',
+          maxWidth: '740px',
+          maxHeight: '92vh',
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           overflow: 'hidden',
-          animation: 'fadeInUp 0.25s ease-out',
+          animation: 'fadeInUp 0.2s ease-out',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal Header */}
+        {/* Header */}
         <div
           style={{
-            padding: '20px 24px',
+            padding: '18px 24px',
             borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             alignItems: 'center',
@@ -284,9 +273,9 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div
               style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
+                width: '38px',
+                height: '38px',
+                borderRadius: '10px',
                 backgroundColor: '#2563eb',
                 color: '#fff',
                 display: 'flex',
@@ -294,28 +283,21 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
                 justifyContent: 'center',
               }}
             >
-              <Sparkles size={22} />
+              <Sparkles size={20} />
             </div>
             <div>
               <h2
                 style={{
-                  fontSize: '20px',
-                  fontWeight: 700,
+                  fontSize: '18px',
+                  fontWeight: 800,
                   color: '#0f172a',
                   margin: 0,
                 }}
               >
                 Đăng yêu cầu chăm sóc mới
               </h2>
-              <p
-                style={{
-                  fontSize: '13px',
-                  color: '#64748b',
-                  margin: 0,
-                  marginTop: '2px',
-                }}
-              >
-                Mô tả chi tiết nhu cầu để CareLink kết nối người chăm sóc phù hợp nhất
+              <p style={{ fontSize: '12.5px', color: '#64748b', margin: '2px 0 0' }}>
+                Chỉ mất 1 phút để kết nối người chăm sóc phù hợp nhất
               </p>
             </div>
           </div>
@@ -324,7 +306,7 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
             type="button"
             onClick={onClose}
             style={{
-              padding: '8px',
+              padding: '6px',
               borderRadius: '999px',
               border: 'none',
               backgroundColor: '#f1f5f9',
@@ -333,42 +315,70 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'background 0.2s',
             }}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Modal Body Form */}
+        {/* Form Body: 4 Clean Groups */}
         <form
           onSubmit={handleSubmit}
           style={{
-            padding: '24px',
+            padding: '20px 24px',
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: '24px',
+            gap: '18px',
           }}
         >
-          {/* 1. Chọn loại dịch vụ */}
+          {/* Nhóm 1: Loại dịch vụ & Đối tượng */}
           <div>
-            <label
+            <div
               style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#1e293b',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 marginBottom: '10px',
               }}
             >
-              1. Loại dịch vụ chăm sóc <span style={{ color: '#ef4444' }}>*</span>
-            </label>
+              <span
+                style={{
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    backgroundColor: '#2563eb',
+                    color: '#fff',
+                    fontSize: '11px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                  }}
+                >
+                  1
+                </span>
+                Loại dịch vụ & Đối tượng <span style={{ color: '#ef4444' }}>*</span>
+              </span>
+            </div>
+
+            {/* Radio Cards */}
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '10px',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '8px',
+                marginBottom: '12px',
               }}
             >
               {CATEGORIES.map((cat) => {
@@ -377,198 +387,279 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
                   <button
                     type="button"
                     key={cat.id}
-                    onClick={() => setCategory(cat.id)}
+                    onClick={() => {
+                      setCategory(cat.id);
+                      if (cat.id === 'child-care' && (age === '' || Number(age) > 15)) {
+                        setAge(3);
+                      } else if (cat.id === 'elderly-care' && (age === '' || Number(age) < 50)) {
+                        setAge(75);
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      alignItems: 'flex-start',
-                      padding: '12px 14px',
+                      alignItems: 'center',
+                      padding: '10px 8px',
                       borderRadius: '12px',
                       border: isSelected ? '2px solid #2563eb' : '1px solid #e2e8f0',
                       backgroundColor: isSelected ? '#eff6ff' : '#ffffff',
                       cursor: 'pointer',
-                      textAlign: 'left',
+                      textAlign: 'center',
                       transition: 'all 0.15s ease',
                     }}
                   >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        width: '100%',
-                        marginBottom: '6px',
-                      }}
-                    >
-                      {cat.icon}
-                      {isSelected && (
-                        <CheckCircle2 size={16} className="text-blue-600" />
-                      )}
-                    </div>
+                    <div style={{ marginBottom: '4px' }}>{cat.icon}</div>
                     <span
                       style={{
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        color: isSelected ? '#1e40af' : '#1e293b',
+                        fontSize: '12.5px',
+                        fontWeight: 700,
+                        color: isSelected ? '#1d4ed8' : '#1e293b',
+                        lineHeight: 1.2,
                       }}
                     >
                       {cat.title}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '11px',
-                        color: '#64748b',
-                        marginTop: '2px',
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {cat.desc}
                     </span>
                   </button>
                 );
               })}
             </div>
-          </div>
 
-          {/* 2. Tiêu đề và Mô tả nhu cầu */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <label
+            {/* Age & Gender Row */}
+            <div
               style={{
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#1e293b',
-                margin: 0,
+                display: 'grid',
+                gridTemplateColumns: '1fr 1.5fr',
+                gap: '12px',
               }}
             >
-              2. Tiêu đề & Mô tả nhu cầu <span style={{ color: '#ef4444' }}>*</span>
-            </label>
+              <div>
+                <label
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#475569',
+                    display: 'block',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Độ tuổi người được chăm sóc <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="number"
+                    min="0"
+                    max="130"
+                    placeholder="VD: 75"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value ? Number(e.target.value) : '')}
+                    style={{
+                      width: '100%',
+                      padding: '9px 40px 9px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '13.5px',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                    }}
+                    required
+                  />
+                  <span
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      fontSize: '12px',
+                      color: '#94a3b8',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    tuổi
+                  </span>
+                </div>
+              </div>
 
-            <div>
-              <input
-                type="text"
-                placeholder="VD: Cần người chăm sóc bà cụ 78 tuổi tại nhà (Quận Ninh Kiều)"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  border: '1px solid #cbd5e1',
-                  fontSize: '14px',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                }}
-                required
-              />
-            </div>
-
-            <div>
-              <textarea
-                placeholder="Mô tả chi tiết tình trạng sức khỏe, các công việc cần hỗ trợ hàng ngày (ăn uống, đi lại, vệ sinh cá nhân, uống thuốc, v.v.)..."
-                rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  border: '1px solid #cbd5e1',
-                  fontSize: '14px',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                  resize: 'vertical',
-                }}
-                required
-              />
+              <div>
+                <label
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#475569',
+                    display: 'block',
+                    marginBottom: '4px',
+                  }}
+                >
+                  Giới tính (tùy chọn)
+                </label>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '4px',
+                    backgroundColor: '#f1f5f9',
+                    padding: '3px',
+                    borderRadius: '8px',
+                  }}
+                >
+                  {[
+                    { id: 'FEMALE', label: 'Nữ' },
+                    { id: 'MALE', label: 'Nam' },
+                    { id: 'OTHER', label: 'Không yêu cầu' },
+                  ].map((g) => {
+                    const active = gender === g.id;
+                    return (
+                      <button
+                        type="button"
+                        key={g.id}
+                        onClick={() => setGender(g.id as 'FEMALE' | 'MALE' | 'OTHER')}
+                        style={{
+                          padding: '6px 4px',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: active ? 700 : 500,
+                          backgroundColor: active ? '#ffffff' : 'transparent',
+                          color: active ? '#1d4ed8' : '#64748b',
+                          boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {g.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* 3. Thông tin người được chăm sóc */}
-          <div
-            style={{
-              padding: '16px',
-              borderRadius: '14px',
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
-            }}
-          >
-            <label
+          {/* Nhóm 2: Nhu cầu & Tình trạng sức khỏe */}
+          <div>
+            <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#1e293b',
-                marginBottom: '12px',
+                justifyContent: 'space-between',
+                marginBottom: '6px',
               }}
             >
-              <User size={16} className="text-blue-600" />
-              3. Người được chăm sóc
-            </label>
+              <span
+                style={{
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    backgroundColor: '#2563eb',
+                    color: '#fff',
+                    fontSize: '11px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                  }}
+                >
+                  2
+                </span>
+                Mô tả nhu cầu & Tình trạng sức khỏe <span style={{ color: '#ef4444' }}>*</span>
+              </span>
+            </div>
+
+            <textarea
+              placeholder="Mô tả cụ thể tình trạng sức khỏe và các công việc cần hỗ trợ (VD: Đi lại chậm sau mổ mắt, cần người trò chuyện, hỗ trợ ăn uống nhẹ, nhắc thuốc đúng giờ và dìu đi bộ mỗi chiều...)"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: '1px solid #cbd5e1',
+                fontSize: '13.5px',
+                lineHeight: 1.5,
+                outline: 'none',
+                boxSizing: 'border-box',
+                resize: 'vertical',
+              }}
+              required
+            />
+          </div>
+
+          {/* Nhóm 3: Thời gian & Khu vực chăm sóc */}
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '8px',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    backgroundColor: '#2563eb',
+                    color: '#fff',
+                    fontSize: '11px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                  }}
+                >
+                  3
+                </span>
+                Khu vực & Thời gian chăm sóc <span style={{ color: '#ef4444' }}>*</span>
+              </span>
+            </div>
 
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '12px',
-                marginBottom: '12px',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '10px',
+                marginBottom: '10px',
               }}
             >
+              {/* City */}
               <div>
-                <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>
-                  Họ và tên <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="VD: Nguyễn Thị Lan"
-                  value={recipientName}
-                  onChange={(e) => setRecipientName(e.target.value)}
+                <label
                   style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '13px',
-                    boxSizing: 'border-box',
+                    fontSize: '11.5px',
+                    color: '#64748b',
+                    display: 'block',
+                    marginBottom: '3px',
                   }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>
-                  Tuổi <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <input
-                  type="number"
-                  placeholder="VD: 75"
-                  min="0"
-                  max="120"
-                  value={recipientAge}
-                  onChange={(e) => setRecipientAge(e.target.value ? Number(e.target.value) : '')}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '13px',
-                    boxSizing: 'border-box',
-                  }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>
-                  Giới tính
+                >
+                  Tỉnh / Thành phố
                 </label>
                 <select
-                  value={recipientGender}
-                  onChange={(e) => setRecipientGender(e.target.value as 'MALE' | 'FEMALE' | 'OTHER')}
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
+                    padding: '8px 10px',
                     borderRadius: '8px',
                     border: '1px solid #cbd5e1',
                     fontSize: '13px',
@@ -576,105 +667,33 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
                     boxSizing: 'border-box',
                   }}
                 >
-                  <option value="FEMALE">Nữ</option>
-                  <option value="MALE">Nam</option>
-                  <option value="OTHER">Khác</option>
+                  {CITIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
                 </select>
               </div>
 
+              {/* Area */}
               <div>
-                <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>
-                  Mối quan hệ <span style={{ color: '#ef4444' }}>*</span>
+                <label
+                  style={{
+                    fontSize: '11.5px',
+                    color: '#64748b',
+                    display: 'block',
+                    marginBottom: '3px',
+                  }}
+                >
+                  Quận / Huyện <span style={{ color: '#ef4444' }}>*</span>
                 </label>
-                <input
-                  type="text"
-                  placeholder="VD: Mẹ, Bố, Con, Bản thân"
-                  value={relationship}
-                  onChange={(e) => setRelationship(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '13px',
-                    boxSizing: 'border-box',
-                  }}
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>
-                Lưu ý bệnh lý / Tình trạng đặc biệt
-              </label>
-              <input
-                type="text"
-                placeholder="VD: Khó đi lại sau phẫu thuật, huyết áp cao cần theo dõi..."
-                value={conditionNotes}
-                onChange={(e) => setConditionNotes(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  fontSize: '13px',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-          </div>
-
-          {/* 4. Địa điểm cần chăm sóc */}
-          <div>
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#1e293b',
-                marginBottom: '10px',
-              }}
-            >
-              <MapPin size={16} className="text-blue-600" />
-              4. Địa chỉ & Khu vực cần chăm sóc <span style={{ color: '#ef4444' }}>*</span>
-            </label>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '12px',
-              }}
-            >
-              <div style={{ gridColumn: 'span 2' }}>
-                <input
-                  type="text"
-                  placeholder="Số nhà, tên đường, phường/xã cụ thể..."
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '13px',
-                    boxSizing: 'border-box',
-                  }}
-                  required
-                />
-              </div>
-
-              <div>
                 <select
                   value={area}
                   onChange={(e) => setArea(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
                     border: '1px solid #cbd5e1',
                     fontSize: '13px',
                     backgroundColor: '#fff',
@@ -689,51 +708,16 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
                 </select>
               </div>
 
+              {/* Start Date */}
               <div>
-                <input
-                  type="text"
-                  placeholder="Tỉnh / Thành phố"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                <label
                   style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '10px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '13px',
-                    boxSizing: 'border-box',
+                    fontSize: '11.5px',
+                    color: '#64748b',
+                    display: 'block',
+                    marginBottom: '3px',
                   }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 5. Lịch trình & Thời gian */}
-          <div>
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#1e293b',
-                marginBottom: '10px',
-              }}
-            >
-              <Calendar size={16} className="text-blue-600" />
-              5. Thời gian & Lịch chăm sóc <span style={{ color: '#ef4444' }}>*</span>
-            </label>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '12px',
-              }}
-            >
-              <div>
-                <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>
+                >
                   Ngày bắt đầu <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
@@ -742,7 +726,7 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
                   onChange={(e) => setStartDate(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '9px 12px',
+                    padding: '8px 10px',
                     borderRadius: '8px',
                     border: '1px solid #cbd5e1',
                     fontSize: '13px',
@@ -752,48 +736,49 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
                 />
               </div>
 
+              {/* Time Slot */}
               <div>
-                <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>
-                  Ngày kết thúc (tùy chọn)
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                <label
                   style={{
-                    width: '100%',
-                    padding: '9px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '13px',
-                    boxSizing: 'border-box',
+                    fontSize: '11.5px',
+                    color: '#64748b',
+                    display: 'block',
+                    marginBottom: '3px',
                   }}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>
+                >
                   Khung giờ chăm sóc <span style={{ color: '#ef4444' }}>*</span>
                 </label>
-                <input
-                  type="text"
-                  placeholder="VD: 08:00 - 12:00 (Sáng)"
+                <select
                   value={timeSlot}
                   onChange={(e) => setTimeSlot(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '9px 12px',
+                    padding: '8px 10px',
                     borderRadius: '8px',
                     border: '1px solid #cbd5e1',
                     fontSize: '13px',
+                    backgroundColor: '#fff',
                     boxSizing: 'border-box',
                   }}
-                  required
-                />
+                >
+                  {TIME_SLOT_OPTIONS.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ))}
+                </select>
               </div>
 
+              {/* Daily Hours */}
               <div>
-                <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>
+                <label
+                  style={{
+                    fontSize: '11.5px',
+                    color: '#64748b',
+                    display: 'block',
+                    marginBottom: '3px',
+                  }}
+                >
                   Số giờ / ngày <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <select
@@ -801,7 +786,7 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
                   onChange={(e) => setDailyHours(Number(e.target.value))}
                   style={{
                     width: '100%',
-                    padding: '9px 12px',
+                    padding: '8px 10px',
                     borderRadius: '8px',
                     border: '1px solid #cbd5e1',
                     fontSize: '13px',
@@ -819,16 +804,24 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
                 </select>
               </div>
 
+              {/* Frequency */}
               <div>
-                <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>
-                  Tần suất chăm sóc
+                <label
+                  style={{
+                    fontSize: '11.5px',
+                    color: '#64748b',
+                    display: 'block',
+                    marginBottom: '3px',
+                  }}
+                >
+                  Tần suất chăm sóc <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <select
                   value={frequency}
                   onChange={(e) => setFrequency(e.target.value as CareFrequency)}
                   style={{
                     width: '100%',
-                    padding: '9px 12px',
+                    padding: '8px 10px',
                     borderRadius: '8px',
                     border: '1px solid #cbd5e1',
                     fontSize: '13px',
@@ -837,120 +830,261 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
                   }}
                 >
                   <option value="DAILY">Hàng ngày (Cả tuần)</option>
-                  <option value="WEEKDAYS">Thứ 2 - Thứ 6 (Ngày làm việc)</option>
-                  <option value="WEEKLY">Hàng tuần (Vài ngày định kỳ)</option>
+                  <option value="WEEKDAYS">Thứ 2 - Thứ 6</option>
+                  <option value="WEEKLY">Hàng tuần</option>
                   <option value="ONE_TIME">Một lần duy nhất</option>
                 </select>
               </div>
+            </div>
+          </div>
 
+          {/* Nhóm 4: Ngân sách & Thông tin bổ sung */}
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '8px',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    backgroundColor: '#2563eb',
+                    color: '#fff',
+                    fontSize: '11px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                  }}
+                >
+                  4
+                </span>
+                Ngân sách dự kiến <span style={{ color: '#ef4444' }}>*</span>
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2fr 1.2fr',
+                gap: '10px',
+                marginBottom: '14px',
+              }}
+            >
               <div>
-                <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>
-                  Ngân sách dự kiến (VNĐ/ngày) <span style={{ color: '#ef4444' }}>*</span>
-                </label>
                 <input
                   type="number"
                   step="50000"
                   min="0"
                   placeholder="VD: 350000"
-                  value={expectedBudget}
-                  onChange={(e) => setExpectedBudget(e.target.value ? Number(e.target.value) : '')}
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value ? Number(e.target.value) : '')}
                   style={{
                     width: '100%',
                     padding: '9px 12px',
                     borderRadius: '8px',
                     border: '1px solid #cbd5e1',
-                    fontSize: '13px',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: '#16a34a',
                     boxSizing: 'border-box',
+                    outline: 'none',
                   }}
                   required
                 />
               </div>
-            </div>
-          </div>
 
-          {/* 6. Yêu cầu đặc biệt */}
-          <div>
-            <label
+              <div>
+                <select
+                  value={budgetUnit}
+                  onChange={(e) => setBudgetUnit(e.target.value as CareBudgetUnit)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 10px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '13px',
+                    backgroundColor: '#fff',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <option value="PER_DAY">VNĐ / ngày</option>
+                  <option value="PER_HOUR">VNĐ / giờ</option>
+                  <option value="PER_MONTH">VNĐ / tháng</option>
+                  <option value="TOTAL">Trọn gói</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Accordion: Thông tin bổ sung */}
+            <div
               style={{
-                fontSize: '14px',
-                fontWeight: 600,
-                color: '#1e293b',
-                display: 'block',
-                marginBottom: '8px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                backgroundColor: showAdditional ? '#f8fafc' : '#ffffff',
+                overflow: 'hidden',
+                transition: 'all 0.2s ease',
               }}
             >
-              6. Yêu cầu đặc biệt dành cho người chăm sóc
-            </label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
-              {COMMON_REQUIREMENTS.map((req) => {
-                const selected = specialReqs.includes(req);
-                return (
-                  <button
-                    type="button"
-                    key={req}
-                    onClick={() => toggleSpecialReq(req)}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '999px',
-                      fontSize: '12px',
-                      fontWeight: selected ? 600 : 400,
-                      backgroundColor: selected ? '#eff6ff' : '#f8fafc',
-                      color: selected ? '#1d4ed8' : '#475569',
-                      border: selected ? '1px solid #93c5fd' : '1px solid #e2e8f0',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    {selected ? '✓ ' : '+ '}
-                    {req}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input
-                type="text"
-                placeholder="Thêm yêu cầu khác (nhấn Enter)..."
-                value={customReq}
-                onChange={(e) => setCustomReq(e.target.value)}
-                onKeyDown={addCustomReq}
-                style={{
-                  flex: 1,
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  fontSize: '13px',
-                }}
-              />
               <button
                 type="button"
-                onClick={addCustomReq}
+                onClick={() => setShowAdditional(!showAdditional)}
                 style={{
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  backgroundColor: '#f1f5f9',
-                  border: '1px solid #cbd5e1',
+                  width: '100%',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  cursor: 'pointer',
                   fontSize: '13px',
                   fontWeight: 600,
-                  color: '#334155',
-                  cursor: 'pointer',
+                  color: '#475569',
                 }}
               >
-                Thêm
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Info size={15} className="text-blue-600" />
+                  Thông tin bổ sung (Ngày kết thúc, yêu cầu đặc biệt)
+                </span>
+                {showAdditional ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
+
+              {showAdditional && (
+                <div
+                  style={{
+                    padding: '12px 14px 16px',
+                    borderTop: '1px solid #e2e8f0',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                  }}
+                >
+                  {/* End Date */}
+                  <div>
+                    <label
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: '#475569',
+                        display: 'block',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      Ngày kết thúc (tùy chọn)
+                    </label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '13px',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+
+                  {/* Special requirements tags */}
+                  <div>
+                    <label
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: '#475569',
+                        display: 'block',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      Yêu cầu đặc biệt đối với người chăm sóc
+                    </label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {SPECIAL_TAGS.map((tag) => {
+                        const isTagSelected = specialReqs.includes(tag);
+                        return (
+                          <button
+                            type="button"
+                            key={tag}
+                            onClick={() => toggleSpecialTag(tag)}
+                            style={{
+                              padding: '5px 10px',
+                              borderRadius: '999px',
+                              fontSize: '12px',
+                              fontWeight: isTagSelected ? 600 : 400,
+                              backgroundColor: isTagSelected ? '#eff6ff' : '#ffffff',
+                              color: isTagSelected ? '#1d4ed8' : '#475569',
+                              border: isTagSelected ? '1px solid #93c5fd' : '1px solid #e2e8f0',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {isTagSelected ? '✓ ' : '+ '}
+                            {tag}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Specific address (optional) */}
+                  <div>
+                    <label
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: '#475569',
+                        display: 'block',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      Địa chỉ cụ thể (tùy chọn)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Số nhà, tên đường (chỉ hiển thị cho người chăm sóc sau khi tiếp nhận)"
+                      value={specificAddress}
+                      onChange={(e) => setSpecificAddress(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '12.5px',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Footer Submit */}
           <div
             style={{
-              paddingTop: '16px',
+              paddingTop: '12px',
               borderTop: '1px solid #e2e8f0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
-              gap: '12px',
+              gap: '10px',
             }}
           >
             <button
@@ -958,34 +1092,34 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
               onClick={onClose}
               disabled={loading}
               style={{
-                padding: '10px 20px',
-                borderRadius: '10px',
+                padding: '9px 18px',
+                borderRadius: '8px',
                 border: '1px solid #cbd5e1',
                 backgroundColor: '#ffffff',
                 color: '#475569',
-                fontSize: '14px',
+                fontSize: '13.5px',
                 fontWeight: 600,
                 cursor: 'pointer',
               }}
             >
-              Hủy bỏ
+              Hủy
             </button>
             <button
               type="submit"
               disabled={loading}
               style={{
-                padding: '10px 24px',
-                borderRadius: '10px',
+                padding: '9px 24px',
+                borderRadius: '8px',
                 border: 'none',
                 backgroundColor: '#2563eb',
                 color: '#ffffff',
-                fontSize: '14px',
-                fontWeight: 600,
+                fontSize: '13.5px',
+                fontWeight: 700,
                 cursor: loading ? 'not-allowed' : 'pointer',
                 boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '6px',
               }}
             >
               {loading ? 'Đang gửi...' : 'Đăng yêu cầu ngay'}
@@ -996,4 +1130,3 @@ export const PostCareRequestModal: React.FC<PostCareRequestModalProps> = ({
     </div>
   );
 };
-

@@ -1,0 +1,33 @@
+.cds-page-container {
+  width: var(--container-width);
+  max-width: var(--max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.cds-page-container--gutter {
+  padding-top: var(--space-8);
+  padding-bottom: var(--space-16);
+}
+
+@media (max-width: 1400px) {
+  .cds-page-container {
+    width: 94%;
+  }
+}
+
+@media (max-width: 768px) {
+  .cds-page-container {
+    width: 100%;
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .cds-page-container--gutter {
+    padding-top: var(--space-5);
+    padding-bottom: var(--space-10);
+  }
+}
+
