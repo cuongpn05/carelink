@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosClient from '../api/axiosClient';
 import { Navbar } from '../components/Navbar';
-import { CaregiverHeader } from '../components/CaregiverHeader';
+import { CaregiverHeader } from '../components/CaregiverHeaderComponent';
 import toast from 'react-hot-toast';
 import {
   User,

@@ -15,7 +15,6 @@ import './CaregiversPage.css';
 
 interface FilterFormValues {
   keyword: string;
-  minExperience: string;
   minPrice: string;
   maxPrice: string;
   area: string;
@@ -25,14 +24,27 @@ interface FilterFormValues {
 
 const emptyFilters: FilterFormValues = {
   keyword: '',
-  minExperience: '',
   minPrice: '',
   maxPrice: '',
   area: '',
   skill: '',
   sortBy: 'createdAt',
-  order: 'desc',
-  limit: '9',
+};
+
+const mapServiceToSkill = (service: string | null): string => {
+  if (!service) return '';
+  switch (service.toLowerCase()) {
+    case 'elderly-care':
+      return 'Chăm sóc người cao tuổi';
+    case 'child-care':
+      return 'Chăm sóc trẻ em';
+    case 'home-care':
+      return 'Chăm sóc tại nhà';
+    case 'post-treatment-care':
+      return 'Chăm sóc sau điều trị';
+    default:
+      return service;
+  }
 };
 
 const optionalNumber = (value: string): number | undefined =>
@@ -67,13 +79,12 @@ export const CaregiversPage: React.FC = () => {
     let active = true;
     const filters: CaregiverFilters = {
       keyword: appliedFilters.keyword.trim() || undefined,
-      minExperience: optionalNumber(appliedFilters.minExperience),
       minPrice: optionalNumber(appliedFilters.minPrice),
       maxPrice: optionalNumber(appliedFilters.maxPrice),
       area: appliedFilters.area.trim() || undefined,
       skill: appliedFilters.skill.trim() || undefined,
       page,
-      limit: Number(appliedFilters.limit),
+      limit: 9,
       sortBy: appliedFilters.sortBy,
       order: 'desc',
     };
@@ -161,20 +172,6 @@ export const CaregiversPage: React.FC = () => {
                 </div>
               </label>
 
-              <label className="caregiver-filter-field">
-                <span>Kinh nghiệm tối thiểu</span>
-                <div className="caregiver-filter-input-wrap">
-                  <input
-                    type="number"
-                    min="0"
-                    value={formValues.minExperience}
-                    onChange={(event) => updateField('minExperience', event.target.value)}
-                    placeholder="0"
-                  />
-                  <span className="filter-unit">năm</span>
-                </div>
-              </label>
-
               {/* 5. Giá tối thiểu */}
               <label className="caregiver-filter-field">
                 <span>Giá tối thiểu</span>
@@ -208,22 +205,6 @@ export const CaregiversPage: React.FC = () => {
               </label>
 
               <label className="caregiver-filter-field">
-                <span>Đánh giá tối thiểu</span>
-                <div className="caregiver-filter-input-wrap">
-                  <input
-                    type="number"
-                    min="0"
-                    max="5"
-                    step="0.1"
-                    value={formValues.minRating}
-                    onChange={(event) => updateField('minRating', event.target.value)}
-                    placeholder="0 - 5"
-                  />
-                  <span className="filter-unit">/ 5</span>
-                </div>
-              </label>
-
-              <label className="caregiver-filter-field">
                 <span>Khu vực</span>
                 <input
                   value={formValues.area}
@@ -252,30 +233,6 @@ export const CaregiversPage: React.FC = () => {
                   <option value="experienceYears">Kinh nghiệm</option>
                   <option value="ratingAvg">Đánh giá</option>
                   <option value="reviewCount">Số lượt đánh giá</option>
-                </select>
-              </label>
-
-              <label className="caregiver-filter-field">
-                <span>Thứ tự</span>
-                <select
-                  value={formValues.order}
-                  onChange={(event) => updateField('order', event.target.value as 'asc' | 'desc')}
-                >
-                  <option value="desc">Giảm dần</option>
-                  <option value="asc">Tăng dần</option>
-                </select>
-              </label>
-
-              <label className="caregiver-filter-field caregiver-page-size">
-                <span>Số kết quả mỗi trang</span>
-                <select
-                  value={formValues.limit}
-                  onChange={(event) => updateField('limit', event.target.value)}
-                >
-                  <option value="6">6</option>
-                  <option value="9">9</option>
-                  <option value="12">12</option>
-                  <option value="24">24</option>
                 </select>
               </label>
 

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CalendarClock, CheckCircle2, Clock3, MapPin, RefreshCw, UserRound, XCircle, Heart, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { CaregiverHeader } from '../components/CaregiverHeader';
+import { CaregiverHeader } from '../components/CaregiverHeaderComponent';
 import { useAuth } from '../context/AuthContext';
 import { getMyAcceptedCareRequests, updateCareRequestStatus } from '../services/careRequestService';
 import { CareRequestItem } from '../types/careRequest';
