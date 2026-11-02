@@ -1,4 +1,4 @@
-/* HomePage.css - Modern, Spacious, Responsive Healthcare Layout */
+/* HomePage.css - Modern, Spacious, Responsive Healthcare Layout matching CareLink Design System */
 
 .home-page-container {
   min-height: 100vh;
@@ -118,14 +118,14 @@
   font-weight: 700;
   border-radius: 9999px;
   text-decoration: none;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.28);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
 }
 
 .hero-btn-primary:hover {
   background-color: #1d4ed8;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.38);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
 .hero-btn-secondary {
@@ -133,26 +133,26 @@
   align-items: center;
   padding: 15px 30px;
   background-color: #ffffff;
-  border: 1.5px solid #bfdbfe;
-  color: #2563eb;
+  color: #0f172a;
+  border: 1.5px solid #cbd5e1;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 9999px;
   text-decoration: none;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .hero-btn-secondary:hover {
-  background-color: #eff6ff;
-  border-color: #93c5fd;
-  color: #1d4ed8;
+  background-color: #f8fafc;
+  border-color: #94a3b8;
   transform: translateY(-2px);
 }
 
 .home-hero-features {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 32px;
   flex-wrap: wrap;
 }
 
@@ -166,54 +166,45 @@
 }
 
 .feature-check-icon {
-  color: #16a34a;
-  fill: #dcfce7;
+  color: #2563eb;
   flex-shrink: 0;
 }
 
 /* ==========================================================================
-   3. Floating Search Bar: Expanded full width with generous spacing
+   3. Floating Search Bar: Overlapping bottom of Hero banner
    ========================================================================== */
 .floating-search-bar-container {
-  margin-top: -46px;
-  margin-bottom: 56px;
   position: relative;
-  z-index: 20;
+  margin-top: -50px;
+  margin-bottom: 56px;
+  z-index: 10;
   width: 100%;
 }
 
 .floating-search-bar {
   background-color: #ffffff;
-  border: 1px solid #dbeafe;
   border-radius: 9999px;
-  padding: 16px 24px 16px 36px;
-  box-shadow: 0 18px 46px -8px rgba(15, 23, 42, 0.12), 0 4px 16px -2px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 10px 36px rgba(13, 40, 71, 0.12);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 12px 14px 12px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  width: 100%;
-  transition: all 0.2s ease;
-}
-
-.floating-search-bar:focus-within {
-  border-color: #93c5fd;
-  box-shadow: 0 20px 48px -8px rgba(37, 99, 235, 0.14), 0 0 0 3px rgba(37, 99, 235, 0.1);
+  gap: 16px;
 }
 
 .search-field-item {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   flex: 1;
-  position: relative;
-  cursor: pointer;
   min-width: 0;
+  padding: 4px 8px;
 }
 
 .search-field-icon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background-color: #eff6ff;
   color: #2563eb;
@@ -226,15 +217,17 @@
 .search-field-texts {
   display: flex;
   flex-direction: column;
-  flex: 1;
   min-width: 0;
+  flex: 1;
 }
 
 .search-field-label {
-  font-size: 12.5px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   color: #64748b;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 
 .search-select-wrapper {
@@ -251,7 +244,7 @@
   background: transparent;
   padding: 0 24px 0 0;
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: #0f172a;
   cursor: pointer;
@@ -303,8 +296,33 @@
 }
 
 /* ==========================================================================
-   Common Section Headers
+   Common Section Title Wrap
    ========================================================================== */
+.section-title-wrap {
+  margin-bottom: 24px;
+}
+
+.section-pill-tag {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  background-color: #e0f2fe;
+  color: #0369a1;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+
+.section-main-heading {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.6px;
+  margin: 0;
+}
+
 .home-section-header {
   display: flex;
   align-items: flex-end;
@@ -314,18 +332,10 @@
   flex-wrap: wrap;
 }
 
-.home-section-title {
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--text-main);
-  letter-spacing: -0.5px;
-  margin: 0;
-}
-
 .home-section-subtitle {
   font-size: 15px;
-  color: var(--text-muted);
-  margin: 5px 0 0 0;
+  color: #64748b;
+  margin: 6px 0 0 0;
   font-weight: 400;
 }
 
@@ -335,165 +345,220 @@
   gap: 8px;
   font-size: 15px;
   font-weight: 700;
-  color: var(--color-primary-700);
+  color: #1d4ed8;
   text-decoration: none;
-  transition: all var(--transition-fast);
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .home-section-link:hover {
-  color: var(--color-primary-800);
+  color: #1e40af;
   gap: 11px;
 }
 
 /* ==========================================================================
-   4. Service Categories: 4 evenly distributed columns, larger cards
+   4. Section: DANH MỤC DỊCH VỤ - Các dịch vụ chăm sóc nổi bật
    ========================================================================== */
-.services-category-grid {
+.services-highlight-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  gap: 22px;
   margin-bottom: 56px;
 }
 
-.service-cat-card {
-  background-color: var(--surface-white);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xl);
-  padding: 32px 22px;
+.service-card-item {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  min-height: 190px;
-  box-shadow: var(--elevation-low);
+  text-decoration: none;
   outline: none;
 }
 
-.service-cat-card:hover {
-  background-color: var(--color-primary-50);
-  border-color: var(--color-primary-200);
+.service-card-item:hover {
   transform: translateY(-4px);
-  box-shadow: var(--elevation-md);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.09);
+  border-color: #cbd5e1;
 }
 
-.service-cat-card:focus-visible {
-  box-shadow: var(--focus-ring);
-  border-color: var(--color-primary-600);
+.service-card-photo-wrap {
+  width: 100%;
+  height: 185px;
+  overflow: hidden;
+  position: relative;
+  background-color: #f1f5f9;
 }
 
-.service-cat-icon-wrapper {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
+.service-card-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.service-card-item:hover .service-card-photo {
+  transform: scale(1.04);
+}
+
+.service-card-content {
+  padding: 16px 18px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+}
+
+.service-card-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform var(--transition-fast);
-  margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
-.service-cat-card:hover .service-cat-icon-wrapper {
-  transform: scale(1.08);
+.service-card-text {
+  flex: 1;
+  min-width: 0;
 }
 
-.service-cat-title {
-  font-size: 17.5px;
+.service-card-name {
+  font-size: 16px;
   font-weight: 700;
-  color: var(--text-main);
-  margin: 0;
-  line-height: 1.35;
+  color: #0f172a;
+  margin: 0 0 3px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.service-cat-subtitle {
+.service-card-desc {
   font-size: 13px;
-  color: var(--text-muted);
+  color: #64748b;
   margin: 0;
-  line-height: 1.45;
-  max-width: 220px;
+  line-height: 1.4;
 }
 
-/* ==========================================================================
-   5. Call to Action Banner "Đăng yêu cầu chăm sóc ngay"
-   ========================================================================== */
-.post-request-banner {
-  background: #edf5fe;
-  border: 1px solid #c7ddfb;
-  border-radius: 22px;
-  padding: 28px 44px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 28px;
-  margin-bottom: 56px;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.04);
-}
-
-.post-request-left {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
-
-.post-request-icon-box {
-  width: 60px;
-  height: 60px;
-  border-radius: 16px;
-  background-color: #ffffff;
-  border: 1.5px solid #bfdbfe;
+.service-card-arrow-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid #dbeafe;
+  background: #f8fbff;
   color: #2563eb;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
   flex-shrink: 0;
-}
-
-.post-request-title {
-  font-size: 20px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0 0 4px 0;
-}
-
-.post-request-subtitle {
-  font-size: 15px;
-  color: #475569;
-  margin: 0;
-}
-
-.post-request-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 15px 34px;
-  border-radius: 9999px;
-  background-color: #1d4ed8;
-  color: #ffffff;
-  font-size: 15.5px;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
-.post-request-btn:hover {
-  background-color: #1e40af;
-  transform: translateY(-1px);
-  gap: 12px;
-  box-shadow: 0 6px 18px rgba(29, 78, 216, 0.35);
+.service-card-item:hover .service-card-arrow-btn {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  transform: translateX(2px);
 }
 
 /* ==========================================================================
-   6. Featured Caregivers Section (3 wide columns)
+   5. Section: QUY TRÌNH SỬ DỤNG - Chỉ 4 bước đơn giản
+   ========================================================================== */
+.workflow-section {
+  margin-bottom: 56px;
+}
+
+.workflow-cards-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.workflow-card-step {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 34px 18px 22px;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+  transition: all 0.25s ease;
+}
+
+.workflow-card-step:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  border-color: #cbd5e1;
+}
+
+.workflow-card-number {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(29, 78, 216, 0.35);
+}
+
+.workflow-card-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  transition: transform 0.2s ease;
+}
+
+.workflow-card-step:hover .workflow-card-icon-wrap {
+  transform: scale(1.08);
+}
+
+.workflow-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.workflow-card-desc {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.workflow-card-arrow {
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 2px;
+}
+
+/* ==========================================================================
+   6. Section: Người chăm sóc nổi bật
    ========================================================================== */
 .featured-caregivers-grid {
   display: grid;
@@ -642,288 +707,197 @@
 }
 
 /* ==========================================================================
-   7. Quy trình sử dụng CareLink (Flowchart 3 steps)
+   7. Section: CÂU HỎI THƯỜNG GẶP - Những câu hỏi thường gặp
    ========================================================================== */
-.workflow-section {
-  margin-bottom: 40px;
+.faq-section {
+  margin-bottom: 56px;
 }
 
-.workflow-steps-box {
-  background-color: #ffffff;
+.faq-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 20px;
+  margin-top: 24px;
+}
+
+.faq-card-item {
+  background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 22px;
-  padding: 44px 64px;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+}
+
+.faq-card-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.faq-card-item.open {
+  border-color: #bfdbfe;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.07);
+}
+
+.faq-card-trigger {
+  width: 100%;
+  padding: 18px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  gap: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  outline: none;
 }
 
-.workflow-step-item {
+.faq-trigger-left {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
+  gap: 12px;
   flex: 1;
-  position: relative;
 }
 
-.workflow-step-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  background-color: var(--color-primary-100);
-  color: var(--color-primary-700);
-  font-size: 11.5px;
+.faq-question-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 12px;
+  flex-shrink: 0;
+  border: 1.5px solid #dbeafe;
 }
 
-.workflow-step-icon {
+.faq-question-text {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.4;
+}
+
+.faq-chevron {
+  color: #2563eb;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.faq-card-item.open .faq-chevron {
+  transform: rotate(180deg);
+}
+
+.faq-card-content {
+  padding: 0 20px 18px 60px;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+  animation: faqFadeIn 0.2s ease-out;
+}
+
+@keyframes faqFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   8. Section: Pre-Footer CTA: Bạn đang cần người chăm sóc?
+   ========================================================================== */
+.home-banner-cta-container {
+  margin-bottom: 56px;
+}
+
+.home-banner-cta-card {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e1effe 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 26px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: 0 4px 18px rgba(37, 99, 235, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-banner-cta-left {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  position: relative;
+  z-index: 2;
+}
+
+.home-banner-cta-icon-box {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
-  background-color: #eff6ff;
+  border-radius: 16px;
+  background: #ffffff;
   border: 1.5px solid #bfdbfe;
   color: #2563eb;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
-  transition: transform 0.2s ease;
-}
-
-.workflow-step-item:hover .workflow-step-icon {
-  transform: scale(1.1);
-  background-color: #dbeafe;
-}
-
-.workflow-step-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 6px 0;
-}
-
-.workflow-step-desc {
-  font-size: 14px;
-  color: #64748b;
-  margin: 0;
-}
-
-.workflow-arrow-divider {
-  color: #94a3b8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.12);
 }
 
-/* ==========================================================================
-   8. Trust & Safety Section
-   ========================================================================== */
-.home-trust-section {
-  background-color: var(--surface-white);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-2xl);
-  padding: 48px 44px;
-  margin-bottom: 56px;
-  box-shadow: var(--elevation-low);
-}
-
-.home-trust-header {
-  text-align: center;
-  max-width: 680px;
-  margin: 0 auto 40px;
-}
-
-.home-trust-tag {
-  display: inline-block;
-  padding: 6px 16px;
-  border-radius: var(--radius-full);
-  background-color: var(--color-accent-teal-subtle);
-  color: var(--color-accent-teal);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  margin-bottom: 12px;
-}
-
-.home-trust-heading {
-  font-size: 28px;
+.home-banner-cta-title {
+  font-size: 22px;
   font-weight: 800;
-  color: var(--text-main);
-  letter-spacing: -0.6px;
-  margin: 0 0 10px;
+  color: #0f172a;
+  margin: 0 0 5px 0;
+  letter-spacing: -0.3px;
 }
 
-.home-trust-desc {
-  font-size: 15.5px;
-  color: var(--text-muted);
-  line-height: 1.55;
+.home-banner-cta-subtitle {
+  font-size: 14.5px;
+  color: #475569;
   margin: 0;
+  line-height: 1.45;
 }
 
-.home-trust-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-}
-
-.home-trust-card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 24px 20px;
-  background-color: var(--surface-subtle);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-subtle);
-  transition: all var(--transition-fast);
-}
-
-.home-trust-card:hover {
-  background-color: var(--surface-white);
-  border-color: var(--border-focus);
-  box-shadow: var(--elevation-md);
-  transform: translateY(-2px);
-}
-
-.home-trust-icon-box {
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-lg);
-  background-color: var(--color-primary-100);
-  color: var(--color-primary-700);
-  display: flex;
+.home-banner-cta-btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.home-trust-title {
-  font-size: 17px;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 9999px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 15px;
   font-weight: 700;
-  color: var(--text-main);
-  margin: 0 0 8px;
-}
-
-.home-trust-text {
-  font-size: 13.5px;
-  color: var(--text-body);
-  line-height: 1.55;
-  margin: 0;
-}
-
-/* ==========================================================================
-   9. Bottom Pre-Footer CTA Banner
-   ========================================================================== */
-.home-bottom-cta-section {
-  margin-bottom: 40px;
-}
-
-.home-bottom-cta-box {
-  background: var(--color-primary-900);
-  border-radius: var(--radius-2xl);
-  padding: 56px 44px;
-  color: var(--text-inverse);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 14px 34px -4px rgba(12, 35, 64, 0.25);
-}
-
-.home-bottom-cta-content {
-  max-width: 720px;
-  margin: 0 auto;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
   position: relative;
   z-index: 2;
 }
 
-.home-bottom-cta-badge {
-  display: inline-block;
-  padding: 6px 18px;
-  border-radius: var(--radius-full);
-  background-color: rgba(255, 255, 255, 0.12);
-  color: var(--color-primary-200);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  margin-bottom: 16px;
-  backdrop-filter: blur(4px);
-}
-
-.home-bottom-cta-heading {
-  font-size: clamp(28px, 2.5vw, 36px);
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.6px;
-  margin: 0 0 12px;
-  line-height: 1.25;
-}
-
-.home-bottom-cta-desc {
-  font-size: 16px;
-  color: var(--color-primary-200);
-  line-height: 1.6;
-  margin: 0 auto 32px;
-  max-width: 600px;
-}
-
-.home-bottom-cta-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.cta-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
-  border-radius: var(--radius-full);
-  background-color: #ffffff;
-  color: var(--color-primary-700);
-  font-size: 15.5px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: all var(--transition-fast);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-}
-
-.cta-btn-primary:hover {
-  background-color: var(--color-primary-100);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
-}
-
-.cta-btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 28px;
-  border-radius: var(--radius-full);
-  background-color: transparent;
-  border: 1.5px solid var(--color-primary-200);
-  color: #ffffff;
-  font-size: 15.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.cta-btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: #ffffff;
-  transform: translateY(-2px);
+.home-banner-cta-btn:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(29, 78, 216, 0.4);
+  gap: 12px;
 }
 
 /* ==========================================================================
-   10. Responsive Breakpoints
+   Responsive Breakpoints
    ========================================================================== */
 @media (max-width: 1400px) {
   .home-content-wrapper,
@@ -953,7 +927,7 @@
     opacity: 0.25;
   }
 
-  .services-category-grid {
+  .services-highlight-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 18px;
   }
@@ -983,14 +957,33 @@
     justify-content: center;
   }
 
-  .workflow-steps-box {
-    padding: 32px 24px;
+  .workflow-cards-row {
+    flex-wrap: wrap;
     gap: 20px;
   }
 
-  .home-trust-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+  .workflow-card-step {
+    min-width: calc(50% - 10px);
+  }
+
+  .workflow-card-arrow {
+    display: none;
+  }
+
+  .faq-grid-2col {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .home-banner-cta-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+  }
+
+  .home-banner-cta-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
@@ -1048,8 +1041,13 @@
     padding: 0 16px 60px;
   }
 
-  .services-category-grid {
+  .services-highlight-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .workflow-card-step {
+    min-width: 100%;
   }
 
   .featured-caregivers-grid {
@@ -1060,48 +1058,9 @@
     min-width: 100%;
   }
 
-  .post-request-banner {
+  .home-banner-cta-left {
     flex-direction: column;
     align-items: flex-start;
-    padding: 22px;
-  }
-
-  .post-request-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .workflow-steps-box {
-    flex-direction: column;
-    gap: 28px;
-    padding: 28px 20px;
-  }
-
-  .workflow-arrow-divider {
-    transform: rotate(90deg);
-  }
-
-  .home-trust-section {
-    padding: 32px 20px;
-  }
-
-  .home-trust-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .home-bottom-cta-box {
-    padding: 40px 20px;
-  }
-
-  .home-bottom-cta-actions {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .cta-btn-primary,
-  .cta-btn-secondary {
-    width: 100%;
-    justify-content: center;
+    gap: 14px;
   }
 }
