@@ -14,6 +14,7 @@ export interface CreateBookingInput {
 }
 
 export interface CaregiverBookingInfo {
+  profileId?: string;
   accountId: string;
   fullName: string;
   avatarUrl: string;
@@ -73,6 +74,7 @@ export interface Booking {
     fullName: string;
     phone?: string;
   } | null;
+  caregiver?: CaregiverBookingInfo | null;
 }
 
 export interface BookingNotification {

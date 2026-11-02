@@ -14,6 +14,7 @@ import {
   LogOut,
   User as UserIcon,
   Calendar,
+  History,
   ChevronDown,
   Menu,
   X,
@@ -215,6 +216,7 @@ export const Navbar = () => {
               fontWeight: 800,
               color: '#0f172a',
               letterSpacing: '-0.5px',
+              fontFamily: 'var(--font-family)',
             }}
           >
             Care<span style={{ color: '#2563eb' }}>Link</span>
@@ -622,6 +624,33 @@ export const Navbar = () => {
                         type="button"
                         onClick={() => {
                           setDropdownOpen(false);
+                          navigate('/my-bookings');
+                        }}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: '#334155',
+                          fontSize: '13.5px',
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <History size={16} className="text-blue-600" />
+                        <span>Lịch sử người chăm sóc</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDropdownOpen(false);
                           navigate('/my-care-requests');
                         }}
                         style={{
@@ -829,6 +858,21 @@ export const Navbar = () => {
                 })}
               >
                 Yêu cầu của tôi
+              </NavLink>
+              <NavLink
+                to="/my-bookings"
+                onClick={() => setMobileMenuOpen(false)}
+                style={({ isActive }) => ({
+                  fontSize: '15px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#1d4ed8' : '#334155',
+                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                })}
+              >
+                Lịch sử người chăm sóc
               </NavLink>
               <NavLink
                 to="/bookings"

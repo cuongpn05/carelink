@@ -8,8 +8,7 @@
 
 .caregivers-page-heading .container {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 430px);
-  gap: 48px;
+  grid-template-columns: minmax(0, 1fr);
   align-items: end;
 }
 
@@ -29,36 +28,6 @@
   font-size: 16px;
 }
 
-.caregiver-search {
-  display: flex;
-  min-width: 0;
-  height: 54px;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 6px 6px 16px;
-  background: #fff;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  color: var(--text-muted);
-}
-
-.caregiver-search input {
-  width: 100%;
-  min-width: 0;
-  height: 100%;
-  border: 0;
-  outline: 0;
-  color: var(--text-primary);
-  background: transparent;
-  font: inherit;
-}
-
-.caregiver-search input::placeholder {
-  color: var(--text-light);
-}
-
-.caregiver-search button,
 .caregivers-state-error button {
   min-height: 40px;
   padding: 0 17px;
@@ -71,7 +40,6 @@
   transition: background-color 0.2s ease;
 }
 
-.caregiver-search button:hover,
 .caregivers-state-error button:hover {
   background: var(--primary-hover);
 }

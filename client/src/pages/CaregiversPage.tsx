@@ -15,28 +15,20 @@ import './CaregiversPage.css';
 
 interface FilterFormValues {
   keyword: string;
-  minExperience: string;
   minPrice: string;
   maxPrice: string;
-  minRating: string;
   area: string;
   skill: string;
   sortBy: CaregiverSortField;
-  order: 'asc' | 'desc';
-  limit: string;
 }
 
 const emptyFilters: FilterFormValues = {
   keyword: '',
-  minExperience: '',
   minPrice: '',
   maxPrice: '',
-  minRating: '',
   area: '',
   skill: '',
   sortBy: 'createdAt',
-  order: 'desc',
-  limit: '9',
 };
 
 const optionalNumber = (value: string): number | undefined =>
@@ -61,16 +53,14 @@ export const CaregiversPage: React.FC = () => {
     let active = true;
     const filters: CaregiverFilters = {
       keyword: appliedFilters.keyword.trim() || undefined,
-      minExperience: optionalNumber(appliedFilters.minExperience),
       minPrice: optionalNumber(appliedFilters.minPrice),
       maxPrice: optionalNumber(appliedFilters.maxPrice),
-      minRating: optionalNumber(appliedFilters.minRating),
       area: appliedFilters.area.trim() || undefined,
       skill: appliedFilters.skill.trim() || undefined,
       page,
-      limit: Number(appliedFilters.limit),
+      limit: 9,
       sortBy: appliedFilters.sortBy,
-      order: appliedFilters.order,
+      order: 'desc',
     };
 
     const loadCaregivers = async () => {
@@ -107,14 +97,9 @@ export const CaregiversPage: React.FC = () => {
     event.preventDefault();
     const minPrice = optionalNumber(formValues.minPrice);
     const maxPrice = optionalNumber(formValues.maxPrice);
-    const minRating = optionalNumber(formValues.minRating);
 
     if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
       setValidationError('Giá tối thiểu không được lớn hơn giá tối đa.');
-      return;
-    }
-    if (minRating !== undefined && (minRating < 0 || minRating > 5)) {
-      setValidationError('Đánh giá phải nằm trong khoảng 0 đến 5.');
       return;
     }
 
@@ -140,7 +125,7 @@ export const CaregiversPage: React.FC = () => {
               <span className="tag-badge">ĐỘI NGŨ ĐÃ XÁC MINH</span>
               <h1>Chọn người chăm sóc phù hợp</h1>
               <p>
-                Lọc hồ sơ theo kinh nghiệm, mức phí, đánh giá, khu vực và kỹ năng.
+                Tìm người chăm sóc theo tên hoặc lọc theo mức phí, khu vực và kỹ năng.
               </p>
             </div>
           </div>
@@ -149,29 +134,14 @@ export const CaregiversPage: React.FC = () => {
         <section className="caregivers-filter-section">
           <div className="container">
             <form className="caregivers-filter-form" onSubmit={handleApplyFilters}>
-              <label className="caregiver-filter-field caregiver-filter-keyword">
+              <label className="caregiver-filter-field">
                 <span>Tên người chăm sóc</span>
                 <div className="caregiver-filter-input-wrap">
-                  <Search size={17} aria-hidden="true" />
                   <input
                     value={formValues.keyword}
                     onChange={(event) => updateField('keyword', event.target.value)}
-                    placeholder="Ví dụ: An"
+                    placeholder="Nhập tên cần tìm"
                   />
-                </div>
-              </label>
-
-              <label className="caregiver-filter-field">
-                <span>Kinh nghiệm tối thiểu</span>
-                <div className="caregiver-filter-input-wrap">
-                  <input
-                    type="number"
-                    min="0"
-                    value={formValues.minExperience}
-                    onChange={(event) => updateField('minExperience', event.target.value)}
-                    placeholder="0"
-                  />
-                  <span className="filter-unit">năm</span>
                 </div>
               </label>
 
@@ -200,22 +170,6 @@ export const CaregiversPage: React.FC = () => {
                     placeholder="Không giới hạn"
                   />
                   <span className="filter-unit">đ/giờ</span>
-                </div>
-              </label>
-
-              <label className="caregiver-filter-field">
-                <span>Đánh giá tối thiểu</span>
-                <div className="caregiver-filter-input-wrap">
-                  <input
-                    type="number"
-                    min="0"
-                    max="5"
-                    step="0.1"
-                    value={formValues.minRating}
-                    onChange={(event) => updateField('minRating', event.target.value)}
-                    placeholder="0 - 5"
-                  />
-                  <span className="filter-unit">/ 5</span>
                 </div>
               </label>
 
@@ -251,34 +205,10 @@ export const CaregiversPage: React.FC = () => {
                 </select>
               </label>
 
-              <label className="caregiver-filter-field">
-                <span>Thứ tự</span>
-                <select
-                  value={formValues.order}
-                  onChange={(event) => updateField('order', event.target.value as 'asc' | 'desc')}
-                >
-                  <option value="desc">Giảm dần</option>
-                  <option value="asc">Tăng dần</option>
-                </select>
-              </label>
-
-              <label className="caregiver-filter-field caregiver-page-size">
-                <span>Số kết quả mỗi trang</span>
-                <select
-                  value={formValues.limit}
-                  onChange={(event) => updateField('limit', event.target.value)}
-                >
-                  <option value="6">6</option>
-                  <option value="9">9</option>
-                  <option value="12">12</option>
-                  <option value="24">24</option>
-                </select>
-              </label>
-
               <div className="caregiver-filter-actions">
                 <button className="caregiver-filter-submit" type="submit">
                   <Search size={17} aria-hidden="true" />
-                  Lọc danh sách
+                  Tìm kiếm
                 </button>
                 <button className="caregiver-filter-reset" type="button" onClick={handleResetFilters}>
                   Xóa bộ lọc
