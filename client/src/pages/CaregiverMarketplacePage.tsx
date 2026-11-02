@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { CaregiverHeader } from '../components/CaregiverHeader';
+import { CaregiverHeader } from '../components/CaregiverHeaderComponent';
 import {
   getOpenCareRequests,
   acceptCareRequest,
