@@ -14,6 +14,7 @@ import { Caregiver } from '../types';
 import './CaregiversPage.css';
 
 interface FilterFormValues {
+  keyword: string;
   minExperience: string;
   minPrice: string;
   maxPrice: string;
@@ -23,28 +24,15 @@ interface FilterFormValues {
 }
 
 const emptyFilters: FilterFormValues = {
+  keyword: '',
   minExperience: '',
   minPrice: '',
   maxPrice: '',
   area: '',
   skill: '',
   sortBy: 'createdAt',
-};
-
-const mapServiceToSkill = (service: string | null): string => {
-  if (!service) return '';
-  switch (service.toLowerCase()) {
-    case 'elderly-care':
-      return 'Chăm sóc người cao tuổi';
-    case 'child-care':
-      return 'Chăm sóc trẻ em';
-    case 'home-care':
-      return 'Chăm sóc tại nhà';
-    case 'post-treatment-care':
-      return 'Chăm sóc sau điều trị';
-    default:
-      return service;
-  }
+  order: 'desc',
+  limit: '9',
 };
 
 const optionalNumber = (value: string): number | undefined =>
@@ -78,13 +66,14 @@ export const CaregiversPage: React.FC = () => {
   useEffect(() => {
     let active = true;
     const filters: CaregiverFilters = {
+      keyword: appliedFilters.keyword.trim() || undefined,
       minExperience: optionalNumber(appliedFilters.minExperience),
       minPrice: optionalNumber(appliedFilters.minPrice),
       maxPrice: optionalNumber(appliedFilters.maxPrice),
       area: appliedFilters.area.trim() || undefined,
       skill: appliedFilters.skill.trim() || undefined,
       page,
-      limit: 12,
+      limit: Number(appliedFilters.limit),
       sortBy: appliedFilters.sortBy,
       order: 'desc',
     };
@@ -151,7 +140,7 @@ export const CaregiversPage: React.FC = () => {
               <span className="tag-badge">ĐỘI NGŨ ĐÃ XÁC MINH</span>
               <h1>Chọn người chăm sóc phù hợp</h1>
               <p>
-                Lọc hồ sơ theo khu vực, kỹ năng chuyên môn, kinh nghiệm và mức phí dự kiến.
+                Lọc hồ sơ theo kinh nghiệm, mức phí, đánh giá, khu vực và kỹ năng.
               </p>
             </div>
           </div>
@@ -160,92 +149,18 @@ export const CaregiversPage: React.FC = () => {
         <section className="caregivers-filter-section">
           <div className="container">
             <form className="caregivers-filter-form" onSubmit={handleApplyFilters}>
-              {/* 1. Khu vực (Smart Categorized Select) */}
-              <label className="caregiver-filter-field">
-                <span>Khu vực</span>
-                <select
-                  value={formValues.area}
-                  onChange={(event) => updateField('area', event.target.value)}
-                  className="caregiver-filter-select"
-                >
-                  <option value="">Tất cả khu vực</option>
-                  <optgroup label="Cần Thơ">
-                    <option value="Cần Thơ">Toàn thành phố Cần Thơ</option>
-                    <option value="Ninh Kiều">Quận Ninh Kiều</option>
-                    <option value="Bình Thủy">Quận Bình Thủy</option>
-                    <option value="Cái Răng">Quận Cái Răng</option>
-                    <option value="Ô Môn">Quận Ô Môn</option>
-                    <option value="Thốt Nốt">Quận Thốt Nốt</option>
-                    <option value="Phong Điền">Huyện Phong Điền</option>
-                  </optgroup>
-                  <optgroup label="TP. Hồ Chí Minh">
-                    <option value="TP. Hồ Chí Minh">Toàn TP. Hồ Chí Minh</option>
-                    <option value="Quận 1">Quận 1</option>
-                    <option value="Quận 3">Quận 3</option>
-                    <option value="Quận 7">Quận 7</option>
-                    <option value="Bình Thạnh">Quận Bình Thạnh</option>
-                    <option value="Thủ Đức">TP. Thủ Đức</option>
-                    <option value="Tân Bình">Quận Tân Bình</option>
-                    <option value="Gò Vấp">Quận Gò Vấp</option>
-                  </optgroup>
-                  <optgroup label="Hà Nội">
-                    <option value="Hà Nội">Toàn TP. Hà Nội</option>
-                    <option value="Ba Đình">Quận Ba Đình</option>
-                    <option value="Hoàn Kiếm">Quận Hoàn Kiếm</option>
-                    <option value="Đống Đa">Quận Đống Đa</option>
-                    <option value="Cầu Giấy">Quận Cầu Giấy</option>
-                    <option value="Hai Bà Trưng">Quận Hai Bà Trưng</option>
-                  </optgroup>
-                  <optgroup label="Đà Nẵng">
-                    <option value="Đà Nẵng">Toàn TP. Đà Nẵng</option>
-                    <option value="Hải Châu">Quận Hải Châu</option>
-                    <option value="Sơn Trà">Quận Sơn Trà</option>
-                    <option value="Thanh Khê">Quận Thanh Khê</option>
-                    <option value="Ngũ Hành Sơn">Quận Ngũ Hành Sơn</option>
-                  </optgroup>
-                </select>
+              <label className="caregiver-filter-field caregiver-filter-keyword">
+                <span>Tên người chăm sóc</span>
+                <div className="caregiver-filter-input-wrap">
+                  <Search size={17} aria-hidden="true" />
+                  <input
+                    value={formValues.keyword}
+                    onChange={(event) => updateField('keyword', event.target.value)}
+                    placeholder="Ví dụ: An"
+                  />
+                </div>
               </label>
 
-              {/* 2. Kỹ năng chuyên môn (Dropdown Select) */}
-              <label className="caregiver-filter-field">
-                <span>Kỹ năng chuyên môn</span>
-                <select
-                  value={formValues.skill}
-                  onChange={(event) => updateField('skill', event.target.value)}
-                  className="caregiver-filter-select"
-                >
-                  <option value="">Tất cả kỹ năng</option>
-                  <option value="Chăm sóc người cao tuổi">Chăm sóc người cao tuổi</option>
-                  <option value="Chăm sóc trẻ em">Chăm sóc trẻ em</option>
-                  <option value="Chăm sóc tại nhà">Chăm sóc tại nhà</option>
-                  <option value="Chăm sóc sau điều trị">Chăm sóc sau điều trị</option>
-                  <option value="Chăm bệnh nhân tại viện">Chăm bệnh nhân tại viện</option>
-                  <option value="Vật lý trị liệu">Vật lý trị liệu & Phục hồi chức năng</option>
-                  <option value="Đo sinh hiệu">Đo sinh hiệu (Huyết áp, đường huyết)</option>
-                  <option value="Chăm sóc vết thương">Chăm sóc vết thương & Thay băng</option>
-                  <option value="Hỗ trợ sinh hoạt">Hỗ trợ sinh hoạt & Vệ sinh cá nhân</option>
-                  <option value="Hỗ trợ đi lại">Hỗ trợ đi lại & Vận động</option>
-                  <option value="Nấu ăn">Nấu ăn dinh dưỡng y khoa</option>
-                </select>
-              </label>
-
-              {/* 3. Sắp xếp theo */}
-              <label className="caregiver-filter-field">
-                <span>Sắp xếp theo</span>
-                <select
-                  value={formValues.sortBy}
-                  onChange={(event) => updateField('sortBy', event.target.value as CaregiverSortField)}
-                  className="caregiver-filter-select"
-                >
-                  <option value="createdAt">Mới nhất</option>
-                  <option value="ratingAvg">Đánh giá cao nhất</option>
-                  <option value="hourlyRate">Mức giá</option>
-                  <option value="experienceYears">Kinh nghiệm nhiều nhất</option>
-                  <option value="reviewCount">Số lượt đánh giá</option>
-                </select>
-              </label>
-
-              {/* 4. Kinh nghiệm tối thiểu */}
               <label className="caregiver-filter-field">
                 <span>Kinh nghiệm tối thiểu</span>
                 <div className="caregiver-filter-input-wrap">
@@ -292,11 +207,82 @@ export const CaregiversPage: React.FC = () => {
                 </div>
               </label>
 
-              {/* Actions */}
+              <label className="caregiver-filter-field">
+                <span>Đánh giá tối thiểu</span>
+                <div className="caregiver-filter-input-wrap">
+                  <input
+                    type="number"
+                    min="0"
+                    max="5"
+                    step="0.1"
+                    value={formValues.minRating}
+                    onChange={(event) => updateField('minRating', event.target.value)}
+                    placeholder="0 - 5"
+                  />
+                  <span className="filter-unit">/ 5</span>
+                </div>
+              </label>
+
+              <label className="caregiver-filter-field">
+                <span>Khu vực</span>
+                <input
+                  value={formValues.area}
+                  onChange={(event) => updateField('area', event.target.value)}
+                  placeholder="Ví dụ: Ninh Kieu"
+                />
+              </label>
+
+              <label className="caregiver-filter-field">
+                <span>Kỹ năng</span>
+                <input
+                  value={formValues.skill}
+                  onChange={(event) => updateField('skill', event.target.value)}
+                  placeholder="Ví dụ: Chăm sóc người cao tuổi"
+                />
+              </label>
+
+              <label className="caregiver-filter-field">
+                <span>Sắp xếp theo</span>
+                <select
+                  value={formValues.sortBy}
+                  onChange={(event) => updateField('sortBy', event.target.value as CaregiverSortField)}
+                >
+                  <option value="createdAt">Mới nhất</option>
+                  <option value="hourlyRate">Giá dịch vụ</option>
+                  <option value="experienceYears">Kinh nghiệm</option>
+                  <option value="ratingAvg">Đánh giá</option>
+                  <option value="reviewCount">Số lượt đánh giá</option>
+                </select>
+              </label>
+
+              <label className="caregiver-filter-field">
+                <span>Thứ tự</span>
+                <select
+                  value={formValues.order}
+                  onChange={(event) => updateField('order', event.target.value as 'asc' | 'desc')}
+                >
+                  <option value="desc">Giảm dần</option>
+                  <option value="asc">Tăng dần</option>
+                </select>
+              </label>
+
+              <label className="caregiver-filter-field caregiver-page-size">
+                <span>Số kết quả mỗi trang</span>
+                <select
+                  value={formValues.limit}
+                  onChange={(event) => updateField('limit', event.target.value)}
+                >
+                  <option value="6">6</option>
+                  <option value="9">9</option>
+                  <option value="12">12</option>
+                  <option value="24">24</option>
+                </select>
+              </label>
+
               <div className="caregiver-filter-actions">
                 <button className="caregiver-filter-submit" type="submit">
-                  <Search size={16} aria-hidden="true" />
-                  <span>Lọc danh sách</span>
+                  <Search size={17} aria-hidden="true" />
+                  Lọc danh sách
                 </button>
                 <button className="caregiver-filter-reset" type="button" onClick={handleResetFilters}>
                   <RotateCcw size={15} aria-hidden="true" />

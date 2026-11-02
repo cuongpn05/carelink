@@ -1,10 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { CalendarClock, CheckCircle2, Clock3, MapPin, RefreshCw, Bell } from 'lucide-react';
+import {
+  Bell,
+  CalendarClock,
+  CheckCircle2,
+  Clock3,
+  MapPin,
+  RotateCcw,
+  RefreshCw,
+  Star,
+  UserRound,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer/Footer';
+import { CaregiverDetailModal } from '../components/Modal/CaregiverDetailModal';
 import { useAuth } from '../context/AuthContext';
+import { getCaregiverById } from '../services/caregiverService';
 import {
   Booking,
   BookingNotification,
@@ -12,6 +24,7 @@ import {
   getCustomerBookings,
   markBookingNotificationRead,
 } from '../services/bookingService';
+import { Caregiver } from '../types';
 import './MyBookingsPage.css';
 
 const formatDate = (value: string) =>
@@ -54,6 +67,8 @@ export const MyBookingsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [readingId, setReadingId] = useState<string | null>(null);
+  const [rebookingId, setRebookingId] = useState<string | null>(null);
+  const [selectedCaregiver, setSelectedCaregiver] = useState<Caregiver | null>(null);
 
   const loadBookings = useCallback(async () => {
     setLoading(true);
@@ -125,6 +140,27 @@ export const MyBookingsPage: React.FC = () => {
     }
   };
 
+  const handleRebook = async (booking: Booking) => {
+    const caregiverProfileId = booking.caregiver?.profileId;
+    if (!caregiverProfileId) {
+      toast.error('Không tìm thấy hồ sơ người chăm sóc cho lịch này.');
+      return;
+    }
+
+    setRebookingId(booking._id);
+    try {
+      setSelectedCaregiver(await getCaregiverById(caregiverProfileId));
+    } catch (requestError) {
+      toast.error(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Không thể tải hồ sơ người chăm sóc.',
+      );
+    } finally {
+      setRebookingId(null);
+    }
+  };
+
   return (
     <div className="my-bookings-layout">
       <Navbar />
@@ -132,8 +168,8 @@ export const MyBookingsPage: React.FC = () => {
         <div className="container">
           <header className="my-bookings-heading">
             <span className="tag-badge">TÀI KHOẢN KHÁCH HÀNG</span>
-            <h1>Lịch của tôi</h1>
-            <p>Theo dõi lịch đã đặt và thông báo xác nhận từ người chăm sóc.</p>
+            <h1>Lịch sử người chăm sóc</h1>
+            <p>Xem lại người chăm sóc bạn đã đặt cùng thông tin và trạng thái từng lịch.</p>
           </header>
 
           <section className="my-bookings-section" aria-live="polite">
@@ -173,7 +209,7 @@ export const MyBookingsPage: React.FC = () => {
           <section className="my-bookings-section">
             <div className="my-bookings-section-heading">
               <div>
-                <h2>Lịch đã đặt</h2>
+                <h2>Lịch sử đặt lịch</h2>
                 <p>{bookings.length} lịch</p>
               </div>
               <button
@@ -217,6 +253,31 @@ export const MyBookingsPage: React.FC = () => {
                   </span>
                 </div>
 
+                <div className="my-booking-caregiver">
+                  {booking.caregiver?.avatarUrl ? (
+                    <img
+                      src={booking.caregiver.avatarUrl}
+                      alt={booking.caregiver.fullName || 'Người chăm sóc'}
+                    />
+                  ) : (
+                    <div className="my-booking-caregiver-avatar-placeholder" aria-hidden="true">
+                      <UserRound size={20} />
+                    </div>
+                  )}
+                  <div className="my-booking-caregiver-info">
+                    <span>Người chăm sóc</span>
+                    <strong>{booking.caregiver?.fullName || 'Chưa có thông tin'}</strong>
+                    {booking.caregiver && (
+                      <span className="my-booking-caregiver-rating">
+                        <Star size={14} fill="currentColor" />
+                        {booking.caregiver.ratingAvg.toFixed(1)}
+                        {' · '}
+                        {booking.caregiver.experienceYears} năm kinh nghiệm
+                      </span>
+                    )}
+                  </div>
+                </div>
+
                 <div className="my-booking-details">
                   <p><Clock3 size={17} /> Kết thúc {formatDate(booking.endTime)}</p>
                   <p><MapPin size={17} /> {booking.serviceAddress}{booking.serviceArea ? `, ${booking.serviceArea}` : ''}</p>
@@ -234,6 +295,17 @@ export const MyBookingsPage: React.FC = () => {
                 <footer className="my-booking-footer">
                   <span>Tổng phí</span>
                   <strong>{formatPrice(booking.totalPrice)}</strong>
+                  {booking.caregiver?.profileId && (
+                    <button
+                      type="button"
+                      className="my-booking-rebook"
+                      onClick={() => void handleRebook(booking)}
+                      disabled={rebookingId === booking._id}
+                    >
+                      <RotateCcw size={16} />
+                      {rebookingId === booking._id ? 'Đang tải...' : 'Đặt lại dịch vụ này'}
+                    </button>
+                  )}
                 </footer>
               </article>
             ))}
@@ -241,6 +313,11 @@ export const MyBookingsPage: React.FC = () => {
         </div>
       </main>
       <Footer />
+      <CaregiverDetailModal
+        caregiver={selectedCaregiver}
+        onClose={() => setSelectedCaregiver(null)}
+        startWithBookingForm
+      />
     </div>
   );
 };

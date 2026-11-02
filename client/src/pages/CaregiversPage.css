@@ -17,8 +17,9 @@
 }
 
 .caregivers-page-heading .container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
 }
 
 .caregivers-page-copy h1 {
@@ -34,8 +35,23 @@
   max-width: 650px;
   margin-top: 10px;
   color: var(--text-secondary);
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 16px;
+}
+
+.caregivers-state-error button {
+  min-height: 40px;
+  padding: 0 17px;
+  border-radius: 7px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.caregivers-state-error button:hover {
+  background: var(--primary-hover);
 }
 
 .caregivers-filter-section {

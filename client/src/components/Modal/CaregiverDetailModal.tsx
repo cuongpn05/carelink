@@ -27,11 +27,13 @@ const packageUnitByType: Record<BookingPackage, string> = {
 interface CaregiverDetailModalProps {
   caregiver: Caregiver | null;
   onClose: () => void;
+  startWithBookingForm?: boolean;
 }
 
 export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({ 
   caregiver, 
-  onClose 
+  onClose,
+  startWithBookingForm = false,
 }) => {
   const { account, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -77,7 +79,7 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
 
     let active = true;
     setDetailCaregiver(caregiver);
-    setBookingFormOpen(false);
+    setBookingFormOpen(startWithBookingForm);
     setCreatedBooking(null);
     setBookingError('');
     setDetailLoading(true);
@@ -102,7 +104,7 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
     return () => {
       active = false;
     };
-  }, [caregiver, retryCount]);
+  }, [caregiver, retryCount, startWithBookingForm]);
 
   const displayedCaregiver = caregiver
     ? detailCaregiver?.id === caregiver.id ? detailCaregiver : caregiver

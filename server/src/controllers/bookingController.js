@@ -53,6 +53,7 @@ const enrichBooking = async (booking, viewerAccountId) => {
       : null,
     caregiver: caregiverProfile
       ? {
+          profileId: caregiverProfile._id,
           accountId: caregiverAccount?._id || caregiverAccountId,
           fullName: caregiverProfile.fullName || caregiverUser?.fullName || '',
           avatarUrl: caregiverProfile.avatarUrl || caregiverUser?.avatarUrl || '',
@@ -360,11 +361,14 @@ const getCustomerBookings = async (req, res) => {
     const bookings = await Booking.find({ customerId: req.account._id }).sort({
       startTime: -1,
     });
+    const enrichedBookings = await Promise.all(
+      bookings.map((booking) => enrichBooking(booking, req.account._id)),
+    );
 
     return res.status(200).json({
       success: true,
       message: 'Lấy danh sách lịch của bạn thành công.',
-      data: bookings,
+      data: enrichedBookings,
     });
   } catch (error) {
     console.error('getCustomerBookings error:', error);

@@ -127,6 +127,62 @@
   font-size: 13px;
 }
 
+.my-booking-caregiver {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.my-booking-caregiver > img,
+.my-booking-caregiver-avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+}
+
+.my-booking-caregiver > img {
+  object-fit: cover;
+}
+
+.my-booking-caregiver-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.my-booking-caregiver-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.my-booking-caregiver-info > span:first-child {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.my-booking-caregiver-info strong {
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.my-booking-caregiver-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.my-booking-caregiver-rating svg {
+  color: #f59e0b;
+}
+
 .my-booking-status {
   padding: 6px 10px;
   border-radius: 999px;
@@ -187,7 +243,8 @@
 }
 
 .my-booking-footer {
-  justify-content: flex-start;
+  flex-wrap: wrap;
+  align-items: center;
   padding-top: 14px;
   border-top: 1px solid #f1f5f9;
   color: #64748b;
@@ -197,6 +254,32 @@
 .my-booking-footer strong {
   color: #0f172a;
   font-size: 19px;
+}
+
+.my-booking-rebook {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  margin-left: auto;
+  padding: 0 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 9px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.my-booking-rebook:hover {
+  background: #dbeafe;
+}
+
+.my-booking-rebook:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 .my-bookings-error {
