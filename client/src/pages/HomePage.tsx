@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import { Footer } from '../components/Footer/Footer';
 import { CaregiverDetailModal } from '../components/Modal/CaregiverDetailModal';
 import { PostCareRequestModal } from '../components/PostCareRequestModal';
+import { RatingStars } from '../components/common';
 import { getCaregivers } from '../services/caregiverService';
 import { Caregiver } from '../types';
 import heroBg from '../assets/hero-bg.png';
@@ -15,7 +16,6 @@ import {
   ArrowRight,
   Clock,
   Home,
-  Plus,
   Users,
   FileCheck2,
   FileText,
@@ -23,6 +23,13 @@ import {
   ChevronRight,
   CheckCircle2,
   ChevronDown,
+  Baby,
+  HeartHandshake,
+  Activity,
+  Star,
+  Headphones,
+  Shield,
+  Sparkles,
 } from 'lucide-react';
 import './HomePage.css';
 
@@ -95,6 +102,11 @@ const SCREENSHOT_DEFAULT_CAREGIVERS: Caregiver[] = [
     isAvailable: true,
   },
 ];
+
+const formatVND = (amount?: number) => {
+  if (!amount) return 'Liên hệ';
+  return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
+};
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -218,7 +230,7 @@ export const HomePage: React.FC = () => {
             {/* Field 1: Loại chăm sóc */}
             <div className="search-field-item">
               <div className="search-field-icon">
-                <Heart size={22} fill="#2563eb" color="#2563eb" />
+                <Heart size={22} fill="var(--color-primary-600)" color="var(--color-primary-600)" />
               </div>
               <div className="search-field-texts">
                 <span className="search-field-label">Loại chăm sóc</span>
@@ -301,12 +313,15 @@ export const HomePage: React.FC = () => {
           </form>
         </section>
 
-        {/* 4. Section: Danh mục dịch vụ */}
+        {/* 4. Section: Danh mục dịch vụ (Lucide SVG Icons & Subtitles) */}
         <section className="home-section" aria-label="Danh mục dịch vụ">
           <div className="home-section-header">
-            <h2 className="home-section-title">Danh mục dịch vụ</h2>
+            <div>
+              <h2 className="home-section-title">Danh mục dịch vụ</h2>
+              <p className="home-section-subtitle">Lựa chọn giải pháp chăm sóc phù hợp nhất với nhu cầu của gia đình bạn</p>
+            </div>
             <Link to="/services" className="home-section-link">
-              <span>Xem tất cả</span>
+              <span>Xem tất cả dịch vụ</span>
               <ArrowRight size={16} />
             </Link>
           </div>
@@ -318,14 +333,14 @@ export const HomePage: React.FC = () => {
               onClick={() => handleSelectCategory('elderly-care')}
               role="button"
               tabIndex={0}
+              aria-label="Chọn dịch vụ Chăm sóc người cao tuổi"
               onKeyDown={(e) => e.key === 'Enter' && handleSelectCategory('elderly-care')}
             >
-              <div className="service-cat-icon-wrapper" style={{ backgroundColor: '#e0f2fe' }}>
-                <span style={{ fontSize: '28px', lineHeight: 1 }}>👵👴</span>
+              <div className="service-cat-icon-wrapper" style={{ backgroundColor: 'var(--color-primary-100)', color: 'var(--color-primary-700)' }}>
+                <HeartHandshake size={32} strokeWidth={2.2} />
               </div>
-              <h3 className="service-cat-title">
-                Chăm sóc <br /> người cao tuổi
-              </h3>
+              <h3 className="service-cat-title">Chăm sóc người cao tuổi</h3>
+              <p className="service-cat-subtitle">Tận tâm, an toàn, hỗ trợ sinh hoạt & vận động</p>
             </div>
 
             {/* Card 2: Chăm sóc trẻ em */}
@@ -334,12 +349,14 @@ export const HomePage: React.FC = () => {
               onClick={() => handleSelectCategory('child-care')}
               role="button"
               tabIndex={0}
+              aria-label="Chọn dịch vụ Chăm sóc trẻ em"
               onKeyDown={(e) => e.key === 'Enter' && handleSelectCategory('child-care')}
             >
-              <div className="service-cat-icon-wrapper" style={{ backgroundColor: '#fef3c7' }}>
-                <span style={{ fontSize: '28px', lineHeight: 1 }}>👶</span>
+              <div className="service-cat-icon-wrapper" style={{ backgroundColor: 'var(--color-warning-bg)', color: 'var(--color-warning)' }}>
+                <Baby size={32} strokeWidth={2.2} />
               </div>
               <h3 className="service-cat-title">Chăm sóc trẻ em</h3>
+              <p className="service-cat-subtitle">Tắm bé, rèn nếp sinh hoạt & dinh dưỡng chu đáo</p>
             </div>
 
             {/* Card 3: Chăm sóc tại nhà */}
@@ -348,12 +365,14 @@ export const HomePage: React.FC = () => {
               onClick={() => handleSelectCategory('home-care')}
               role="button"
               tabIndex={0}
+              aria-label="Chọn dịch vụ Chăm sóc tại nhà"
               onKeyDown={(e) => e.key === 'Enter' && handleSelectCategory('home-care')}
             >
-              <div className="service-cat-icon-wrapper" style={{ backgroundColor: '#e0f2fe', color: '#2563eb' }}>
-                <Home size={30} fill="#2563eb" color="#2563eb" />
+              <div className="service-cat-icon-wrapper" style={{ backgroundColor: 'var(--color-primary-100)', color: 'var(--color-primary-600)' }}>
+                <Home size={32} strokeWidth={2.2} />
               </div>
               <h3 className="service-cat-title">Chăm sóc tại nhà</h3>
+              <p className="service-cat-subtitle">Linh hoạt theo ca giờ hoặc trọn gói hàng ngày</p>
             </div>
 
             {/* Card 4: Chăm sóc sau điều trị */}
@@ -362,25 +381,14 @@ export const HomePage: React.FC = () => {
               onClick={() => handleSelectCategory('post-treatment-care')}
               role="button"
               tabIndex={0}
+              aria-label="Chọn dịch vụ Chăm sóc sau điều trị"
               onKeyDown={(e) => e.key === 'Enter' && handleSelectCategory('post-treatment-care')}
             >
-              <div className="service-cat-icon-wrapper" style={{ backgroundColor: '#e0f2fe', color: '#0284c7' }}>
-                <div
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
-                    backgroundColor: '#0284c7',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#ffffff',
-                  }}
-                >
-                  <Plus size={22} strokeWidth={3} />
-                </div>
+              <div className="service-cat-icon-wrapper" style={{ backgroundColor: 'var(--color-accent-teal-subtle)', color: 'var(--color-accent-teal)' }}>
+                <Activity size={32} strokeWidth={2.2} />
               </div>
               <h3 className="service-cat-title">Chăm sóc sau điều trị</h3>
+              <p className="service-cat-subtitle">Theo dõi sinh hiệu, phục hồi sức khỏe xuất viện</p>
             </div>
           </div>
         </section>
@@ -413,7 +421,10 @@ export const HomePage: React.FC = () => {
         {/* 6. Section: Quy trình sử dụng CareLink (Được đưa lên trên Người chăm sóc nổi bật) */}
         <section className="workflow-section" aria-label="Quy trình sử dụng">
           <div className="home-section-header">
-            <h2 className="home-section-title">Quy trình sử dụng CareLink</h2>
+            <div>
+              <h2 className="home-section-title">Quy trình sử dụng CareLink</h2>
+              <p className="home-section-subtitle">Chỉ 3 bước đơn giản để tìm kiếm và xác nhận người chăm sóc chu đáo</p>
+            </div>
             <Link to="/about" className="home-section-link">
               <span>Tìm hiểu thêm</span>
               <ArrowRight size={16} />
@@ -423,11 +434,12 @@ export const HomePage: React.FC = () => {
           <div className="workflow-steps-box">
             {/* Step 1 */}
             <div className="workflow-step-item">
+              <div className="workflow-step-badge">Bước 1</div>
               <div className="workflow-step-icon">
                 <FileText size={24} />
               </div>
               <h4 className="workflow-step-title">1. Đăng yêu cầu</h4>
-              <p className="workflow-step-desc">Mô tả nhu cầu chăm sóc</p>
+              <p className="workflow-step-desc">Mô tả nhu cầu, độ tuổi và thời gian cần chăm sóc</p>
             </div>
 
             {/* Arrow Divider */}
@@ -437,11 +449,12 @@ export const HomePage: React.FC = () => {
 
             {/* Step 2 */}
             <div className="workflow-step-item">
+              <div className="workflow-step-badge">Bước 2</div>
               <div className="workflow-step-icon">
                 <Users size={24} />
               </div>
               <h4 className="workflow-step-title">2. Caregiver tiếp nhận</h4>
-              <p className="workflow-step-desc">Xem và phản hồi</p>
+              <p className="workflow-step-desc">Xem xét hồ sơ, kinh nghiệm và phản hồi nhanh chóng</p>
             </div>
 
             {/* Arrow Divider */}
@@ -451,11 +464,12 @@ export const HomePage: React.FC = () => {
 
             {/* Step 3 */}
             <div className="workflow-step-item">
+              <div className="workflow-step-badge">Bước 3</div>
               <div className="workflow-step-icon">
                 <ShieldCheck size={24} />
               </div>
-              <h4 className="workflow-step-title">3. Xác nhận dịch vụ</h4>
-              <p className="workflow-step-desc">Bắt đầu chăm sóc</p>
+              <h4 className="workflow-step-title">3. Bắt đầu chăm sóc</h4>
+              <p className="workflow-step-desc">Xác nhận dịch vụ an toàn và đồng hành tận tâm</p>
             </div>
           </div>
         </section>
@@ -463,9 +477,12 @@ export const HomePage: React.FC = () => {
         {/* 7. Section: Người chăm sóc nổi bật */}
         <section className="home-section" aria-label="Người chăm sóc nổi bật">
           <div className="home-section-header">
-            <h2 className="home-section-title">Người chăm sóc nổi bật</h2>
+            <div>
+              <h2 className="home-section-title">Người chăm sóc nổi bật</h2>
+              <p className="home-section-subtitle">Đội ngũ điều dưỡng viên và người chăm sóc được xác thực chuyên môn cao</p>
+            </div>
             <Link to="/caregivers" className="home-section-link">
-              <span>Xem tất cả</span>
+              <span>Xem tất cả người chăm sóc</span>
               <ArrowRight size={16} />
             </Link>
           </div>
@@ -473,19 +490,43 @@ export const HomePage: React.FC = () => {
           <div className="featured-caregivers-grid">
             {featuredCaregivers.map((cg) => (
               <div key={cg.id} className="caregiver-custom-card">
-                <div className="caregiver-card-top">
-                  <img
-                    src={cg.avatar}
-                    alt={cg.name}
-                    className="caregiver-avatar-round"
-                  />
-                  <div className="caregiver-info-box">
-                    <h3 className="caregiver-card-name">{cg.name}</h3>
-                    <p className="caregiver-card-role">{cg.title}</p>
-                    <div className="caregiver-card-exp">
-                      <Clock size={13} className="text-slate-400" />
-                      <span>Kinh nghiệm: {cg.experienceYears} năm</span>
+                <div>
+                  <div className="caregiver-card-top">
+                    <img
+                      src={cg.avatar}
+                      alt={cg.name}
+                      className="caregiver-avatar-round"
+                    />
+                    <div className="caregiver-info-box">
+                      <div className="caregiver-name-row">
+                        <h3 className="caregiver-card-name">{cg.name}</h3>
+                        <span title="Đã xác thực hồ sơ" className="caregiver-verified-icon-wrap">
+                          <CheckCircle2 size={16} className="caregiver-verified-icon" />
+                        </span>
+                      </div>
+                      <p className="caregiver-card-role">{cg.title}</p>
+                      <div className="caregiver-card-rating">
+                        <RatingStars rating={cg.rating} reviewCount={cg.reviewCount} size={14} />
+                      </div>
                     </div>
+                  </div>
+
+                  <div className="caregiver-card-meta">
+                    <div className="caregiver-meta-item">
+                      <Clock size={14} className="text-slate-400" />
+                      <span>Kinh nghiệm: <strong>{cg.experienceYears} năm</strong></span>
+                    </div>
+                    <div className="caregiver-meta-item">
+                      <MapPin size={14} className="text-slate-400" />
+                      <span>{cg.location || 'TP. Hồ Chí Minh'}</span>
+                    </div>
+                  </div>
+
+                  <div className="caregiver-price-row">
+                    <span className="caregiver-price-label">Giá dịch vụ:</span>
+                    <span className="caregiver-price-val">
+                      {formatVND(cg.pricing?.hourlyRate || cg.hourlyRate)} / giờ
+                    </span>
                   </div>
                 </div>
 
@@ -494,25 +535,105 @@ export const HomePage: React.FC = () => {
                   className="caregiver-detail-pill-btn"
                   onClick={() => setSelectedCaregiver(cg)}
                 >
-                  <span>Xem chi tiết</span>
+                  <span>Xem chi tiết & Đặt lịch</span>
                   <ArrowRight size={14} />
                 </button>
               </div>
             ))}
           </div>
         </section>
+
+        {/* 8. Section: Cam kết an tâm & Giá trị cốt lõi (Trust & Safety) */}
+        <section className="home-trust-section" aria-label="Cam kết an tâm từ CareLink">
+          <div className="home-trust-header">
+            <span className="home-trust-tag">AN TÂM TUYỆT ĐỐI</span>
+            <h2 className="home-trust-heading">Vì sao hàng nghìn gia đình tin chọn CareLink?</h2>
+            <p className="home-trust-desc">
+              Sức khỏe và sự an toàn của người thân là ưu tiên cao nhất. Chúng tôi kiểm soát chất lượng nghiêm ngặt ở từng bước.
+            </p>
+          </div>
+
+          <div className="home-trust-grid">
+            <div className="home-trust-card">
+              <div className="home-trust-icon-box">
+                <ShieldCheck size={26} />
+              </div>
+              <h3 className="home-trust-title">Xác thực 100% hồ sơ</h3>
+              <p className="home-trust-text">
+                Toàn bộ người chăm sóc đều được kiểm tra CCCD, sơ yếu lý lịch và chứng chỉ chuyên môn y tế trước khi nhận việc.
+              </p>
+            </div>
+
+            <div className="home-trust-card">
+              <div className="home-trust-icon-box">
+                <Star size={26} />
+              </div>
+              <h3 className="home-trust-title">Đánh giá thật & Minh bạch</h3>
+              <p className="home-trust-text">
+                Hệ thống chấm điểm uy tín (Reputation Score) và nhận xét thực tế từ các gia đình sau mỗi ca hoàn thành.
+              </p>
+            </div>
+
+            <div className="home-trust-card">
+              <div className="home-trust-icon-box">
+                <Clock size={26} />
+              </div>
+              <h3 className="home-trust-title">Linh hoạt theo nhu cầu</h3>
+              <p className="home-trust-text">
+                Dễ dàng đặt lịch theo ca giờ, theo ngày hoặc chăm sóc dài hạn với mức chi phí rõ ràng, không phát sinh phụ phí.
+              </p>
+            </div>
+
+            <div className="home-trust-card">
+              <div className="home-trust-icon-box">
+                <Headphones size={26} />
+              </div>
+              <h3 className="home-trust-title">Đồng hành & Hỗ trợ 24/7</h3>
+              <p className="home-trust-text">
+                Đội ngũ chăm sóc khách hàng và chuyên viên y tế luôn sẵn sàng hỗ trợ giải đáp và xử lý mọi tình huống phát sinh.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* 9. Section: Bottom Pre-Footer CTA */}
+        <section className="home-bottom-cta-section" aria-label="Bắt đầu cùng CareLink">
+          <div className="home-bottom-cta-box">
+            <div className="home-bottom-cta-content">
+              <span className="home-bottom-cta-badge">KẾT NỐI NGAY HÔM NAY</span>
+              <h2 className="home-bottom-cta-heading">Sẵn sàng chăm sóc sức khỏe cho người thân yêu?</h2>
+              <p className="home-bottom-cta-desc">
+                Tìm người chăm sóc phù hợp ngay trong khu vực của bạn hoặc đăng yêu cầu để nhận phản hồi nhanh chóng.
+              </p>
+              <div className="home-bottom-cta-actions">
+                <Link to="/caregivers" className="cta-btn-primary">
+                  <span>Tìm người chăm sóc</span>
+                  <ArrowRight size={18} />
+                </Link>
+                <button
+                  type="button"
+                  className="cta-btn-secondary"
+                  onClick={() => setIsPostModalOpen(true)}
+                >
+                  <FileCheck2 size={18} />
+                  <span>Đăng yêu cầu chăm sóc</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
-      {/* 8. Footer */}
+      {/* 10. Footer */}
       <Footer />
 
-      {/* 9. Caregiver Detail Modal for direct booking */}
+      {/* 11. Caregiver Detail Modal for direct booking */}
       <CaregiverDetailModal
         caregiver={selectedCaregiver}
         onClose={() => setSelectedCaregiver(null)}
       />
 
-      {/* 10. Post Care Request Modal */}
+      {/* 12. Post Care Request Modal */}
       <PostCareRequestModal
         isOpen={isPostModalOpen}
         onClose={() => setIsPostModalOpen(false)}

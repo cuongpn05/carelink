@@ -342,8 +342,8 @@
   .filter-row-top {
     grid-template-columns: 1fr;
   }
+
   .marketplace-grid {
     grid-template-columns: 1fr;
   }
 }
-
