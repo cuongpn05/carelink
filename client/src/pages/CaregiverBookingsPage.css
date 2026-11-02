@@ -1,7 +1,8 @@
 .caregiver-bookings-page {
   min-height: 65vh;
   padding: 48px 0 72px;
-  background: #f8fafc;
+  background: var(--surface-subtle);
+  font-family: var(--font-family);
 }
 
 .caregiver-bookings-heading {
@@ -10,14 +11,15 @@
 
 .caregiver-bookings-heading h1 {
   margin-top: 12px;
-  color: #0f172a;
+  color: var(--text-main);
   font-size: 32px;
   font-weight: 800;
+  letter-spacing: -0.6px;
 }
 
 .caregiver-bookings-heading p {
   margin-top: 7px;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .caregiver-bookings-list {
