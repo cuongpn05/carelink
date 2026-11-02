@@ -216,13 +216,6 @@ export const Navbar = () => {
             Người chăm sóc
           </NavLink>
 
-          <NavLink
-            to="/about"
-            className={({ isActive }) => `navbar-nav-link ${isActive ? 'active' : ''}`}
-          >
-            Về chúng tôi
-          </NavLink>
-
           {isAuthenticated && account?.role === 'CUSTOMER' && (
             <>
               <NavLink
@@ -642,13 +635,6 @@ export const Navbar = () => {
             className={({ isActive }) => `navbar-mobile-link ${isActive ? 'active' : ''}`}
           >
             Người chăm sóc
-          </NavLink>
-          <NavLink
-            to="/about"
-            onClick={() => setMobileMenuOpen(false)}
-            className={({ isActive }) => `navbar-mobile-link ${isActive ? 'active' : ''}`}
-          >
-            Về chúng tôi
           </NavLink>
 
           {isAuthenticated && account?.role === 'CUSTOMER' && (

@@ -26,6 +26,8 @@ import {
   Check,
   Search,
   MapPin,
+  ShieldCheck,
+  Headphones,
 } from 'lucide-react';
 import './HomePage.css';
 
@@ -550,6 +552,61 @@ export const HomePage: React.FC = () => {
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        {/* 8. Section: VỀ CARELINK - Sứ mệnh chăm sóc sức khỏe gia đình Việt */}
+        <section className="home-section home-about-section" aria-label="Về CareLink">
+          <div className="section-title-wrap home-about-title-wrap">
+            <span className="section-pill-tag">VỀ CARELINK</span>
+            <h2 className="section-main-heading">Sứ mệnh chăm sóc sức khỏe gia đình Việt</h2>
+            <p className="home-about-desc">
+              CareLink ra đời với mục tiêu giải quyết bài toán chăm sóc người thân trong nhịp sống hiện đại. Chúng tôi ứng dụng công nghệ để kết nối các gia đình với đội ngũ người chăm sóc, điều dưỡng viên uy tín, được kiểm duyệt lý lịch và đào tạo chuyên môn bài bản.
+            </p>
+          </div>
+
+          <div className="home-about-trust-box">
+            <div className="home-about-trust-grid">
+              <div className="home-about-trust-item">
+                <div className="home-about-icon-wrap">
+                  <ShieldCheck size={22} className="home-about-icon" />
+                </div>
+                <div className="home-about-text">
+                  <h4 className="home-about-title">An toàn & Bảo mật</h4>
+                  <p className="home-about-subtitle">Thông tin cá nhân được bảo vệ tuyệt đối.</p>
+                </div>
+              </div>
+
+              <div className="home-about-trust-item">
+                <div className="home-about-icon-wrap">
+                  <Clock size={22} className="home-about-icon" />
+                </div>
+                <div className="home-about-text">
+                  <h4 className="home-about-title">Đặt lịch linh hoạt</h4>
+                  <p className="home-about-subtitle">Dễ dàng chọn thời gian phù hợp với nhu cầu.</p>
+                </div>
+              </div>
+
+              <div className="home-about-trust-item">
+                <div className="home-about-icon-wrap">
+                  <Users size={22} className="home-about-icon" />
+                </div>
+                <div className="home-about-text">
+                  <h4 className="home-about-title">Đội ngũ chuyên nghiệp</h4>
+                  <p className="home-about-subtitle">Được đào tạo và kiểm tra kỹ lưỡng.</p>
+                </div>
+              </div>
+
+              <div className="home-about-trust-item">
+                <div className="home-about-icon-wrap">
+                  <Headphones size={22} className="home-about-icon" />
+                </div>
+                <div className="home-about-text">
+                  <h4 className="home-about-title">Hỗ trợ 24/7</h4>
+                  <p className="home-about-subtitle">Luôn sẵn sàng đồng hành cùng bạn.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
