@@ -75,7 +75,7 @@ const enrichCareRequest = async (doc, viewerAccountId = null) => {
 };
 
 /**
- * 1. Customer: Đăng yêu cầu chăm sóc mới (Status: OPEN)
+ * 1. Customer: Đăng yêu cầu chăm sóc mới (Status: OPEN) - Simplified Flow
  */
 const createCareRequest = async (req, res) => {
   try {
@@ -87,28 +87,36 @@ const createCareRequest = async (req, res) => {
       location,
       schedule,
       expectedBudget,
+      budgetUnit = 'PER_DAY',
       specialRequirements,
     } = req.body;
 
-    // Validation cơ bản
-    if (!serviceCategory || !title || !description) {
+    const validCategories = ['elderly-care', 'child-care', 'home-care', 'post-treatment-care'];
+    if (!serviceCategory || !validCategories.includes(serviceCategory)) {
       return res.status(400).json({
         success: false,
-        message: 'Vui lòng cung cấp danh mục dịch vụ, tiêu đề và mô tả chi tiết.',
+        message: 'Vui lòng chọn loại dịch vụ chăm sóc hợp lệ.',
       });
     }
 
-    if (!recipient || !recipient.name || recipient.age === undefined || !recipient.relationship) {
+    if (!description || description.trim().length < 10) {
       return res.status(400).json({
         success: false,
-        message: 'Vui lòng điền đầy đủ thông tin người được chăm sóc (Họ tên, tuổi, mối quan hệ).',
+        message: 'Vui lòng mô tả chi tiết nhu cầu chăm sóc và tình trạng sức khỏe (ít nhất 10 ký tự).',
       });
     }
 
-    if (!location || !location.address || !location.area) {
+    if (!recipient || recipient.age === undefined || recipient.age === null || Number(recipient.age) < 0) {
       return res.status(400).json({
         success: false,
-        message: 'Vui lòng nhập địa chỉ cụ thể và khu vực / quận cần chăm sóc.',
+        message: 'Vui lòng cung cấp độ tuổi hợp lệ của người được chăm sóc.',
+      });
+    }
+
+    if (!location || !location.area) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng chọn hoặc nhập khu vực (quận/huyện) cần chăm sóc.',
       });
     }
 
@@ -126,31 +134,43 @@ const createCareRequest = async (req, res) => {
       });
     }
 
-    const validCategories = ['elderly-care', 'child-care', 'home-care', 'post-treatment-care'];
-    if (!validCategories.includes(serviceCategory)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Loại dịch vụ chăm sóc không hợp lệ.',
-      });
-    }
+    // Tự động tạo tiêu đề nếu người dùng không nhập thủ công
+    const categoryDisplayNames = {
+      'elderly-care': 'Chăm sóc người cao tuổi',
+      'child-care': 'Chăm sóc trẻ em',
+      'home-care': 'Chăm sóc tại nhà',
+      'post-treatment-care': 'Chăm sóc sau điều trị',
+    };
+    const catLabel = categoryDisplayNames[serviceCategory] || 'Chăm sóc sức khỏe';
+    const ageText = recipient?.age !== undefined ? `${recipient.age} tuổi` : '';
+    const locText = [location?.area, location?.city].filter(Boolean).join(', ');
+    const autoTitle = title?.trim() || `${catLabel}${ageText ? ` (${ageText})` : ''} tại ${locText || 'Cần Thơ'}`;
+
+    // Bảo vệ quyền riêng tư: Tên và quan hệ mặc định thân thiện, địa chỉ chi tiết không ép buộc
+    const defaultRecipientName =
+      serviceCategory === 'elderly-care'
+        ? 'Người cao tuổi'
+        : serviceCategory === 'child-care'
+        ? 'Bé'
+        : 'Người cần chăm sóc';
 
     // Tạo bản ghi mới với trạng thái OPEN
     const newRequest = new CareRequest({
       customerId: req.account._id,
       serviceCategory,
-      title: title.trim(),
+      title: autoTitle,
       description: description.trim(),
       recipient: {
-        name: recipient.name.trim(),
+        name: recipient.name?.trim() || defaultRecipientName,
         age: Number(recipient.age),
         gender: recipient.gender || 'FEMALE',
-        relationship: recipient.relationship.trim(),
+        relationship: recipient.relationship?.trim() || 'Gia đình',
         conditionNotes: recipient.conditionNotes ? recipient.conditionNotes.trim() : '',
       },
       location: {
-        address: location.address.trim(),
+        address: location.address?.trim() || locText || location.area.trim(),
         area: location.area.trim(),
-        city: location.city ? location.city.trim() : 'TP. Hồ Chí Minh',
+        city: location.city ? location.city.trim() : 'Cần Thơ',
       },
       schedule: {
         startDate: new Date(schedule.startDate),
@@ -160,6 +180,7 @@ const createCareRequest = async (req, res) => {
         frequency: schedule.frequency || 'DAILY',
       },
       expectedBudget: Number(expectedBudget),
+      budgetUnit: ['PER_DAY', 'PER_HOUR', 'PER_MONTH', 'TOTAL'].includes(budgetUnit) ? budgetUnit : 'PER_DAY',
       specialRequirements: Array.isArray(specialRequirements)
         ? specialRequirements.filter(Boolean).map((s) => String(s).trim())
         : [],

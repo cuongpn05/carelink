@@ -138,6 +138,21 @@ export const MyCareRequestsPage: React.FC = () => {
     }).format(num);
   };
 
+  const formatBudgetDisplay = (amount: number, unit?: string) => {
+    const formatted = formatVND(amount);
+    switch (unit) {
+      case 'PER_HOUR':
+        return `${formatted} / giờ`;
+      case 'PER_MONTH':
+        return `${formatted} / tháng`;
+      case 'TOTAL':
+        return `${formatted} (Trọn gói)`;
+      case 'PER_DAY':
+      default:
+        return `${formatted} / ngày`;
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
@@ -270,14 +285,19 @@ export const MyCareRequestsPage: React.FC = () => {
                       <div className="info-item">
                         <User size={14} />
                         <span>
-                          <strong>{item.recipient.name}</strong> ({item.recipient.age} tuổi -{' '}
-                          {item.recipient.relationship})
+                          <strong>{item.recipient.age} tuổi</strong>
+                          {item.recipient.gender && item.recipient.gender !== 'OTHER'
+                            ? ` (${item.recipient.gender === 'MALE' ? 'Nam' : 'Nữ'})`
+                            : ''}
+                          {item.recipient.name && !['Người thân', 'Người cao tuổi', 'Bé', 'Người cần chăm sóc'].includes(item.recipient.name)
+                            ? ` • ${item.recipient.name}`
+                            : ''}
                         </span>
                       </div>
                       <div className="info-item">
                         <MapPin size={14} />
                         <span>
-                          {item.location.address}, {item.location.area}
+                          {item.location.area}, {item.location.city || 'Cần Thơ'}
                         </span>
                       </div>
                       <div className="info-item">
@@ -328,7 +348,7 @@ export const MyCareRequestsPage: React.FC = () => {
                   <div className="card-actions">
                     <div className="budget-highlight">
                       <span className="budget-label">Ngân sách dự kiến</span>
-                      <span className="budget-val">{formatVND(item.expectedBudget)}</span>
+                      <span className="budget-val">{formatBudgetDisplay(item.expectedBudget, item.budgetUnit)}</span>
                     </div>
 
                     <div className="btn-group">
@@ -453,14 +473,13 @@ export const MyCareRequestsPage: React.FC = () => {
               }}
             >
               <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
-                Thông tin người được chăm sóc
+                Đối tượng cần chăm sóc
               </h4>
-              <div>Họ tên: <strong>{selectedRequest.recipient.name}</strong></div>
-              <div>Tuổi: {selectedRequest.recipient.age} • Giới tính: {selectedRequest.recipient.gender === 'MALE' ? 'Nam' : 'Nữ'}</div>
-              <div>Mối quan hệ: {selectedRequest.recipient.relationship}</div>
+              <div>Độ tuổi: <strong>{selectedRequest.recipient.age} tuổi</strong></div>
+              <div>Giới tính: {selectedRequest.recipient.gender === 'MALE' ? 'Nam' : selectedRequest.recipient.gender === 'FEMALE' ? 'Nữ' : 'Không yêu cầu'}</div>
               {selectedRequest.recipient.conditionNotes && (
                 <div style={{ color: '#b45309' }}>
-                  Tình trạng sức khỏe: {selectedRequest.recipient.conditionNotes}
+                  Lưu ý sức khỏe: {selectedRequest.recipient.conditionNotes}
                 </div>
               )}
             </div>
@@ -479,15 +498,18 @@ export const MyCareRequestsPage: React.FC = () => {
               }}
             >
               <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
-                Địa điểm & Lịch làm việc
+                Khu vực & Lịch làm việc
               </h4>
-              <div>Địa chỉ: {selectedRequest.location.address}, {selectedRequest.location.area}, {selectedRequest.location.city}</div>
+              <div>Khu vực: {selectedRequest.location.area}, {selectedRequest.location.city || 'Cần Thơ'}</div>
+              {selectedRequest.location.address && selectedRequest.location.address !== selectedRequest.location.area && (
+                <div>Địa chỉ chi tiết: {selectedRequest.location.address}</div>
+              )}
               <div>Ngày bắt đầu: {formatDate(selectedRequest.schedule.startDate)}</div>
               {selectedRequest.schedule.endDate && (
                 <div>Ngày kết thúc: {formatDate(selectedRequest.schedule.endDate)}</div>
               )}
               <div>Khung giờ: {selectedRequest.schedule.timeSlot} ({selectedRequest.schedule.dailyHours} giờ/ngày)</div>
-              <div>Ngân sách: <strong style={{ color: '#2563eb' }}>{formatVND(selectedRequest.expectedBudget)}</strong></div>
+              <div>Ngân sách: <strong style={{ color: '#2563eb' }}>{formatBudgetDisplay(selectedRequest.expectedBudget, selectedRequest.budgetUnit)}</strong></div>
             </div>
 
             {/* Special Requirements */}

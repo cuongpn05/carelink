@@ -51,14 +51,13 @@ describe('CareRequest Controller Unit Tests', () => {
       );
     });
 
-    it('returns 400 when missing recipient info', async () => {
+    it('returns 400 when missing recipient age', async () => {
       mockReq = {
         account: { _id: 'customer_123', role: 'CUSTOMER' },
         body: {
           serviceCategory: 'elderly-care',
-          title: 'Cần người chăm sóc',
           description: 'Mô tả chi tiết hơn 10 ký tự',
-          recipient: { name: '' },
+          recipient: {},
         },
       };
 
@@ -66,7 +65,7 @@ describe('CareRequest Controller Unit Tests', () => {
       expect(mockRes.status).toHaveBeenCalledWith(400);
       expect(mockRes.json).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: expect.stringContaining('thông tin người được chăm sóc'),
+          message: expect.stringContaining('độ tuổi hợp lệ'),
         })
       );
     });

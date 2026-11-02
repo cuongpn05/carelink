@@ -18,9 +18,9 @@ const careRequestSchema = new mongoose.Schema(
 
     title: {
       type: String,
-      required: [true, 'Tiêu đề yêu cầu là bắt buộc'],
       trim: true,
       maxlength: [200, 'Tiêu đề tối đa 200 ký tự'],
+      default: '',
     },
 
     description: {
@@ -33,12 +33,12 @@ const careRequestSchema = new mongoose.Schema(
     recipient: {
       name: {
         type: String,
-        required: [true, 'Tên người được chăm sóc là bắt buộc'],
+        default: 'Người thân',
         trim: true,
       },
       age: {
         type: Number,
-        required: [true, 'Tuổi người được chăm sóc là bắt buộc'],
+        required: [true, 'Độ tuổi người được chăm sóc là bắt buộc'],
         min: [0, 'Tuổi không hợp lệ'],
         max: [130, 'Tuổi không hợp lệ'],
       },
@@ -49,7 +49,7 @@ const careRequestSchema = new mongoose.Schema(
       },
       relationship: {
         type: String,
-        required: [true, 'Mối quan hệ là bắt buộc'],
+        default: 'Gia đình',
         trim: true,
       },
       conditionNotes: {
@@ -62,7 +62,7 @@ const careRequestSchema = new mongoose.Schema(
     location: {
       address: {
         type: String,
-        required: [true, 'Địa chỉ cụ thể là bắt buộc'],
+        default: '',
         trim: true,
       },
       area: {
@@ -73,7 +73,7 @@ const careRequestSchema = new mongoose.Schema(
       },
       city: {
         type: String,
-        default: 'TP. Hồ Chí Minh',
+        default: 'Cần Thơ',
         trim: true,
       },
     },
@@ -109,6 +109,12 @@ const careRequestSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Ngân sách dự kiến là bắt buộc'],
       min: [0, 'Ngân sách không được âm'],
+    },
+
+    budgetUnit: {
+      type: String,
+      enum: ['PER_DAY', 'PER_HOUR', 'PER_MONTH', 'TOTAL'],
+      default: 'PER_DAY',
     },
 
     specialRequirements: {
@@ -179,4 +185,3 @@ careRequestSchema.index({ acceptedCaregiverId: 1, status: 1 });
 const CareRequest = mongoose.models.CareRequest || mongoose.model('CareRequest', careRequestSchema);
 
 module.exports = CareRequest;
-
