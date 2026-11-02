@@ -21,6 +21,7 @@ import {
   PlusCircle,
   Briefcase,
 } from 'lucide-react';
+import './Navbar.css';
 
 export const Navbar = () => {
   const { account, user, caregiverProfile, isAuthenticated, logout } = useAuth();
@@ -97,15 +98,12 @@ export const Navbar = () => {
     return () => window.clearInterval(intervalId);
   }, [account?.role, isAuthenticated, refreshNotifications]);
 
-  // Xử lý nút "Trở thành đối tác"
   const handleBecomeCaregiverClick = () => {
     if (!isAuthenticated) {
-      // Chưa đăng nhập -> Chuyển sang /auth và giữ param redirect
       navigate('/auth?redirect=/become-caregiver');
     } else if (isApprovedCaregiver || account?.role === 'CAREGIVER') {
       navigate('/caregiver/bookings');
     } else {
-      // Đã đăng nhập -> Chuyển thẳng sang trang đăng ký đối tác
       navigate('/become-caregiver');
     }
   };
@@ -116,34 +114,42 @@ export const Navbar = () => {
 
     const score = account.reputationScore ?? 100;
 
-    let badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-    let icon = <Shield size={14} className="text-emerald-600" />;
+    let badgeBg = '#ecfdf5';
+    let badgeText = '#047857';
+    let badgeBorder = '#a7f3d0';
+    let icon = <Shield size={14} color="#059669" />;
     let text = `${score}/100 Uy tín`;
 
     if (score < 50) {
-      badgeClass = 'bg-rose-50 text-rose-700 border-rose-300 animate-pulse';
-      icon = <ShieldX size={14} className="text-rose-600" />;
-      text = `${score}/100 Tạm khóa đặt lịch`;
+      badgeBg = '#fff1f2';
+      badgeText = '#be123c';
+      badgeBorder = '#fecdd3';
+      icon = <ShieldX size={14} color="#e11d48" />;
+      text = `${score}/100 Tạm khóa`;
     } else if (score < 70) {
-      badgeClass = 'bg-amber-50 text-amber-700 border-amber-300';
-      icon = <ShieldAlert size={14} className="text-amber-600" />;
+      badgeBg = '#fffbeb';
+      badgeText = '#b45309';
+      badgeBorder = '#fde68a';
+      icon = <ShieldAlert size={14} color="#d97706" />;
       text = `${score}/100 Cảnh báo`;
     }
 
     return (
       <div
-        className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${badgeClass}`}
+        className="navbar-reputation-badge"
         title={`Điểm uy tín tài khoản: ${score}/100. Bấm để xem chi tiết hồ sơ & lịch sử uy tín.`}
         onClick={() => navigate('/profile')}
         style={{
           display: 'inline-flex',
           alignItems: 'center',
           gap: '6px',
-          padding: '4px 10px',
+          padding: '5px 12px',
           borderRadius: '9999px',
           fontSize: '12px',
           fontWeight: 600,
-          border: '1px solid',
+          backgroundColor: badgeBg,
+          color: badgeText,
+          border: `1px solid ${badgeBorder}`,
           cursor: 'pointer',
         }}
       >
@@ -154,43 +160,15 @@ export const Navbar = () => {
   };
 
   return (
-    <header
-      style={{
-        backgroundColor: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '1560px',
-          width: '92%',
-          margin: '0 auto',
-          padding: '0 16px',
-          height: '74px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
+    <header className="navbar-header">
+      <div className="navbar-container">
         {/* Brand Logo */}
-        <Link
-          to="/"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            textDecoration: 'none',
-          }}
-        >
+        <Link to="/" className="navbar-brand">
           {carelinkLogo ? (
             <img
               src={carelinkLogo}
               alt="CareLink Logo"
-              style={{ height: '42px', width: 'auto', objectFit: 'contain' }}
+              className="navbar-brand-logo"
             />
           ) : (
             <div
@@ -209,136 +187,70 @@ export const Navbar = () => {
               CL
             </div>
           )}
-          <span
-            style={{
-              fontSize: '22px',
-              fontWeight: 800,
-              color: '#0f172a',
-              letterSpacing: '-0.5px',
-            }}
-          >
-            Care<span style={{ color: '#2563eb' }}>Link</span>
+          <span className="navbar-brand-text">
+            Care<span className="navbar-brand-highlight">Link</span>
           </span>
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-          className="hidden lg:flex"
-        >
+        <nav className="navbar-desktop-nav">
           <NavLink
             to="/"
             end
-            style={({ isActive }) => ({
-              fontSize: '15px',
-              fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#1d4ed8' : '#475569',
-              backgroundColor: isActive ? '#eff6ff' : 'transparent',
-              padding: '8px 16px',
-              borderRadius: '9999px',
-              textDecoration: 'none',
-              transition: 'all 0.2s ease',
-            })}
+            className={({ isActive }) => `navbar-nav-link ${isActive ? 'active' : ''}`}
           >
             Trang chủ
           </NavLink>
+
           <NavLink
             to="/services"
-            style={({ isActive }) => ({
-              fontSize: '15px',
-              fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#1d4ed8' : '#475569',
-              backgroundColor: isActive ? '#eff6ff' : 'transparent',
-              padding: '8px 16px',
-              borderRadius: '9999px',
-              textDecoration: 'none',
-              transition: 'all 0.2s ease',
-            })}
+            className={({ isActive }) => `navbar-nav-link ${isActive ? 'active' : ''}`}
           >
             Dịch vụ
           </NavLink>
+
           <NavLink
             to="/caregivers"
-            style={({ isActive }) => ({
-              fontSize: '15px',
-              fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#1d4ed8' : '#475569',
-              backgroundColor: isActive ? '#eff6ff' : 'transparent',
-              padding: '8px 16px',
-              borderRadius: '9999px',
-              textDecoration: 'none',
-              transition: 'all 0.2s ease',
-            })}
+            className={({ isActive }) => `navbar-nav-link ${isActive ? 'active' : ''}`}
           >
             Người chăm sóc
           </NavLink>
+
+          <NavLink
+            to="/about"
+            className={({ isActive }) => `navbar-nav-link ${isActive ? 'active' : ''}`}
+          >
+            Về chúng tôi
+          </NavLink>
+
           {isAuthenticated && account?.role === 'CUSTOMER' && (
             <>
               <NavLink
                 to="/my-care-requests"
-                style={({ isActive }) => ({
-                  fontSize: '15px',
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#1d4ed8' : '#475569',
-                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                  padding: '8px 16px',
-                  borderRadius: '9999px',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                })}
+                className={({ isActive }) => `navbar-nav-link ${isActive ? 'active' : ''}`}
               >
                 Yêu cầu của tôi
               </NavLink>
               <NavLink
                 to="/bookings"
-                style={({ isActive }) => ({
-                  fontSize: '15px',
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#1d4ed8' : '#475569',
-                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                  padding: '8px 16px',
-                  borderRadius: '9999px',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                })}
+                className={({ isActive }) => `navbar-nav-link ${isActive ? 'active' : ''}`}
               >
                 Lịch đã đặt
               </NavLink>
             </>
           )}
+
           {isAuthenticated && (account?.role === 'CAREGIVER' || isApprovedCaregiver) && (
             <>
               <NavLink
                 to="/caregiver/marketplace"
-                style={({ isActive }) => ({
-                  fontSize: '15px',
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#1d4ed8' : '#475569',
-                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                  padding: '8px 16px',
-                  borderRadius: '9999px',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                })}
+                className={({ isActive }) => `navbar-nav-link ${isActive ? 'active' : ''}`}
               >
                 Yêu cầu phù hợp
               </NavLink>
               <NavLink
                 to="/caregiver/bookings"
-                style={({ isActive }) => ({
-                  fontSize: '15px',
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#1d4ed8' : '#475569',
-                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                  padding: '8px 16px',
-                  borderRadius: '9999px',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                })}
+                className={({ isActive }) => `navbar-nav-link ${isActive ? 'active' : ''}`}
               >
                 Lịch nhận việc
               </NavLink>
@@ -347,7 +259,7 @@ export const Navbar = () => {
         </nav>
 
         {/* Right Section Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div className="navbar-actions">
           {isAuthenticated && account?.role === 'CUSTOMER' && (
             <button
               type="button"
@@ -392,32 +304,11 @@ export const Navbar = () => {
             </button>
           )}
 
-          {/* Nút Trở thành đối tác (Luôn hiển thị nổi bật) */}
+          {/* Nút Trở thành đối tác */}
           <button
             type="button"
             onClick={handleBecomeCaregiverClick}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '9px 18px',
-              borderRadius: '9999px',
-              backgroundColor: '#eff6ff',
-              color: '#1d4ed8',
-              border: '1.5px solid #bfdbfe',
-              fontSize: '13.5px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#dbeafe';
-              e.currentTarget.style.borderColor = '#93c5fd';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#eff6ff';
-              e.currentTarget.style.borderColor = '#bfdbfe';
-            }}
+            className="navbar-partner-btn"
           >
             <HeartHandshake size={16} />
             <span>
@@ -433,32 +324,10 @@ export const Navbar = () => {
           {/* Auth Section */}
           {!isAuthenticated ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Link
-                to="/auth?mode=login"
-                style={{
-                  padding: '9px 18px',
-                  borderRadius: '9999px',
-                  color: '#334155',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                }}
-              >
+              <Link to="/auth?mode=login" className="navbar-login-btn">
                 Đăng nhập
               </Link>
-              <Link
-                to="/auth?mode=register"
-                style={{
-                  padding: '9px 20px',
-                  borderRadius: '9999px',
-                  backgroundColor: '#2563eb',
-                  color: '#ffffff',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  boxShadow: '0 2px 8px rgba(37,99,235,0.25)',
-                }}
-              >
+              <Link to="/auth?mode=register" className="navbar-register-btn">
                 Đăng ký
               </Link>
             </div>
@@ -553,7 +422,7 @@ export const Navbar = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f9')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
-                    <UserIcon size={16} className="text-blue-600" />
+                    <UserIcon size={16} color="#2563eb" />
                     <span>Xem profile & Điểm uy tín</span>
                   </button>
 
@@ -583,7 +452,7 @@ export const Navbar = () => {
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                       >
-                        <Briefcase size={16} className="text-blue-600" />
+                        <Briefcase size={16} color="#2563eb" />
                         <span>Yêu cầu phù hợp (Chợ việc)</span>
                       </button>
                       <button
@@ -610,7 +479,7 @@ export const Navbar = () => {
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                       >
-                        <Calendar size={16} className="text-emerald-600" />
+                        <Calendar size={16} color="#059669" />
                         <span>Lịch khách đặt</span>
                       </button>
                     </>
@@ -642,14 +511,14 @@ export const Navbar = () => {
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                       >
-                        <FileText size={16} className="text-blue-600" />
+                        <FileText size={16} color="#2563eb" />
                         <span>Yêu cầu chăm sóc của tôi</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => {
                           setDropdownOpen(false);
-                          navigate('/post-care-request');
+                          navigate('/post-request');
                         }}
                         style={{
                           width: '100%',
@@ -669,7 +538,7 @@ export const Navbar = () => {
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                       >
-                        <PlusCircle size={16} className="text-emerald-600" />
+                        <PlusCircle size={16} color="#059669" />
                         <span>Đăng yêu cầu mới</span>
                       </button>
                       <button
@@ -696,17 +565,20 @@ export const Navbar = () => {
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f8fafc')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                       >
-                        <Bell size={16} className="text-blue-600" />
+                        <Bell size={16} color="#2563eb" />
                         <span>Lịch và thông báo của tôi</span>
                       </button>
                     </>
                   )}
 
+                  <hr style={{ margin: '6px 0', borderColor: '#f1f5f9' }} />
+
                   <button
                     type="button"
                     onClick={() => {
                       setDropdownOpen(false);
-                      logout(navigate);
+                      logout();
+                      navigate('/');
                     }}
                     style={{
                       width: '100%',
@@ -726,7 +598,7 @@ export const Navbar = () => {
                     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fef2f2')}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
-                    <LogOut size={16} />
+                    <LogOut size={16} color="#ef4444" />
                     <span>Đăng xuất</span>
                   </button>
                 </div>
@@ -734,19 +606,11 @@ export const Navbar = () => {
             </div>
           )}
 
-          {/* Mobile hamburger button */}
+          {/* Mobile Menu Toggle Button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{
-              padding: '8px',
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: '#f1f5f9',
-              color: '#334155',
-              cursor: 'pointer',
-            }}
-            className="lg:hidden"
+            className="navbar-mobile-toggle"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
@@ -756,126 +620,69 @@ export const Navbar = () => {
 
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div
-          style={{
-            borderTop: '1px solid #e2e8f0',
-            backgroundColor: '#ffffff',
-            padding: '16px 20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-          }}
-          className="lg:hidden"
-        >
+        <div className="navbar-mobile-drawer">
           <NavLink
             to="/"
             end
             onClick={() => setMobileMenuOpen(false)}
-            style={({ isActive }) => ({
-              fontSize: '15px',
-              fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#1d4ed8' : '#334155',
-              backgroundColor: isActive ? '#eff6ff' : 'transparent',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              textDecoration: 'none',
-            })}
+            className={({ isActive }) => `navbar-mobile-link ${isActive ? 'active' : ''}`}
           >
             Trang chủ
           </NavLink>
           <NavLink
             to="/services"
             onClick={() => setMobileMenuOpen(false)}
-            style={({ isActive }) => ({
-              fontSize: '15px',
-              fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#1d4ed8' : '#334155',
-              backgroundColor: isActive ? '#eff6ff' : 'transparent',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              textDecoration: 'none',
-            })}
+            className={({ isActive }) => `navbar-mobile-link ${isActive ? 'active' : ''}`}
           >
             Dịch vụ
           </NavLink>
           <NavLink
             to="/caregivers"
             onClick={() => setMobileMenuOpen(false)}
-            style={({ isActive }) => ({
-              fontSize: '15px',
-              fontWeight: isActive ? 700 : 500,
-              color: isActive ? '#1d4ed8' : '#334155',
-              backgroundColor: isActive ? '#eff6ff' : 'transparent',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              textDecoration: 'none',
-            })}
+            className={({ isActive }) => `navbar-mobile-link ${isActive ? 'active' : ''}`}
           >
             Người chăm sóc
           </NavLink>
+          <NavLink
+            to="/about"
+            onClick={() => setMobileMenuOpen(false)}
+            className={({ isActive }) => `navbar-mobile-link ${isActive ? 'active' : ''}`}
+          >
+            Về chúng tôi
+          </NavLink>
+
           {isAuthenticated && account?.role === 'CUSTOMER' && (
             <>
               <NavLink
                 to="/my-care-requests"
                 onClick={() => setMobileMenuOpen(false)}
-                style={({ isActive }) => ({
-                  fontSize: '15px',
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#1d4ed8' : '#334155',
-                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                })}
+                className={({ isActive }) => `navbar-mobile-link ${isActive ? 'active' : ''}`}
               >
                 Yêu cầu của tôi
               </NavLink>
               <NavLink
                 to="/bookings"
                 onClick={() => setMobileMenuOpen(false)}
-                style={({ isActive }) => ({
-                  fontSize: '15px',
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#1d4ed8' : '#334155',
-                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                })}
+                className={({ isActive }) => `navbar-mobile-link ${isActive ? 'active' : ''}`}
               >
                 Lịch đã đặt
               </NavLink>
             </>
           )}
+
           {isAuthenticated && (account?.role === 'CAREGIVER' || isApprovedCaregiver) && (
             <>
               <NavLink
                 to="/caregiver/marketplace"
                 onClick={() => setMobileMenuOpen(false)}
-                style={({ isActive }) => ({
-                  fontSize: '15px',
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#1d4ed8' : '#334155',
-                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                })}
+                className={({ isActive }) => `navbar-mobile-link ${isActive ? 'active' : ''}`}
               >
                 Yêu cầu phù hợp
               </NavLink>
               <NavLink
                 to="/caregiver/bookings"
                 onClick={() => setMobileMenuOpen(false)}
-                style={({ isActive }) => ({
-                  fontSize: '15px',
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#1d4ed8' : '#334155',
-                  backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                  padding: '10px 14px',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                })}
+                className={({ isActive }) => `navbar-mobile-link ${isActive ? 'active' : ''}`}
               >
                 Lịch nhận việc
               </NavLink>

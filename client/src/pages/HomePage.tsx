@@ -13,10 +13,6 @@ import elderlyCareImg from '../assets/services/elderly-care.jpg';
 import postTreatmentCareImg from '../assets/services/post-treatment-care.jpg';
 import childCareImg from '../assets/services/child-care.jpg';
 import {
-  Heart,
-  MapPin,
-  Calendar,
-  Search,
   ArrowRight,
   Clock,
   Home,
@@ -28,6 +24,8 @@ import {
   Activity,
   Pencil,
   Check,
+  Search,
+  MapPin,
 } from 'lucide-react';
 import './HomePage.css';
 
@@ -142,11 +140,6 @@ const formatVND = (amount?: number) => {
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
 
-  // Search states
-  const [selectedService, setSelectedService] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState('TP. Hồ Chí Minh');
-  const [selectedTime, setSelectedTime] = useState('all');
-
   // Caregiver states
   const [selectedCaregiver, setSelectedCaregiver] = useState<Caregiver | null>(null);
   const [featuredCaregivers, setFeaturedCaregivers] = useState<Caregiver[]>(SCREENSHOT_DEFAULT_CAREGIVERS);
@@ -188,16 +181,6 @@ export const HomePage: React.FC = () => {
       active = false;
     };
   }, []);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const params = new URLSearchParams();
-    if (selectedService !== 'all') params.append('service', selectedService);
-    if (selectedLocation) params.append('area', selectedLocation);
-    if (selectedTime !== 'all') params.append('time', selectedTime);
-
-    navigate(`/caregivers?${params.toString()}`);
-  };
 
   const handleSelectCategory = (categoryId: string) => {
     navigate(`/caregivers?service=${categoryId}`);
@@ -262,96 +245,7 @@ export const HomePage: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="home-content-wrapper">
-        {/* 3. Floating Search / Filter Bar */}
-        <section className="floating-search-bar-container" aria-label="Bộ lọc tìm kiếm nhanh">
-          <form onSubmit={handleSearchSubmit} className="floating-search-bar">
-            {/* Field 1: Loại chăm sóc */}
-            <div className="search-field-item">
-              <div className="search-field-icon">
-                <Heart size={22} fill="var(--color-primary-600)" color="var(--color-primary-600)" />
-              </div>
-              <div className="search-field-texts">
-                <span className="search-field-label">Loại chăm sóc</span>
-                <div className="search-select-wrapper">
-                  <select
-                    aria-label="Chọn loại chăm sóc"
-                    className="search-field-select"
-                    value={selectedService}
-                    onChange={(e) => setSelectedService(e.target.value)}
-                  >
-                    <option value="all">Tất cả dịch vụ</option>
-                    <option value="elderly-care">Chăm sóc người cao tuổi</option>
-                    <option value="child-care">Chăm sóc trẻ em</option>
-                    <option value="home-care">Chăm sóc tại nhà</option>
-                    <option value="post-treatment-care">Chăm sóc sau điều trị</option>
-                  </select>
-                  <ChevronDown size={16} className="search-chevron-icon" />
-                </div>
-              </div>
-            </div>
-
-            <div className="search-divider" />
-
-            {/* Field 2: Địa điểm */}
-            <div className="search-field-item">
-              <div className="search-field-icon">
-                <MapPin size={22} />
-              </div>
-              <div className="search-field-texts">
-                <span className="search-field-label">Địa điểm</span>
-                <div className="search-select-wrapper">
-                  <select
-                    aria-label="Chọn địa điểm"
-                    className="search-field-select"
-                    value={selectedLocation}
-                    onChange={(e) => setSelectedLocation(e.target.value)}
-                  >
-                    <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-                    <option value="Cần Thơ">Cần Thơ</option>
-                    <option value="Hà Nội">Hà Nội</option>
-                    <option value="Đà Nẵng">Đà Nẵng</option>
-                  </select>
-                  <ChevronDown size={16} className="search-chevron-icon" />
-                </div>
-              </div>
-            </div>
-
-            <div className="search-divider" />
-
-            {/* Field 3: Thời gian */}
-            <div className="search-field-item">
-              <div className="search-field-icon">
-                <Calendar size={22} />
-              </div>
-              <div className="search-field-texts">
-                <span className="search-field-label">Thời gian</span>
-                <div className="search-select-wrapper">
-                  <select
-                    aria-label="Chọn thời gian"
-                    className="search-field-select"
-                    value={selectedTime}
-                    onChange={(e) => setSelectedTime(e.target.value)}
-                  >
-                    <option value="all">Chọn thời gian</option>
-                    <option value="hourly">Theo ca giờ</option>
-                    <option value="daily">Theo ngày (24h)</option>
-                    <option value="weekly">Theo tuần</option>
-                    <option value="monthly">Theo tháng</option>
-                  </select>
-                  <ChevronDown size={16} className="search-chevron-icon" />
-                </div>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <button type="submit" className="search-submit-btn">
-              <Search size={19} />
-              <span>Tìm kiếm</span>
-            </button>
-          </form>
-        </section>
-
-        {/* 4. Section: DANH MỤC DỊCH VỤ - Các dịch vụ chăm sóc nổi bật */}
+        {/* 3. Section: DANH MỤC DỊCH VỤ - Các dịch vụ chăm sóc nổi bật */}
         <section className="home-section" aria-label="Các dịch vụ chăm sóc nổi bật">
           <div className="section-title-wrap">
             <span className="section-pill-tag">DANH MỤC DỊCH VỤ</span>
@@ -465,7 +359,7 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* 5. Section: QUY TRÌNH SỬ DỤNG - Chỉ 4 bước đơn giản */}
+        {/* 4. Section: QUY TRÌNH SỬ DỤNG - Chỉ 4 bước đơn giản */}
         <section className="workflow-section" aria-label="Quy trình sử dụng">
           <div className="section-title-wrap">
             <span className="section-pill-tag">QUY TRÌNH SỬ DỤNG</span>
@@ -527,7 +421,7 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* 6. Banner CTA: Bạn đang cần người chăm sóc? (Nằm ngay trên Người chăm sóc nổi bật) */}
+        {/* 5. Banner CTA: Bạn đang cần người chăm sóc? (Nằm ngay trên Người chăm sóc nổi bật) */}
         <section className="home-banner-cta-container" aria-label="Đăng yêu cầu chăm sóc">
           <div className="home-banner-cta-card">
             <div className="home-banner-cta-left">
@@ -554,7 +448,7 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* 7. Section: Người chăm sóc nổi bật */}
+        {/* 6. Section: Người chăm sóc nổi bật */}
         <section className="home-section" aria-label="Người chăm sóc nổi bật">
           <div className="home-section-header">
             <div>
@@ -624,7 +518,7 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* 8. Section: CÂU HỎI THƯỜNG GẶP - Những câu hỏi thường gặp */}
+        {/* 7. Section: CÂU HỎI THƯỜNG GẶP - Những câu hỏi thường gặp */}
         <section className="faq-section" aria-label="Những câu hỏi thường gặp">
           <div className="section-title-wrap">
             <span className="section-pill-tag">CÂU HỎI THƯỜNG GẶP</span>
@@ -660,16 +554,16 @@ export const HomePage: React.FC = () => {
         </section>
       </main>
 
-      {/* 9. Footer */}
+      {/* 8. Footer */}
       <Footer />
 
-      {/* 10. Caregiver Detail Modal for direct booking */}
+      {/* 9. Caregiver Detail Modal for direct booking */}
       <CaregiverDetailModal
         caregiver={selectedCaregiver}
         onClose={() => setSelectedCaregiver(null)}
       />
 
-      {/* 11. Post Care Request Modal */}
+      {/* 10. Post Care Request Modal */}
       <PostCareRequestModal
         isOpen={isPostModalOpen}
         onClose={() => setIsPostModalOpen(false)}
