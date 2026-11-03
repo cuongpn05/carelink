@@ -48,6 +48,7 @@ const statusLabel: Record<string, string> = {
 
 const careRequestStatusLabel: Record<CareRequestItem['status'], string> = {
   OPEN: 'Đang tìm người chăm sóc',
+  ASSIGNED: 'Đã nhận việc',
   ACCEPTED: 'Đã nhận việc',
   IN_PROGRESS: 'Đang chăm sóc',
   COMPLETED: 'Đã hoàn thành',
@@ -415,7 +416,7 @@ export const CaregiverBookingsPage: React.FC = () => {
                       <small>{request.recipient.age} tuổi · {request.recipient.relationship}</small>
                     </div>
                     <div className="caregiver-booking-actions">
-                      {request.status === 'ACCEPTED' && (
+                      {(request.status === 'ACCEPTED' || request.status === 'ASSIGNED') && (
                         <button
                           type="button"
                           className="caregiver-booking-confirm"

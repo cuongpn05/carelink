@@ -108,10 +108,11 @@ describe('CareRequest Controller Unit Tests', () => {
         {
           _id: '507f1f77bcf86cd799439011',
           status: 'OPEN',
+          acceptedCaregiverId: null,
         },
         expect.objectContaining({
           $set: expect.objectContaining({
-            status: 'ACCEPTED',
+            status: 'ASSIGNED',
             acceptedCaregiverId: caregiverAccountId,
           }),
         }),
@@ -149,8 +150,7 @@ describe('CareRequest Controller Unit Tests', () => {
       expect(mockRes.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: expect.stringContaining('đã được tiếp nhận bởi người chăm sóc khác'),
-          currentStatus: 'ACCEPTED',
+          message: 'Yêu cầu này vừa có người khác tiếp nhận hoặc đã đóng!',
         })
       );
     });

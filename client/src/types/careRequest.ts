@@ -6,6 +6,7 @@ export type CareServiceCategory =
 
 export type CareRequestStatus =
   | 'OPEN'
+  | 'ASSIGNED'
   | 'ACCEPTED'
   | 'IN_PROGRESS'
   | 'COMPLETED'

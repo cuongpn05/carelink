@@ -46,7 +46,7 @@ const enrichCareRequest = async (doc, viewerAccountId = null) => {
 
   const isCustomerViewer = viewerAccountId && customerAccountId?.toString() === viewerAccountId.toString();
   const isAcceptedCaregiverViewer = viewerAccountId && acceptedCaregiverId?.toString() === viewerAccountId.toString();
-  const isRevealed = isCustomerViewer || isAcceptedCaregiverViewer || ['ACCEPTED', 'IN_PROGRESS', 'COMPLETED'].includes(reqObj.status);
+  const isRevealed = isCustomerViewer || isAcceptedCaregiverViewer || ['ACCEPTED', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED'].includes(reqObj.status);
 
   return {
     ...reqObj,
@@ -217,7 +217,11 @@ const getMyCareRequests = async (req, res) => {
 
     const filter = { customerId };
     if (status && status !== 'ALL') {
-      filter.status = status;
+      if (status === 'ACCEPTED' || status === 'ASSIGNED') {
+        filter.status = { $in: ['ACCEPTED', 'ASSIGNED'] };
+      } else {
+        filter.status = status;
+      }
     }
 
     const [requests, statsAgg] = await Promise.all([
@@ -241,6 +245,9 @@ const getMyCareRequests = async (req, res) => {
     statsAgg.forEach((item) => {
       if (stats[item._id] !== undefined) {
         stats[item._id] = item.count;
+      }
+      if (item._id === 'ASSIGNED') {
+        stats.ACCEPTED = (stats.ACCEPTED || 0) + item.count;
       }
       stats.ALL += item.count;
     });
@@ -274,7 +281,7 @@ const getMyAcceptedCareRequests = async (req, res) => {
     const caregiverId = req.account._id;
     const requests = await CareRequest.find({
       acceptedCaregiverId: caregiverId,
-      status: { $in: ['ACCEPTED', 'IN_PROGRESS', 'COMPLETED'] },
+      status: { $in: ['ACCEPTED', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED'] },
     })
       .sort({ updatedAt: -1 })
       .lean();
@@ -482,7 +489,7 @@ const acceptCareRequest = async (req, res) => {
       if (existingReq.status !== 'OPEN') {
         return res.status(409).json({
           success: false,
-          message: 'Rất tiếc! Yêu cầu chăm sóc này đã được tiếp nhận bởi người chăm sóc khác hoặc không còn ở trạng thái mở.',
+          message: 'Yêu cầu này vừa có người khác tiếp nhận hoặc đã đóng!',
           currentStatus: existingReq.status,
         });
       }
@@ -511,19 +518,20 @@ const acceptCareRequest = async (req, res) => {
       }
     }
 
-    // 3. ATOMIC CONDITIONAL UPDATE: Chỉ update nếu status ĐANG LÀ 'OPEN'
+    // 3. ATOMIC CONDITIONAL UPDATE: Chỉ update nếu status ĐANG LÀ 'OPEN' VÀ acceptedCaregiverId đang là null
     const updatedRequest = await CareRequest.findOneAndUpdate(
       {
         _id: id,
         status: 'OPEN',
+        acceptedCaregiverId: null,
       },
       {
         $set: {
-          status: 'ACCEPTED',
+          status: 'ASSIGNED',
           acceptedCaregiverId: caregiverAccountId,
           acceptedCaregiverProfileId: caregiverProfile._id,
           acceptedAt: new Date(),
-          customerNotificationReadAt: null, // Bật cờ để khách hàng nhận được thông báo mới
+          customerNotificationReadAt: null,
         },
       },
       {
@@ -531,20 +539,10 @@ const acceptCareRequest = async (req, res) => {
       }
     );
 
-    // 3. Nếu không tìm thấy hoặc cập nhật thất bại -> Phân loại nguyên nhân
     if (!updatedRequest) {
-      const existing = await CareRequest.findById(id).lean();
-      if (!existing) {
-        return res.status(404).json({
-          success: false,
-          message: 'Yêu cầu chăm sóc không tồn tại.',
-        });
-      }
-
       return res.status(409).json({
         success: false,
-        message: 'Rất tiếc! Yêu cầu chăm sóc này đã được tiếp nhận bởi người chăm sóc khác hoặc không còn ở trạng thái mở.',
-        currentStatus: existing.status,
+        message: 'Yêu cầu này vừa có người khác tiếp nhận hoặc đã đóng!',
       });
     }
 
@@ -727,7 +725,7 @@ const updateCareRequestStatus = async (req, res) => {
     }
 
     // Kiểm tra quy trình chuyển đổi hợp lệ
-    if (newStatus === 'IN_PROGRESS' && request.status !== 'ACCEPTED') {
+    if (newStatus === 'IN_PROGRESS' && !['ACCEPTED', 'ASSIGNED'].includes(request.status)) {
       return res.status(400).json({
         success: false,
         message: `Chỉ có thể chuyển sang "Đang thực hiện" khi yêu cầu đang ở trạng thái ACCEPTED (hiện tại: ${request.status}).`,
@@ -770,7 +768,7 @@ const getCustomerCareRequestNotifications = async (req, res) => {
 
     const acceptedRequests = await CareRequest.find({
       customerId,
-      status: { $in: ['ACCEPTED', 'IN_PROGRESS'] },
+      status: { $in: ['ACCEPTED', 'ASSIGNED', 'IN_PROGRESS'] },
       acceptedAt: { $ne: null },
     })
       .sort({ acceptedAt: -1 })

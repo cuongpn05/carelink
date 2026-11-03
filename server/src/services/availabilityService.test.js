@@ -174,3 +174,4 @@ describe('Availability Service (Shared Time-Conflict Checker)', () => {
     ).rejects.toThrow('Thời gian startTime hoặc endTime không hợp lệ');
   });
 });
+

@@ -46,6 +46,7 @@ const CATEGORY_NAMES: Record<string, { label: string; icon: React.ReactNode }> =
 
 const STATUS_LABELS: Record<CareRequestStatus, { label: string; icon: React.ReactNode }> = {
   OPEN: { label: 'Đang chờ tiếp nhận', icon: <Clock size={12} /> },
+  ASSIGNED: { label: 'Đã có người nhận', icon: <CheckCircle2 size={12} /> },
   ACCEPTED: { label: 'Đã có người nhận', icon: <CheckCircle2 size={12} /> },
   IN_PROGRESS: { label: 'Đang thực hiện', icon: <Clock size={12} /> },
   COMPLETED: { label: 'Đã hoàn thành', icon: <Check size={12} /> },
@@ -578,7 +579,7 @@ export const MyCareRequestsPage: React.FC = () => {
                 </div>
 
                 {/* Status action buttons */}
-                {selectedRequest.status === 'ACCEPTED' && (
+                {(selectedRequest.status === 'ACCEPTED' || selectedRequest.status === 'ASSIGNED') && (
                   <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                     <button
                       type="button"

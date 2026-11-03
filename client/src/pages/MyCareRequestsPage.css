@@ -189,7 +189,8 @@
   border: 1px solid #fef08a;
 }
 
-.status-badge.ACCEPTED {
+.status-badge.ACCEPTED,
+.status-badge.ASSIGNED {
   background-color: #ecfdf5;
   color: #065f46;
   border: 1px solid #a7f3d0;

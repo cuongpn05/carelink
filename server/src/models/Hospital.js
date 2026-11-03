@@ -125,3 +125,4 @@ if (!mongoose.models.Hospitals) {
 }
 
 module.exports = Hospital;
+
