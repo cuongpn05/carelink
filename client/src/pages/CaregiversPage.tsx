@@ -559,7 +559,7 @@ export const CaregiversPage: React.FC = () => {
                       {/* Middle: Details */}
                       <div className="caregiver-h-details">
                         <div className="caregiver-h-badge">
-                          <CheckCircle2 size={13} />
+                          <CheckCircle2 size={13} fill="#16a34a" color="#ffffff" strokeWidth={2.5} />
                           <span>Đã xác minh danh tính</span>
                         </div>
 
@@ -603,24 +603,26 @@ export const CaregiversPage: React.FC = () => {
 
                       {/* Right: Pricing, Bio, Actions */}
                       <div className="caregiver-h-actions-col">
-                        <button
-                          type="button"
-                          className="caregiver-h-fav-btn"
-                          aria-label="Lưu vào yêu thích"
-                          onClick={() => toggleFavorite(cg.id)}
-                        >
-                          <Heart
-                            size={18}
-                            fill={isFavorited ? '#ef4444' : 'none'}
-                            color={isFavorited ? '#ef4444' : '#94a3b8'}
-                          />
-                        </button>
+                        <div className="caregiver-h-price-row">
+                          <div className="caregiver-h-price-wrap">
+                            <span className="caregiver-h-price-amount">
+                              {new Intl.NumberFormat('vi-VN').format(price8h)}đ
+                            </span>
+                            <span className="caregiver-h-price-unit"> / 8 giờ</span>
+                          </div>
 
-                        <div className="caregiver-h-price-wrap">
-                          <span className="caregiver-h-price-amount">
-                            {new Intl.NumberFormat('vi-VN').format(price8h)}đ
-                          </span>
-                          <span className="caregiver-h-price-unit">/ 8 giờ</span>
+                          <button
+                            type="button"
+                            className="caregiver-h-fav-btn"
+                            aria-label="Lưu vào yêu thích"
+                            onClick={() => toggleFavorite(cg.id)}
+                          >
+                            <Heart
+                              size={20}
+                              fill={isFavorited ? '#ef4444' : 'none'}
+                              color={isFavorited ? '#ef4444' : '#94a3b8'}
+                            />
+                          </button>
                         </div>
 
                         <p className="caregiver-h-bio">
