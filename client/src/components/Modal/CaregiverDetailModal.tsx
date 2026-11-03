@@ -62,6 +62,7 @@ interface SearchableLocationSelectProps {
   value: string;
   disabled?: boolean;
   loading?: boolean;
+  error?: string;
   onChange: (value: string) => void;
 }
 
@@ -73,6 +74,7 @@ const SearchableLocationSelect: React.FC<SearchableLocationSelectProps> = ({
   value,
   disabled = false,
   loading = false,
+  error = '',
   onChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -137,6 +139,8 @@ const SearchableLocationSelect: React.FC<SearchableLocationSelectProps> = ({
           role="combobox"
           aria-autocomplete="list"
           aria-expanded={isOpen}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${id}-error` : undefined}
           aria-controls={`${id}-options`}
           aria-activedescendant={
             isOpen && filteredOptions[activeIndex]
@@ -184,6 +188,11 @@ const SearchableLocationSelect: React.FC<SearchableLocationSelectProps> = ({
           </div>
         )}
       </div>
+      {error && (
+        <span className="booking-field-error" id={`${id}-error`} role="alert">
+          {error}
+        </span>
+      )}
     </div>
   );
 };
@@ -209,6 +218,7 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
   const [elderlyModalOpen, setElderlyModalOpen] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState('');
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
   const [createdBooking, setCreatedBooking] = useState<Booking | null>(null);
   const [packageType, setPackageType] = useState<BookingPackage>('HOURLY');
   const [durationValue, setDurationValue] = useState(2);
@@ -370,6 +380,46 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
   const estimatedTotal = typeof selectedPackage?.rate === 'number'
     ? selectedPackage.rate * durationValue
     : null;
+  const selectedProvince = provinces.find((province) => province.code === provinceCode);
+  const selectedWard = wards.find((ward) => ward.code === wardCode);
+  const selectedStart = startDate && startHour
+    ? new Date(`${startDate}T${startHour}`)
+    : null;
+  const bookingValidationErrors = {
+    package: !selectedPackage ||
+      typeof selectedPackage.rate !== 'number' ||
+      !Number.isFinite(selectedPackage.rate) ||
+      selectedPackage.rate < 0
+      ? 'Vui lòng chọn gói dịch vụ có giá hợp lệ.'
+      : '',
+    duration: !Number.isInteger(durationValue) ||
+      durationValue < 1 ||
+      (packageType === 'HOURLY' && ![2, 4, 6, 8, 10, 12].includes(durationValue))
+      ? 'Vui lòng chọn thời lượng hợp lệ.'
+      : '',
+    date: !startDate ||
+      !Number.isFinite(new Date(`${startDate}T00:00`).getTime()) ||
+      startDate < toLocalDateInput(new Date())
+      ? 'Ngày bắt đầu không hợp lệ hoặc đã qua.'
+      : '',
+    time: !startHour
+      ? 'Vui lòng chọn giờ bắt đầu.'
+      : !selectedStart ||
+          !Number.isFinite(selectedStart.getTime()) ||
+          (startDate >= toLocalDateInput(new Date()) && selectedStart <= new Date())
+        ? 'Giờ bắt đầu phải nằm trong tương lai.'
+        : '',
+    province: loadingProvinces || !selectedProvince
+      ? 'Vui lòng chọn tỉnh/thành phố.'
+      : '',
+    ward: loadingWards || !selectedWard
+      ? 'Vui lòng chọn phường/xã.'
+      : '',
+    address: !serviceAddress.trim()
+      ? 'Vui lòng nhập số nhà và tên đường.'
+      : '',
+  };
+  const hasBookingValidationErrors = Object.values(bookingValidationErrors).some(Boolean);
 
   if (!caregiver || !displayedCaregiver) return null;
 
@@ -390,12 +440,14 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
 
     setBookingError('');
     setCreatedBooking(null);
+    setShowValidationErrors(false);
     setBookingFormOpen(true);
   };
 
   const handleBookAnother = () => {
     setCreatedBooking(null);
     setBookingError('');
+    setShowValidationErrors(false);
     setBookingFormOpen(true);
   };
 
@@ -407,39 +459,18 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
   const handleBookingSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setBookingError('');
+    setShowValidationErrors(true);
+
+    if (hasBookingValidationErrors) {
+      return;
+    }
+
+    if (!selectedProvince || !selectedWard || !selectedStart) {
+      setBookingError('Vui lòng kiểm tra lại ngày giờ và địa chỉ chăm sóc.');
+      return;
+    }
 
     const trimmedServiceAddress = serviceAddress.trim();
-    const selectedProvince = provinces.find((province) => province.code === provinceCode);
-    const selectedWard = wards.find((ward) => ward.code === wardCode);
-    if (!selectedProvince || !selectedWard || !trimmedServiceAddress) {
-      setBookingError('Vui lòng chọn tỉnh/thành, phường/xã và nhập địa chỉ chăm sóc.');
-      return;
-    }
-
-    if (
-      !Number.isInteger(durationValue) ||
-      durationValue < 1 ||
-      (packageType === 'HOURLY' && ![2, 4, 6, 8, 10, 12].includes(durationValue))
-    ) {
-      setBookingError('Vui lòng chọn thời lượng dịch vụ hợp lệ.');
-      return;
-    }
-
-    if (!selectedPackage || typeof selectedPackage.rate !== 'number') {
-      setBookingError('Gói dịch vụ này hiện chưa có giá. Vui lòng chọn gói khác.');
-      return;
-    }
-
-    const selectedStart = new Date(`${startDate}T${startHour}`);
-    if (
-      !startDate ||
-      !startHour ||
-      !Number.isFinite(selectedStart.getTime()) ||
-      selectedStart <= new Date()
-    ) {
-      setBookingError('Vui lòng chọn ngày và giờ bắt đầu trong tương lai.');
-      return;
-    }
 
     try {
       setBookingLoading(true);
@@ -570,13 +601,18 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                   </button>
                 </div>
               ) : (
-                <form className="booking-form" onSubmit={handleBookingSubmit}>
+                <form className="booking-form" onSubmit={handleBookingSubmit} noValidate>
                   <label>
                     Gói dịch vụ
                     <select
                       value={packageType}
                       onChange={(event) => handlePackageChange(event.target.value as BookingPackage)}
-                      required
+                      aria-invalid={Boolean(showValidationErrors && bookingValidationErrors.package)}
+                      aria-describedby={
+                        showValidationErrors && bookingValidationErrors.package
+                          ? 'booking-package-error'
+                          : undefined
+                      }
                     >
                       {availablePackages.map((item) => (
                         <option key={item.value} value={item.value}>
@@ -585,6 +621,11 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                       ))}
                     </select>
                   </label>
+                  {showValidationErrors && bookingValidationErrors.package && (
+                    <span className="booking-field-error" id="booking-package-error" role="alert">
+                      {bookingValidationErrors.package}
+                    </span>
+                  )}
                   <div className="booking-form-row">
                     <label>
                       Thời lượng ({packageUnit})
@@ -592,6 +633,12 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                         <select
                           value={durationValue}
                           onChange={(event) => setDurationValue(Number(event.target.value))}
+                          aria-invalid={Boolean(showValidationErrors && bookingValidationErrors.duration)}
+                          aria-describedby={
+                            showValidationErrors && bookingValidationErrors.duration
+                              ? 'booking-duration-error'
+                              : undefined
+                          }
                         >
                           {[2, 4, 6, 8, 10, 12].map((duration) => (
                             <option key={duration} value={duration}>{duration} giờ</option>
@@ -604,8 +651,18 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                           step="1"
                           value={durationValue}
                           onChange={(event) => setDurationValue(Number(event.target.value))}
-                          required
+                          aria-invalid={Boolean(showValidationErrors && bookingValidationErrors.duration)}
+                          aria-describedby={
+                            showValidationErrors && bookingValidationErrors.duration
+                              ? 'booking-duration-error'
+                              : undefined
+                          }
                         />
+                      )}
+                      {showValidationErrors && bookingValidationErrors.duration && (
+                        <span className="booking-field-error" id="booking-duration-error" role="alert">
+                          {bookingValidationErrors.duration}
+                        </span>
                       )}
                     </label>
                     <label>
@@ -622,8 +679,18 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                           };
                           dateInput.showPicker?.();
                         }}
-                        required
+                        aria-invalid={Boolean(showValidationErrors && bookingValidationErrors.date)}
+                        aria-describedby={
+                          showValidationErrors && bookingValidationErrors.date
+                            ? 'booking-date-error'
+                            : undefined
+                        }
                       />
+                      {showValidationErrors && bookingValidationErrors.date && (
+                        <span className="booking-field-error" id="booking-date-error" role="alert">
+                          {bookingValidationErrors.date}
+                        </span>
+                      )}
                     </label>
                   </div>
                   <div className="booking-form-row">
@@ -633,8 +700,18 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                         type="time"
                         value={startHour}
                         onChange={(event) => setStartHour(event.target.value)}
-                        required
+                        aria-invalid={Boolean(showValidationErrors && bookingValidationErrors.time)}
+                        aria-describedby={
+                          showValidationErrors && bookingValidationErrors.time
+                            ? 'booking-time-error'
+                            : undefined
+                        }
                       />
+                      {showValidationErrors && bookingValidationErrors.time && (
+                        <span className="booking-field-error" id="booking-time-error" role="alert">
+                          {bookingValidationErrors.time}
+                        </span>
+                      )}
                     </label>
                   </div>
                   <label>
@@ -659,6 +736,7 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                       options={provinces}
                       value={provinceCode}
                       loading={loadingProvinces}
+                      error={showValidationErrors ? bookingValidationErrors.province : ''}
                       onChange={(code) => {
                         setProvinceCode(code);
                         setWardCode('');
@@ -673,6 +751,7 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                       value={wardCode}
                       disabled={!provinceCode}
                       loading={loadingWards}
+                      error={showValidationErrors ? bookingValidationErrors.ward : ''}
                       onChange={setWardCode}
                     />
                   </div>
@@ -683,8 +762,18 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                       value={serviceAddress}
                       onChange={(event) => setServiceAddress(event.target.value)}
                       placeholder="Ví dụ: 12 đường 30/4"
-                      required
+                      aria-invalid={Boolean(showValidationErrors && bookingValidationErrors.address)}
+                      aria-describedby={
+                        showValidationErrors && bookingValidationErrors.address
+                          ? 'booking-address-error'
+                          : undefined
+                      }
                     />
+                    {showValidationErrors && bookingValidationErrors.address && (
+                      <span className="booking-field-error" id="booking-address-error" role="alert">
+                        {bookingValidationErrors.address}
+                      </span>
+                    )}
                   </label>
                   <label>
                     Ghi chú
@@ -724,7 +813,10 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                     <button
                       type="submit"
                       className="btn-modal-book"
-                      disabled={bookingLoading || detailLoading || availablePackages.length === 0}
+                      disabled={
+                        bookingLoading ||
+                        detailLoading
+                      }
                     >
                       {bookingLoading ? 'Đang gửi...' : 'Xác nhận đặt lịch'}
                     </button>

@@ -152,8 +152,8 @@ export const PostCareRequestPage: React.FC = () => {
       return;
     }
 
-    if (!description.trim() || description.trim().length < 10) {
-      toast.error('Vui lòng mô tả chi tiết nhu cầu chăm sóc (tối thiểu 10 ký tự).');
+    if (!description.trim()) {
+      toast.error('Vui lòng nhập mô tả nhu cầu chăm sóc và tình trạng sức khỏe.');
       return;
     }
 

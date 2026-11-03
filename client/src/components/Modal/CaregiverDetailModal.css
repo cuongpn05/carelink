@@ -354,6 +354,12 @@
   font-size: 14px;
 }
 
+.booking-form input[aria-invalid="true"],
+.booking-form select[aria-invalid="true"],
+.searchable-location-input[aria-invalid="true"] {
+  border-color: #dc2626;
+}
+
 .booking-form textarea {
   resize: vertical;
 }
@@ -504,6 +510,14 @@
 .booking-error {
   color: #b42318;
   font-size: 13px;
+}
+
+.booking-field-error {
+  display: block;
+  margin-top: 2px;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 400;
 }
 
 .booking-success {

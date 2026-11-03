@@ -100,10 +100,10 @@ const createCareRequest = async (req, res) => {
       });
     }
 
-    if (!description || description.trim().length < 10) {
+    if (!description || !description.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'Vui lòng mô tả chi tiết nhu cầu chăm sóc và tình trạng sức khỏe (ít nhất 10 ký tự).',
+        message: 'Vui lòng nhập mô tả nhu cầu chăm sóc và tình trạng sức khỏe.',
       });
     }
 
