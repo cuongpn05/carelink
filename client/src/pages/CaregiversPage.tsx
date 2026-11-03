@@ -1,4 +1,4 @@
-import React, { FormEvent, useEffect, useState } from 'react';
+import React, { FormEvent, useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Search,
@@ -20,6 +20,7 @@ import {
   Zap,
   ChevronDown,
   X,
+  Check,
 } from 'lucide-react';
 import { Navbar } from '../components/Header/Navbar';
 import { Footer } from '../components/Footer/Footer';
@@ -180,7 +181,16 @@ export const CaregiversPage: React.FC = () => {
   const [selectedProvinceCode, setSelectedProvinceCode] = useState('92'); // default Can Tho (92)
   const [selectedProvinceName, setSelectedProvinceName] = useState('Cần Thơ');
   const [selectedWardName, setSelectedWardName] = useState('');
+
+  // Custom Dropdown states inside popover
+  const [isProvinceMenuOpen, setIsProvinceMenuOpen] = useState(false);
+  const [isWardMenuOpen, setIsWardMenuOpen] = useState(false);
+  const [provinceSearch, setProvinceSearch] = useState('');
+  const [wardSearch, setWardSearch] = useState('');
+
   const locationPickerRef = React.useRef<HTMLDivElement>(null);
+  const provinceMenuRef = React.useRef<HTMLDivElement>(null);
+  const wardMenuRef = React.useRef<HTMLDivElement>(null);
 
   const [page, setPage] = useState(1);
   const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
@@ -196,13 +206,33 @@ export const CaregiversPage: React.FC = () => {
   // Favorite IDs state
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
 
+  // Sắp xếp tỉnh thành thông minh: Ghim Cần Thơ, TP.HCM, Hà Nội lên đầu
+  const sortProvincesSmart = (items: ProvinceItem[]): ProvinceItem[] => {
+    const priorityCodes = ['92', '79', '1', '48'];
+    const priorityList: ProvinceItem[] = [];
+    const otherList: ProvinceItem[] = [];
+
+    items.forEach((p) => {
+      if (priorityCodes.includes(p.code)) {
+        priorityList.push(p);
+      } else {
+        otherList.push(p);
+      }
+    });
+
+    priorityList.sort((a, b) => priorityCodes.indexOf(a.code) - priorityCodes.indexOf(b.code));
+    otherList.sort((a, b) => (a.shortName || a.name).localeCompare(b.shortName || b.name, 'vi'));
+    return [...priorityList, ...otherList];
+  };
+
   // Load administrative provinces on mount
   useEffect(() => {
     getAdministrativeProvinces()
       .then((provs) => {
         if (provs && provs.length > 0) {
-          setProvinces(provs);
-          const ct = provs.find((p) => p.shortName.includes('Cần Thơ') || p.name.includes('Cần Thơ'));
+          const sorted = sortProvincesSmart(provs);
+          setProvinces(sorted);
+          const ct = sorted.find((p) => p.code === '92' || p.shortName.includes('Cần Thơ') || p.name.includes('Cần Thơ'));
           if (ct) {
             setSelectedProvinceCode(ct.code);
             setSelectedProvinceName(ct.shortName || ct.name);
@@ -223,30 +253,40 @@ export const CaregiversPage: React.FC = () => {
     }
   }, [selectedProvinceCode]);
 
-  // Click outside listener for location popover
+  // Click outside listener for location popover and custom dropdowns
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (locationPickerRef.current && !locationPickerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (provinceMenuRef.current && !provinceMenuRef.current.contains(target)) {
+        setIsProvinceMenuOpen(false);
+      }
+      if (wardMenuRef.current && !wardMenuRef.current.contains(target)) {
+        setIsWardMenuOpen(false);
+      }
+      if (locationPickerRef.current && !locationPickerRef.current.contains(target)) {
         setIsLocationOpen(false);
+        setIsProvinceMenuOpen(false);
+        setIsWardMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const code = e.target.value;
-    setSelectedProvinceCode(code);
-    const found = provinces.find((p) => p.code === code);
-    const pName = found ? (found.shortName || found.name) : '';
+  const handleSelectProvince = (prov: ProvinceItem) => {
+    setSelectedProvinceCode(prov.code);
+    const pName = prov.shortName || prov.name;
     setSelectedProvinceName(pName);
     setSelectedWardName('');
+    setProvinceSearch('');
+    setIsProvinceMenuOpen(false);
     updateField('area', pName);
   };
 
-  const handleWardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const wName = e.target.value;
+  const handleSelectWard = (wName: string) => {
     setSelectedWardName(wName);
+    setWardSearch('');
+    setIsWardMenuOpen(false);
     if (wName) {
       const cleanW = wName.replace(/^(Phường|Xã|Thị trấn|Quận|Huyện)\s+/, '');
       updateField('area', cleanW);
@@ -265,8 +305,50 @@ export const CaregiversPage: React.FC = () => {
       setSelectedProvinceName('Cần Thơ');
       updateField('area', areaName);
     }
+    setIsProvinceMenuOpen(false);
+    setIsWardMenuOpen(false);
     setIsLocationOpen(false);
   };
+
+  const filteredProvinces = useMemo(() => {
+    const query = provinceSearch.trim().toLowerCase();
+    if (!query) return provinces;
+    return provinces.filter(
+      (p) =>
+        p.name.toLowerCase().includes(query) ||
+        (p.shortName && p.shortName.toLowerCase().includes(query))
+    );
+  }, [provinces, provinceSearch]);
+
+  const defaultCanThoWards = useMemo<WardItem[]>(
+    () => [
+      { code: 'NK', name: 'Quận Ninh Kiều' },
+      { code: 'CR', name: 'Quận Cái Răng' },
+      { code: 'BT', name: 'Quận Bình Thủy' },
+      { code: 'PD', name: 'Huyện Phong Điền' },
+      { code: 'OM', name: 'Quận Ô Môn' },
+      { code: 'TN', name: 'Quận Thốt Nốt' },
+    ],
+    []
+  );
+
+  const displayWards = useMemo(() => {
+    if (selectedProvinceCode === '92') {
+      const existingNames = new Set(wards.map((w) => w.name));
+      const combined = [...defaultCanThoWards];
+      wards.forEach((w) => {
+        if (!existingNames.has(w.name)) combined.push(w);
+      });
+      return combined;
+    }
+    return wards;
+  }, [wards, selectedProvinceCode, defaultCanThoWards]);
+
+  const filteredWards = useMemo(() => {
+    const query = wardSearch.trim().toLowerCase();
+    if (!query) return displayWards;
+    return displayWards.filter((w) => w.name.toLowerCase().includes(query));
+  }, [displayWards, wardSearch]);
 
   const toggleFavorite = (id: string) => {
     setFavoriteIds((prev) => {
@@ -482,83 +564,141 @@ export const CaregiversPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Popover Dropdown Tỉnh/Thành & Phường/Xã */}
+                    {/* Popover Dropdown Tỉnh/Thành & Phường/Xã (Custom UI) */}
                     {isLocationOpen && (
                       <div className="location-popover-card">
                         <div className="location-popover-header">
-                          <span className="location-popover-title">Chọn khu vực chăm sóc</span>
+                          <span className="location-popover-title">
+                            <MapPin size={16} className="popover-pin-icon" />
+                            Chọn khu vực chăm sóc
+                          </span>
                           <button
                             type="button"
                             className="btn-close-popover"
-                            onClick={() => setIsLocationOpen(false)}
+                            onClick={() => {
+                              setIsLocationOpen(false);
+                              setIsProvinceMenuOpen(false);
+                              setIsWardMenuOpen(false);
+                            }}
                           >
                             <X size={14} />
                           </button>
                         </div>
 
                         <div className="location-popover-body">
-                          {/* 1. Tỉnh / Thành phố */}
-                          <div className="location-select-group">
-                            <label>Tỉnh / Thành phố</label>
-                            <select
-                              value={selectedProvinceCode}
-                              onChange={handleProvinceChange}
-                              className="location-select-control"
-                            >
-                              {provinces.length > 0 ? (
-                                provinces.map((prov) => (
-                                  <option key={prov.code} value={prov.code}>
-                                    {prov.name}
-                                  </option>
-                                ))
-                              ) : (
-                                <>
-                                  <option value="92">Thành phố Cần Thơ</option>
-                                  <option value="79">Thành phố Hồ Chí Minh</option>
-                                  <option value="1">Thành phố Hà Nội</option>
-                                </>
+                          {/* 1. Tỉnh / Thành phố (Custom Dropdown) */}
+                          <div className="location-field-block">
+                            <label className="location-field-label">Tỉnh / Thành phố</label>
+                            <div className="custom-dropdown-wrap" ref={provinceMenuRef}>
+                              <button
+                                type="button"
+                                className={`custom-dropdown-btn ${isProvinceMenuOpen ? 'active' : ''}`}
+                                onClick={() => {
+                                  setIsProvinceMenuOpen((prev) => !prev);
+                                  setIsWardMenuOpen(false);
+                                }}
+                              >
+                                <span>{selectedProvinceName || 'Chọn Tỉnh / Thành phố'}</span>
+                                <ChevronDown size={14} className={`dropdown-chevron ${isProvinceMenuOpen ? 'open' : ''}`} />
+                              </button>
+
+                              {isProvinceMenuOpen && (
+                                <div className="custom-dropdown-menu">
+                                  <div className="dropdown-search-wrap">
+                                    <Search size={13} />
+                                    <input
+                                      type="text"
+                                      placeholder="Tìm tỉnh thành..."
+                                      value={provinceSearch}
+                                      onChange={(e) => setProvinceSearch(e.target.value)}
+                                      autoFocus
+                                    />
+                                  </div>
+                                  <div className="custom-dropdown-list">
+                                    {filteredProvinces.map((prov) => (
+                                      <div
+                                        key={prov.code}
+                                        className={`custom-dropdown-item ${selectedProvinceCode === prov.code ? 'selected' : ''}`}
+                                        onClick={() => handleSelectProvince(prov)}
+                                      >
+                                        <span>{prov.name}</span>
+                                        {selectedProvinceCode === prov.code && <Check size={14} className="item-check" />}
+                                      </div>
+                                    ))}
+                                    {filteredProvinces.length === 0 && (
+                                      <div className="dropdown-empty-msg">Không tìm thấy tỉnh thành</div>
+                                    )}
+                                  </div>
+                                </div>
                               )}
-                            </select>
+                            </div>
                           </div>
 
-                          {/* 2. Phường / Xã / Quận */}
-                          <div className="location-select-group">
-                            <label>Phường / Xã / Quận</label>
-                            <select
-                              value={selectedWardName}
-                              onChange={handleWardChange}
-                              className="location-select-control"
-                            >
-                              <option value="">Tất cả phường / xã</option>
-                              {wards.length > 0 ? (
-                                wards.map((ward) => (
-                                  <option key={ward.code} value={ward.name}>
-                                    {ward.name}
-                                  </option>
-                                ))
-                              ) : (
-                                <>
-                                  <option value="Ninh Kiều">Quận Ninh Kiều</option>
-                                  <option value="Cái Răng">Quận Cái Răng</option>
-                                  <option value="Bình Thủy">Quận Bình Thủy</option>
-                                  <option value="Phong Điền">Huyện Phong Điền</option>
-                                  <option value="Ô Môn">Quận Ô Môn</option>
-                                  <option value="Thốt Nốt">Quận Thốt Nốt</option>
-                                </>
+                          {/* 2. Phường / Xã / Quận (Custom Dropdown) */}
+                          <div className="location-field-block">
+                            <label className="location-field-label">Phường / Xã / Quận</label>
+                            <div className="custom-dropdown-wrap" ref={wardMenuRef}>
+                              <button
+                                type="button"
+                                className={`custom-dropdown-btn ${isWardMenuOpen ? 'active' : ''}`}
+                                onClick={() => {
+                                  setIsWardMenuOpen((prev) => !prev);
+                                  setIsProvinceMenuOpen(false);
+                                }}
+                              >
+                                <span>{selectedWardName || 'Tất cả phường / xã'}</span>
+                                <ChevronDown size={14} className={`dropdown-chevron ${isWardMenuOpen ? 'open' : ''}`} />
+                              </button>
+
+                              {isWardMenuOpen && (
+                                <div className="custom-dropdown-menu">
+                                  <div className="dropdown-search-wrap">
+                                    <Search size={13} />
+                                    <input
+                                      type="text"
+                                      placeholder="Tìm phường xã, quận huyện..."
+                                      value={wardSearch}
+                                      onChange={(e) => setWardSearch(e.target.value)}
+                                      autoFocus
+                                    />
+                                  </div>
+                                  <div className="custom-dropdown-list">
+                                    <div
+                                      className={`custom-dropdown-item ${!selectedWardName ? 'selected' : ''}`}
+                                      onClick={() => handleSelectWard('')}
+                                    >
+                                      <span>Tất cả phường / xã</span>
+                                      {!selectedWardName && <Check size={14} className="item-check" />}
+                                    </div>
+                                    {filteredWards.map((w, idx) => (
+                                      <div
+                                        key={`${w.code}-${idx}`}
+                                        className={`custom-dropdown-item ${selectedWardName === w.name ? 'selected' : ''}`}
+                                        onClick={() => handleSelectWard(w.name)}
+                                      >
+                                        <span>{w.name}</span>
+                                        {selectedWardName === w.name && <Check size={14} className="item-check" />}
+                                      </div>
+                                    ))}
+                                    {filteredWards.length === 0 && (
+                                      <div className="dropdown-empty-msg">Không tìm thấy phường xã</div>
+                                    )}
+                                  </div>
+                                </div>
                               )}
-                            </select>
+                            </div>
                           </div>
 
                           {/* 3. Gợi ý nhanh khu vực Cần Thơ */}
                           <div className="location-quick-picks">
-                            <span className="quick-picks-label">Gợi ý khu vực Cần Thơ:</span>
+                            <span className="quick-picks-label">Gợi ý chọn nhanh tại Cần Thơ:</span>
                             <div className="quick-picks-tags">
-                              {['Ninh Kiều', 'Cái Răng', 'Bình Thủy', 'Phong Điền', 'Ô Môn', 'Tất cả Cần Thơ'].map((areaName) => (
+                              {['Tất cả Cần Thơ', 'Ninh Kiều', 'Cái Răng', 'Bình Thủy', 'Phong Điền', 'Ô Môn'].map((areaName) => (
                                 <button
                                   key={areaName}
                                   type="button"
                                   className={`quick-tag ${
-                                    (areaName === 'Tất cả Cần Thơ' && !selectedWardName) ||
+                                    (areaName === 'Tất cả Cần Thơ' && (!selectedWardName || formValues.area === 'Cần Thơ')) ||
                                     selectedWardName.includes(areaName) ||
                                     formValues.area.includes(areaName)
                                       ? 'active'
@@ -577,7 +717,11 @@ export const CaregiversPage: React.FC = () => {
                           <button
                             type="button"
                             className="btn-apply-location"
-                            onClick={() => setIsLocationOpen(false)}
+                            onClick={() => {
+                              setIsLocationOpen(false);
+                              setIsProvinceMenuOpen(false);
+                              setIsWardMenuOpen(false);
+                            }}
                           >
                             Xác nhận khu vực
                           </button>

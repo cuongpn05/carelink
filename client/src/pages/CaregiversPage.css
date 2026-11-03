@@ -404,19 +404,20 @@
 
 .location-popover-card {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 10px);
   left: 0;
-  width: 320px;
+  width: 380px;
+  max-width: calc(100vw - 32px);
   background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 16px;
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
-  padding: 16px;
-  z-index: 100;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(15, 23, 42, 0.04);
+  padding: 18px 20px;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  animation: locationFadeIn 0.2s ease-out;
+  gap: 14px;
+  animation: locationFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes locationFadeIn {
@@ -434,79 +435,208 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 8px;
+  padding-bottom: 10px;
   border-bottom: 1px solid #f1f5f9;
 }
 
 .location-popover-title {
-  font-size: 13.5px;
-  font-weight: 700;
+  font-size: 14.5px;
+  font-weight: 800;
   color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.popover-pin-icon {
+  color: #2563eb;
 }
 
 .btn-close-popover {
-  background: none;
-  border: none;
-  color: #94a3b8;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.15s ease;
 }
 
 .btn-close-popover:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #fca5a5;
 }
 
 .location-popover-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
-.location-select-group {
+.location-field-block {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
-.location-select-group label {
-  font-size: 11.5px;
+.location-field-label {
+  font-size: 12px;
   font-weight: 700;
-  color: #475569;
+  color: #334155;
 }
 
-.location-select-control {
+.custom-dropdown-wrap {
+  position: relative;
   width: 100%;
-  height: 38px;
-  padding: 0 10px;
+}
+
+.custom-dropdown-btn {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.custom-dropdown-btn:hover {
+  border-color: #93c5fd;
+  background: #f8fafc;
+}
+
+.custom-dropdown-btn.active {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.dropdown-chevron {
+  color: #64748b;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.dropdown-chevron.open {
+  transform: rotate(180deg);
+  color: #2563eb;
+}
+
+.custom-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+  background: #ffffff;
   border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: locationFadeIn 0.15s ease-out;
+}
+
+.dropdown-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #64748b;
+}
+
+.dropdown-search-wrap input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 12.5px;
+  color: #0f172a;
+}
+
+.custom-dropdown-list {
+  max-height: 170px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.custom-dropdown-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-dropdown-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.custom-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
   border-radius: 8px;
   font-size: 13px;
-  color: #0f172a;
-  background: #ffffff;
-  outline: none;
-  transition: border-color 0.2s;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.location-select-control:focus {
-  border-color: #2563eb;
+.custom-dropdown-item:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.custom-dropdown-item.selected {
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.item-check {
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.dropdown-empty-msg {
+  padding: 12px;
+  text-align: center;
+  font-size: 12.5px;
+  color: #94a3b8;
 }
 
 .location-quick-picks {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed #e2e8f0;
 }
 
 .quick-picks-label {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
 }
 
 .quick-picks-tags {
@@ -516,12 +646,12 @@
 }
 
 .quick-tag {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
-  color: #3b82f6;
+  color: #2563eb;
   background: #eff6ff;
   border: 1px solid #bfdbfe;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 9999px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -529,35 +659,41 @@
 
 .quick-tag:hover {
   background: #dbeafe;
+  border-color: #93c5fd;
+  transform: translateY(-1px);
 }
 
 .quick-tag.active {
   background: #2563eb;
   color: #ffffff;
   border-color: #2563eb;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
 }
 
 .location-popover-footer {
   display: flex;
   justify-content: flex-end;
-  padding-top: 6px;
+  padding-top: 8px;
   border-top: 1px solid #f1f5f9;
 }
 
 .btn-apply-location {
-  padding: 7px 16px;
-  border-radius: 8px;
+  padding: 9px 20px;
+  border-radius: 10px;
   background: #2563eb;
   color: #ffffff;
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 700;
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
 }
 
 .btn-apply-location:hover {
   background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 /* Collapsible Advanced Filters */
