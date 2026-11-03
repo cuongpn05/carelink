@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Home, User, BriefcaseMedical, Baby, ArrowRight } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { serviceCategories } from '../../data/mockData';
 import { ServiceCategory } from '../../types';
 import './ServiceCategories.css';
@@ -30,8 +31,22 @@ export const ServiceCategories: React.FC<ServiceCategoriesProps> = ({ onSelectCa
   const handleCardClick = (category: ServiceCategory) => {
     if (onSelectCategory) {
       onSelectCategory(category);
+    } else if (category.id === 'elderly' || category.id === 'elderly-care') {
+      navigate('/services/elderly-care');
     } else {
-      navigate(`/caregivers?service=${category.id}`);
+      toast('Tính năng phát triển trong tương lai', {
+        icon: '🚀',
+        duration: 3500,
+        style: {
+          borderRadius: '12px',
+          background: '#0f172a',
+          color: '#ffffff',
+          fontSize: '14px',
+          fontWeight: 600,
+          border: '1px solid #334155',
+          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
+        },
+      });
     }
   };
 

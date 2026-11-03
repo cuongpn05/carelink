@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import { Footer } from '../components/Footer/Footer';
 import { CaregiverDetailModal } from '../components/Modal/CaregiverDetailModal';
@@ -185,7 +186,23 @@ export const HomePage: React.FC = () => {
   }, []);
 
   const handleSelectCategory = (categoryId: string) => {
-    navigate(`/caregivers?service=${categoryId}`);
+    if (categoryId === 'elderly-care') {
+      navigate('/services/elderly-care');
+    } else {
+      toast('Tính năng phát triển trong tương lai', {
+        icon: '🚀',
+        duration: 3500,
+        style: {
+          borderRadius: '12px',
+          background: '#0f172a',
+          color: '#ffffff',
+          fontSize: '14px',
+          fontWeight: 600,
+          border: '1px solid #334155',
+          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
+        },
+      });
+    }
   };
 
   return (

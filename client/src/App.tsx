@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { HomePage } from './pages/HomePage';
 import { ServicesPage } from './pages/ServicesPage';
+import { ElderlyCareServicePage } from './pages/ElderlyCareServicePage';
 import { CaregiversPage } from './pages/CaregiversPage';
 import { AboutPage } from './pages/AboutPage';
 import { AuthPage } from './pages/AuthPage';
@@ -54,6 +55,8 @@ const App: React.FC = () => {
           <Route path="/post-care-request" element={<PostCareRequestPage />} />
           <Route path="/my-bookings" element={<MyBookingsPage />} />
           <Route path="/services" element={<ServicesPage />} />
+          <Route path="/services/elderly-care" element={<ElderlyCareServicePage />} />
+          <Route path="/services/elderly" element={<ElderlyCareServicePage />} />
           <Route path="/caregivers" element={<CaregiversPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/profile" element={<ProfilePage />} />
