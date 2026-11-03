@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const CaregiverProfile = require("../models/CaregiverProfile");
 const User = require("../models/User");
+const { calculateDistancePricing } = require("../services/geoDistanceService");
+const { checkCaregiverAvailability } = require("../services/availabilityService");
 
 const getCaregivers = async (req, res) => {
   try {
@@ -359,7 +361,149 @@ const getCaregiverDetail = async (req, res) => {
     });
   }
 };
+
+/**
+ * Tìm kiếm & Khớp người chăm sóc người già theo tọa độ (Geospatial & Distance Pricing Engine)
+ * GET /api/caregivers/match-elderly
+ */
+const matchElderlyCaregivers = async (req, res) => {
+  try {
+    const { lng, lat, packageType = 'HOURLY', durationValue, startTime, endTime } = req.query;
+
+    if (lng === undefined || lat === undefined || lng === '' || lat === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Tọa độ lng và lat là bắt buộc.',
+      });
+    }
+
+    const longitude = parseFloat(lng);
+    const latitude = parseFloat(lat);
+
+    if (
+      Number.isNaN(longitude) ||
+      Number.isNaN(latitude) ||
+      longitude < -180 ||
+      longitude > 180 ||
+      latitude < -90 ||
+      latitude > 90
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tọa độ lng (-180 đến 180) hoặc lat (-90 đến 90) không hợp lệ.',
+      });
+    }
+
+    const pipeline = [
+      {
+        $geoNear: {
+          near: {
+            type: 'Point',
+            coordinates: [longitude, latitude],
+          },
+          distanceField: 'distanceMeters',
+          spherical: true,
+          query: {
+            approvalStatus: 'APPROVED',
+            skills: { $in: ['Chăm sóc người cao tuổi', /người cao tuổi/i, /người già/i] },
+          },
+        },
+      },
+      {
+        $addFields: {
+          distanceKm: { $round: [{ $divide: ['$distanceMeters', 1000] }, 1] },
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $lte: ['$distanceKm', { $ifNull: ['$serviceRadius', 15] }],
+          },
+        },
+      },
+      {
+        $sort: {
+          distanceKm: 1,
+          priorityScore: -1,
+          ratingAvg: -1,
+        },
+      },
+    ];
+
+    const matchedCaregivers = await CaregiverProfile.aggregate(pipeline);
+
+    const normPackageType = (packageType || 'HOURLY').toUpperCase();
+    const normDuration = Number(durationValue) || (normPackageType === 'DAILY' ? 1 : 4);
+
+    let parsedStart = null;
+    let parsedEnd = null;
+    if (startTime && endTime) {
+      parsedStart = new Date(startTime);
+      parsedEnd = new Date(endTime);
+      if (Number.isNaN(parsedStart.getTime()) || Number.isNaN(parsedEnd.getTime())) {
+        parsedStart = null;
+        parsedEnd = null;
+      }
+    }
+
+    const results = [];
+    for (const caregiver of matchedCaregivers) {
+      if (parsedStart && parsedEnd && caregiver.accountId) {
+        const isFree = await checkCaregiverAvailability(caregiver.accountId, parsedStart, parsedEnd);
+        if (!isFree) {
+          continue;
+        }
+      }
+
+      const hourlyRate = caregiver.pricing?.hourlyRate || caregiver.hourlyRate || 100000;
+      const dailyRate = caregiver.pricing?.dailyRate || hourlyRate * 10 || 800000;
+      const baseRate = normPackageType === 'DAILY' ? dailyRate : hourlyRate;
+      const basePrice = baseRate * normDuration;
+
+      const distancePricing = calculateDistancePricing(caregiver.distanceKm);
+      const distanceFee = distancePricing.surchargeAmount;
+      const totalEstimatedPrice = basePrice + distanceFee;
+
+      results.push({
+        ...caregiver,
+        distancePricing: {
+          distanceKm: caregiver.distanceKm,
+          isFree: distancePricing.isFree,
+          surchargeAmount: distanceFee,
+        },
+        calculatedPricing: {
+          packageType: normPackageType,
+          durationValue: normDuration,
+          baseRate,
+          basePrice,
+          distanceKm: caregiver.distanceKm,
+          distanceFee,
+          totalEstimatedPrice,
+        },
+      });
+    }
+
+    const populated = await CaregiverProfile.populate(results, {
+      path: 'userId',
+      select: 'fullName avatarUrl phone email',
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: populated.length,
+      data: populated,
+    });
+  } catch (error) {
+    console.error('matchElderlyCaregivers error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi tìm kiếm người chăm sóc theo vị trí.',
+    });
+  }
+};
+
 module.exports = {
+  matchElderlyCaregivers,
   getCaregivers,
   getFeaturedCaregivers,
   getCaregiverDetail,

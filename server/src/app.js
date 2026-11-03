@@ -13,6 +13,7 @@ const userRoutes = require('./routes/user.route');
 const caregiverRoutes = require('./routes/caregiverRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const careRequestRoutes = require('./routes/careRequestRoutes');
+const hospitalRoutes = require('./routes/hospitalRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -44,6 +45,10 @@ app.use('/api/v1/user', userRoutes);
 app.use('/api/caregivers', caregiverRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
+
+// Hospital Routes
+app.use('/api/hospitals', hospitalRoutes);
+app.use('/api/v1/hospitals', hospitalRoutes);
 
 // Care Request Marketplace Routes
 app.use('/api/care-requests', careRequestRoutes);

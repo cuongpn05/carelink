@@ -11,6 +11,18 @@ const connectDB = async () => {
     await mongoose.connect(connStr);
 
     console.log("MongoDB connected successfully");
+
+    // Auto-seed hospitals if collection is empty
+    try {
+      const Hospital = require('../models/Hospital');
+      const count = await Hospital.countDocuments();
+      if (count === 0) {
+        const { seedHospitals } = require('../seeders/hospitalSeeder');
+        await seedHospitals();
+      }
+    } catch (seedErr) {
+      console.warn("Could not auto-seed hospitals:", seedErr.message);
+    }
   } catch (error) {
     console.error("Database connection error:", error.message);
     throw error;

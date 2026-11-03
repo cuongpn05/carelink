@@ -15,6 +15,8 @@ import {
   Calendar 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ElderlyBookingModal } from './ElderlyBookingModal';
+import { Heart } from 'lucide-react';
 import './CaregiverDetailModal.css';
 
 const packageUnitByType: Record<BookingPackage, string> = {
@@ -42,6 +44,7 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
   const [detailError, setDetailError] = useState('');
   const [retryCount, setRetryCount] = useState(0);
   const [bookingFormOpen, setBookingFormOpen] = useState(false);
+  const [elderlyModalOpen, setElderlyModalOpen] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState('');
   const [createdBooking, setCreatedBooking] = useState<Booking | null>(null);

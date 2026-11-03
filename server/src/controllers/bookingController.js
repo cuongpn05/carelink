@@ -9,6 +9,10 @@ const {
   calculateCaregiverCancellationPenalty,
 } = require('../utils/booking.util');
 const { checkCaregiverAvailability } = require('../services/availabilityService');
+const {
+  calculateHaversineDistance,
+  calculateDistancePricing,
+} = require('../services/geoDistanceService');
 
 const enrichBooking = async (booking, viewerAccountId) => {
   const bookingData = typeof booking.toObject === 'function' ? booking.toObject() : booking;
@@ -153,13 +157,29 @@ const createBooking = async (req, res) => {
       preferredGender,
       requiredSkills,
       note,
+      careNotes,
       paymentMethod,
+      location,
     } = req.body;
 
-    if (!caregiverId || !serviceArea || !serviceAddress || !startTime) {
+    const targetServiceAddress = (
+      location?.fullAddress ||
+      location?.detail ||
+      serviceAddress ||
+      ''
+    ).trim();
+
+    const targetServiceArea = (
+      serviceArea ||
+      location?.wardName ||
+      location?.provinceName ||
+      'Cần Thơ'
+    ).trim();
+
+    if (!caregiverId || !targetServiceArea || !targetServiceAddress || !startTime) {
       return res.status(400).json({
         success: false,
-        message: 'Vui lòng cung cấp caregiverId, startTime, serviceArea và serviceAddress.',
+        message: 'Vui lòng cung cấp caregiverId, startTime, địa điểm hoặc địa chỉ chăm sóc.',
       });
     }
 
@@ -167,18 +187,6 @@ const createBooking = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'caregiverId không hợp lệ.',
-      });
-    }
-
-    if (
-      typeof serviceArea !== 'string' ||
-      typeof serviceAddress !== 'string' ||
-      !serviceArea.trim() ||
-      !serviceAddress.trim()
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: 'serviceArea và serviceAddress không được để trống.',
       });
     }
 
@@ -281,6 +289,73 @@ const createBooking = async (req, res) => {
       });
     }
 
+    // Tính toán phụ phí di chuyển độc lập tại backend (Geospatial & Distance Pricing Engine)
+    let distanceKm = 0;
+    let distanceFee = 0;
+    const destCoords = location?.coordinates;
+
+    if (
+      Array.isArray(destCoords) &&
+      destCoords.length === 2 &&
+      Number.isFinite(Number(destCoords[0])) &&
+      Number.isFinite(Number(destCoords[1])) &&
+      caregiver.serviceLocation?.coordinates &&
+      Array.isArray(caregiver.serviceLocation.coordinates) &&
+      caregiver.serviceLocation.coordinates.length === 2
+    ) {
+      distanceKm = calculateHaversineDistance(
+        caregiver.serviceLocation.coordinates,
+        [Number(destCoords[0]), Number(destCoords[1])]
+      );
+      const distancePricing = calculateDistancePricing(distanceKm);
+      distanceFee = distancePricing.surchargeAmount;
+    }
+
+    const subtotal = bookingDetails.subtotal || bookingDetails.totalPrice || 0;
+    const finalTotalPrice = subtotal + distanceFee;
+
+    const locationSnapshot = {
+      placeType: location?.placeType || 'home',
+      recipientName: location?.recipientName || '',
+      recipientPhone: location?.recipientPhone || '',
+      provinceCode: location?.provinceCode || '',
+      provinceName: location?.provinceName || '',
+      wardCode: location?.wardCode || '',
+      wardName: location?.wardName || '',
+      detail: location?.detail || targetServiceAddress,
+      fullAddress: location?.fullAddress || targetServiceAddress,
+      hospitalId: location?.hospitalId || null,
+      hospitalName: location?.hospitalName || '',
+      department: location?.department || '',
+      roomNumber: location?.roomNumber || '',
+      bedNumber: location?.bedNumber || '',
+      coordinates:
+        Array.isArray(destCoords) &&
+        destCoords.length === 2 &&
+        Number.isFinite(Number(destCoords[0])) &&
+        Number.isFinite(Number(destCoords[1]))
+          ? [Number(destCoords[0]), Number(destCoords[1])]
+          : undefined,
+    };
+
+    const baseRate =
+      packageType === 'DAILY'
+        ? (caregiver.pricing?.dailyRate ?? caregiver.get('dailyRate') ?? 800000)
+        : (caregiver.pricing?.hourlyRate ?? caregiver.get('hourlyRate') ?? 100000);
+
+    const pricingSnapshot = {
+      baseRate,
+      durationUnit: packageType,
+      durationValue: Number(durationValue),
+      subtotal,
+      serviceFee: 0,
+      discountAmount: 0,
+      distanceKm,
+      distanceFee,
+      totalPrice: finalTotalPrice,
+      currency: 'VND',
+    };
+
     const booking = await Booking.create({
       customerId: req.account._id,
       caregiverId: caregiverAccountId,
@@ -292,12 +367,16 @@ const createBooking = async (req, res) => {
       packageType,
       durationValue: Number(durationValue),
       ...bookingDetails,
-      serviceArea: serviceArea.trim(),
-      serviceAddress: serviceAddress.trim(),
+      totalPrice: finalTotalPrice,
+      serviceArea: targetServiceArea,
+      serviceAddress: targetServiceAddress,
+      locationSnapshot,
+      pricingSnapshot,
       preferredGender,
       requiredSkills,
-      note,
-      paymentMethod,
+      note: note || careNotes || '',
+      careNotes: careNotes || note || '',
+      paymentMethod: paymentMethod || 'CASH',
     });
 
     const enriched = await enrichBooking(booking, req.account._id);
@@ -323,9 +402,6 @@ const createBooking = async (req, res) => {
   }
 };
 
-/**
- * Lấy danh sách lịch đặt của tài khoản hiện tại (Khách hàng hoặc Người chăm sóc)
- */
 const getMyBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({

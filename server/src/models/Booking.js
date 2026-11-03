@@ -26,6 +26,9 @@ const locationSnapshotSchema = new mongoose.Schema(
       default: 'home',
       required: true,
     },
+    // Thông tin người nhận dịch vụ / đại diện liên hệ
+    recipientName: { type: String, default: '', trim: true },
+    recipientPhone: { type: String, default: '', trim: true },
     // Thông tin địa chỉ hành chính
     provinceCode: { type: String, default: '', trim: true },
     provinceName: { type: String, default: '', trim: true },
@@ -83,6 +86,8 @@ const pricingSnapshotSchema = new mongoose.Schema(
     subtotal: { type: Number, default: 0 },
     serviceFee: { type: Number, default: 0 },
     discountAmount: { type: Number, default: 0 },
+    distanceKm: { type: Number, default: 0 },
+    distanceFee: { type: Number, default: 0 },
     totalPrice: { type: Number, default: 0 },
     currency: { type: String, default: 'VND' },
   },
@@ -188,6 +193,12 @@ const bookingSchema = new mongoose.Schema(
     }, // Các yêu cầu công việc trong ca đó
 
     note: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+
+    careNotes: {
       type: String,
       default: '',
       trim: true,

@@ -1,16 +1,51 @@
 export type BookingPackage = 'HOURLY' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
+export interface BookingLocationPayload {
+  placeType: 'home' | 'hospital';
+  recipientName?: string;
+  recipientPhone?: string;
+  provinceCode?: string;
+  provinceName?: string;
+  wardCode?: string;
+  wardName?: string;
+  detail?: string;
+  fullAddress?: string;
+  hospitalId?: string | null;
+  hospitalName?: string;
+  department?: string;
+  roomNumber?: string;
+  bedNumber?: string;
+  coordinates?: [number, number];
+}
+
+export interface BookingLocationSnapshot extends BookingLocationPayload {}
+
+export interface BookingPricingSnapshot {
+  baseRate: number;
+  durationUnit: string;
+  durationValue: number;
+  subtotal: number;
+  serviceFee?: number;
+  discountAmount?: number;
+  distanceKm?: number;
+  distanceFee?: number;
+  totalPrice: number;
+  currency?: string;
+}
+
 export interface CreateBookingInput {
   caregiverId: string;
   packageType: BookingPackage;
   durationValue: number;
   startTime: string;
-  serviceArea: string;
-  serviceAddress: string;
+  serviceArea?: string;
+  serviceAddress?: string;
   requiredSkills?: string[];
   note?: string;
+  careNotes?: string;
   paymentMethod: 'CASH' | 'BANK_TRANSFER';
+  location?: BookingLocationPayload;
 }
 
 export interface CaregiverBookingInfo {
@@ -62,6 +97,9 @@ export interface Booking {
   serviceArea: string;
   serviceAddress: string;
   note?: string;
+  careNotes?: string;
+  locationSnapshot?: BookingLocationSnapshot;
+  pricingSnapshot?: BookingPricingSnapshot;
   confirmedAt?: string | null;
   customerNotificationReadAt?: string | null;
   cancellationInfo?: {

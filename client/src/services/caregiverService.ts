@@ -130,3 +130,43 @@ export const getCaregiverById = async (id: string): Promise<Caregiver> => {
     throw error instanceof Error ? error : new Error('Lỗi không xác định khi tải caregiver.');
   }
 };
+
+export interface MatchElderlyParams {
+  lng: number;
+  lat: number;
+  packageType?: 'HOURLY' | 'DAILY';
+  durationValue?: number;
+  startTime?: string;
+  endTime?: string;
+}
+
+export interface MatchedCaregiverItem extends Caregiver {
+  distancePricing: {
+    distanceKm: number;
+    isFree: boolean;
+    surchargeAmount: number;
+  };
+  calculatedPricing: {
+    packageType: string;
+    durationValue: number;
+    baseRate: number;
+    basePrice: number;
+    distanceKm: number;
+    distanceFee: number;
+    totalEstimatedPrice: number;
+  };
+}
+
+export const matchElderlyCaregivers = async (
+  params: MatchElderlyParams
+): Promise<MatchedCaregiverItem[]> => {
+  const response = await api.get<{ success: boolean; data: any[] }>('/caregivers/match-elderly', {
+    params,
+  });
+
+  return (response.data?.data || []).map((item) => ({
+    ...toCaregiver(item),
+    distancePricing: item.distancePricing,
+    calculatedPricing: item.calculatedPricing,
+  }));
+};

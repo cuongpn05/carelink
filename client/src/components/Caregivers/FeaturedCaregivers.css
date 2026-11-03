@@ -66,12 +66,16 @@
   background-color: #f1f5f9;
 }
 
+.caregiver-avatar-container img,
+.caregiver-avatar-container .caregiver-avatar,
+.caregiver-avatar-container .caregiver-avatar-img,
 .caregivers-section .caregiver-avatar {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border: 0;
-  border-radius: 18px;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  display: block !important;
   transition: transform 0.3s ease;
 }
 
