@@ -8,6 +8,7 @@ const {
   getAdministrativeWards,
 } = require('./user.controller');
 const { User, CaregiverProfile } = require('../models');
+const administrativeService = require('../services/administrativeService');
 
 jest.mock('../models', () => ({
   User: {
@@ -23,6 +24,11 @@ jest.mock('../models', () => ({
   ReputationLog: {
     find: jest.fn(),
   },
+}));
+
+jest.mock('../services/administrativeService', () => ({
+  getAdministrativeProvinces: jest.fn(),
+  getAdministrativeWards: jest.fn(),
 }));
 
 describe('User Controller - Profile & Address Management Tests', () => {
@@ -172,23 +178,29 @@ describe('User Controller - Profile & Address Management Tests', () => {
   });
 
   describe('Administrative endpoints', () => {
-    it('returns all 63 provinces', async () => {
+    it('returns provinces from the current administrative directory', async () => {
+      administrativeService.getAdministrativeProvinces.mockResolvedValue([
+        { code: '79', name: 'Thành phố Hồ Chí Minh', shortName: 'Hồ Chí Minh' },
+      ]);
+
       await getAdministrativeProvinces({}, mockRes);
       expect(mockRes.status).toHaveBeenCalledWith(200);
       expect(mockRes.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
           data: expect.objectContaining({
-            provinces: expect.arrayContaining([
-              expect.objectContaining({ code: '92', shortName: 'Cần Thơ' }),
-              expect.objectContaining({ code: '79', shortName: 'TP. Hồ Chí Minh' }),
-            ]),
+            provinces: [
+              expect.objectContaining({ code: '79', shortName: 'Hồ Chí Minh' }),
+            ],
           }),
         })
       );
     });
 
     it('returns wards for a province', async () => {
+      administrativeService.getAdministrativeWards.mockResolvedValue([
+        { code: '25747', name: 'Phường Thủ Dầu Một' },
+      ]);
       mockReq = { query: { provinceCode: '92' } };
       await getAdministrativeWards(mockReq, mockRes);
       expect(mockRes.status).toHaveBeenCalledWith(200);
@@ -196,13 +208,22 @@ describe('User Controller - Profile & Address Management Tests', () => {
         expect.objectContaining({
           success: true,
           data: expect.objectContaining({
-            wards: expect.arrayContaining([
-              expect.objectContaining({ name: 'Phường An Khánh' }),
-            ]),
+            wards: [{ code: '25747', name: 'Phường Thủ Dầu Một' }],
           }),
         })
       );
     });
+
+    it('returns an explicit upstream error when the province API is unavailable', async () => {
+      administrativeService.getAdministrativeProvinces.mockRejectedValue(new Error('upstream unavailable'));
+
+      await getAdministrativeProvinces({}, mockRes);
+
+      expect(mockRes.status).toHaveBeenCalledWith(502);
+      expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: false,
+        message: expect.stringContaining('Không thể tải danh mục tỉnh/thành'),
+      }));
+    });
   });
 });
-

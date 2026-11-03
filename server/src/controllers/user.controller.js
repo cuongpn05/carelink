@@ -1,10 +1,12 @@
 const bcrypt = require('bcryptjs');
 const { User, Account, CaregiverProfile, ReputationLog } = require('../models');
 const {
-  getAllProvinces,
-  getWardsByProvince,
   formatFullAddress,
 } = require('../data/vietnamAdministrative');
+const {
+  getAdministrativeProvinces: fetchAdministrativeProvinces,
+  getAdministrativeWards: fetchAdministrativeWards,
+} = require('../services/administrativeService');
 const { migrateSingleUserAddresses } = require('../utils/userAddressMigration');
 
 // Regex kiểm tra số điện thoại Việt Nam (10 số, bắt đầu bằng 03, 05, 07, 08, 09 hoặc +84)
@@ -586,20 +588,20 @@ const setDefaultAddress = async (req, res) => {
 };
 
 /**
- * 8. Lấy danh sách 63 Tỉnh / Thành phố Việt Nam
+ * 8. Lấy danh sách tỉnh/thành sau sáp nhập
  * GET /api/user/administrative/provinces
  */
 const getAdministrativeProvinces = async (req, res) => {
   try {
-    const provinces = getAllProvinces();
+    const provinces = await fetchAdministrativeProvinces();
     return res.status(200).json({
       success: true,
       data: { provinces },
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(502).json({
       success: false,
-      message: 'Lỗi khi lấy danh mục tỉnh thành.',
+      message: 'Không thể tải danh mục tỉnh/thành hiện hành. Vui lòng thử lại sau.',
       error: error.message,
     });
   }
@@ -619,15 +621,15 @@ const getAdministrativeWards = async (req, res) => {
       });
     }
 
-    const wards = getWardsByProvince(provinceCode);
+    const wards = await fetchAdministrativeWards(provinceCode);
     return res.status(200).json({
       success: true,
       data: { wards },
     });
   } catch (error) {
-    return res.status(500).json({
+    return res.status(502).json({
       success: false,
-      message: 'Lỗi khi lấy danh mục phường xã.',
+      message: 'Không thể tải danh mục phường/xã hiện hành. Vui lòng thử lại sau.',
       error: error.message,
     });
   }

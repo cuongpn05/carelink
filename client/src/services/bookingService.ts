@@ -285,6 +285,7 @@ export const cancelBooking = async (
 ): Promise<ApiResponse<{
   booking: Booking;
   currentReputationScore: number;
+  cancellationCount: number | null;
   caregiverCancellationCount: number | null;
   penaltyPointsDeducted: number;
 }>> => {
@@ -292,6 +293,7 @@ export const cancelBooking = async (
   return requestBookingApi<{
     booking: Booking;
     currentReputationScore: number;
+    cancellationCount: number | null;
     caregiverCancellationCount: number | null;
     penaltyPointsDeducted: number;
   }>(path, {

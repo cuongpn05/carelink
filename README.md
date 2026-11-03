@@ -15,7 +15,7 @@
 | **Xem chi tiết người chăm sóc** | ✅ Có | Xem kỹ năng, kinh nghiệm, biểu phí, khu vực và đánh giá của khách hàng. |
 | **Đặt lịch chăm sóc** | ✅ Có | Chọn ngày, giờ bắt đầu/kết thúc, địa điểm, dịch vụ cần thực hiện và tự động tính tổng phí. |
 | **Xem lịch sử và trạng thái đặt lịch**| ✅ Có | Theo dõi lịch đặt: `pending` (chờ duyệt), `confirmed` (đã nhận), `completed` (hoàn thành), `cancelled` (đã hủy). |
-| **Hủy lịch theo quy tắc** | ✅ Có | Khách hàng chịu mức trừ theo thời gian hủy; caregiver hủy lịch đã xác nhận bị trừ lũy tiến 5/10/15 điểm theo số lần hủy. Từ chối lịch đang chờ không bị tính. |
+| **Hủy lịch theo quy tắc** | ✅ Có | Khách hàng hoặc caregiver hủy lịch đã xác nhận bị trừ lũy tiến 5/10/15 điểm theo số lần hủy của tài khoản. Hủy lịch đang chờ hoặc từ chối lịch đang chờ không bị tính. |
 | **Đánh giá sau dịch vụ** | ✅ Có | Chấm điểm (1-5 sao) và để lại nhận xét sau khi lịch chăm sóc chuyển sang `completed`. |
 
 ---
@@ -32,6 +32,15 @@ Authorization: Bearer <accessToken>
 ```
 
 Các endpoint hỗ trợ cả tiền tố `/api` và `/api/v1`.
+
+### Danh mục địa chỉ đặt lịch
+
+Form đặt lịch lấy danh mục tỉnh/thành sau sáp nhập và phường/xã từ
+[Province Open API v2](https://provinces.open-api.vn/), thông qua hai endpoint
+không cần đăng nhập: `GET /api/user/administrative/provinces` và
+`GET /api/user/administrative/wards?provinceCode=...`. Backend lưu cache kết quả
+trong bộ nhớ 24 giờ; nếu nguồn dữ liệu không khả dụng, API trả lỗi thay vì hiển
+thị danh sách địa chỉ cũ hoặc giả lập.
 
 ### Tạo lịch đặt
 

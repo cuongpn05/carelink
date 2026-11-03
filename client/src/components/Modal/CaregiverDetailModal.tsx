@@ -2,6 +2,12 @@ import React, { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Caregiver } from '../../types';
 import { getCaregiverById } from '../../services/caregiverService';
 import { Booking, BookingPackage, createBooking } from '../../services/bookingService';
+import {
+  getAdministrativeProvinces,
+  getAdministrativeWards,
+  ProvinceItem,
+  WardItem,
+} from '../../services/userService';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -56,7 +62,13 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
     return toLocalDateInput(tomorrow);
   });
   const [startHour, setStartHour] = useState('08:00');
-  const [serviceArea, setServiceArea] = useState('');
+  const [provinces, setProvinces] = useState<ProvinceItem[]>([]);
+  const [wards, setWards] = useState<WardItem[]>([]);
+  const [provinceCode, setProvinceCode] = useState('');
+  const [wardCode, setWardCode] = useState('');
+  const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [loadingWards, setLoadingWards] = useState(false);
+  const [locationError, setLocationError] = useState('');
   const [serviceAddress, setServiceAddress] = useState('');
   const [note, setNote] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'BANK_TRANSFER'>('CASH');
@@ -92,7 +104,6 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
       .then((result) => {
         if (active) {
           setDetailCaregiver(result);
-          setServiceArea(result.location.split(',')[0].trim());
         }
       })
       .catch((error: unknown) => {
@@ -108,6 +119,63 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
       active = false;
     };
   }, [caregiver, retryCount, startWithBookingForm]);
+
+  useEffect(() => {
+    if (!caregiver || !bookingFormOpen) return undefined;
+
+    let active = true;
+    setLoadingProvinces(true);
+    setLocationError('');
+    getAdministrativeProvinces()
+      .then((items) => {
+        if (active) setProvinces(items);
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setLocationError(
+            error instanceof Error ? error.message : 'Không thể tải danh sách tỉnh/thành.',
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoadingProvinces(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [caregiver, bookingFormOpen]);
+
+  useEffect(() => {
+    if (!provinceCode || !bookingFormOpen) {
+      setWards([]);
+      setWardCode('');
+      return undefined;
+    }
+
+    let active = true;
+    setLoadingWards(true);
+    setWards([]);
+    setLocationError('');
+    getAdministrativeWards(provinceCode)
+      .then((items) => {
+        if (active) setWards(items);
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setLocationError(
+            error instanceof Error ? error.message : 'Không thể tải danh sách phường/xã.',
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoadingWards(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [provinceCode, bookingFormOpen]);
 
   const displayedCaregiver = caregiver
     ? detailCaregiver?.id === caregiver.id ? detailCaregiver : caregiver
@@ -174,10 +242,11 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
     event.preventDefault();
     setBookingError('');
 
-    const trimmedServiceArea = serviceArea.trim();
     const trimmedServiceAddress = serviceAddress.trim();
-    if (!trimmedServiceArea || !trimmedServiceAddress) {
-      setBookingError('Vui lòng nhập khu vực và địa chỉ chăm sóc.');
+    const selectedProvince = provinces.find((province) => province.code === provinceCode);
+    const selectedWard = wards.find((ward) => ward.code === wardCode);
+    if (!selectedProvince || !selectedWard || !trimmedServiceAddress) {
+      setBookingError('Vui lòng chọn tỉnh/thành, phường/xã và nhập địa chỉ chăm sóc.');
       return;
     }
 
@@ -213,8 +282,17 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
         packageType,
         durationValue,
         startTime: selectedStart.toISOString(),
-        serviceArea: trimmedServiceArea,
-        serviceAddress: trimmedServiceAddress,
+        serviceArea: selectedWard.name,
+        serviceAddress: `${trimmedServiceAddress}, ${selectedWard.name}, ${selectedProvince.shortName}`,
+        location: {
+          placeType: 'home',
+          provinceCode: selectedProvince.code,
+          provinceName: selectedProvince.name,
+          wardCode: selectedWard.code,
+          wardName: selectedWard.name,
+          detail: trimmedServiceAddress,
+          fullAddress: `${trimmedServiceAddress}, ${selectedWard.name}, ${selectedProvince.shortName}`,
+        },
         note: note.trim(),
         paymentMethod,
       });
@@ -385,22 +463,56 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                         required
                       />
                     </label>
+                  </div>
+                  <div className="booking-form-row">
                     <label>
-                      Khu vực
-                      <input
-                        value={serviceArea}
-                        onChange={(event) => setServiceArea(event.target.value)}
-                        placeholder="Quận/huyện"
+                      Tỉnh / Thành phố
+                      <select
+                        value={provinceCode}
+                        onChange={(event) => {
+                          setProvinceCode(event.target.value);
+                          setWardCode('');
+                          setWards([]);
+                        }}
+                        disabled={loadingProvinces}
                         required
-                      />
+                      >
+                        <option value="">
+                          {loadingProvinces ? 'Đang tải tỉnh/thành...' : 'Chọn tỉnh/thành phố'}
+                        </option>
+                        {provinces.map((province) => (
+                          <option key={province.code} value={province.code}>
+                            {province.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Phường / Xã
+                      <select
+                        value={wardCode}
+                        onChange={(event) => setWardCode(event.target.value)}
+                        disabled={!provinceCode || loadingWards}
+                        required
+                      >
+                        <option value="">
+                          {loadingWards ? 'Đang tải phường/xã...' : 'Chọn phường/xã'}
+                        </option>
+                        {wards.map((ward) => (
+                          <option key={ward.code} value={ward.code}>
+                            {ward.name}
+                          </option>
+                        ))}
+                      </select>
                     </label>
                   </div>
+                  {locationError && <p className="booking-error" role="alert">{locationError}</p>}
                   <label>
-                    Địa chỉ chăm sóc
+                    Số nhà, tên đường
                     <input
                       value={serviceAddress}
                       onChange={(event) => setServiceAddress(event.target.value)}
-                      placeholder="Số nhà, tên đường, phường/xã..."
+                      placeholder="Ví dụ: 12 đường 30/4"
                       required
                     />
                   </label>
