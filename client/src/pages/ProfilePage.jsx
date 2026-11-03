@@ -24,7 +24,17 @@ import {
   KeyRound,
   Save,
   Check,
+  Plus,
+  Edit2,
+  Trash2,
+  Navigation,
+  Compass,
+  Star,
+  X,
+  MapPinned,
 } from 'lucide-react';
+import * as userService from '../services/userService';
+import './ProfilePage.css';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
@@ -34,6 +44,8 @@ const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
   'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
 ];
+
+const VIETNAMESE_PHONE_REGEX = /^(0|\+84)(3[2-9]|5[2689]|7[06-9]|8[1-9]|9[0-9])[0-9]{7}$/;
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
@@ -48,15 +60,40 @@ export const ProfilePage = () => {
   const [gender, setGender] = useState('OTHER');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
-  const [city, setCity] = useState('');
-  const [district, setDistrict] = useState('');
-  const [ward, setWard] = useState('');
-  const [detailAddress, setDetailAddress] = useState('');
 
   // Form states - Change Password
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Address Book states
+  const [addresses, setAddresses] = useState([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null); // null if adding new
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState(null);
+  const [deletingAddress, setDeletingAddress] = useState(false);
+  const [settingDefaultId, setSettingDefaultId] = useState(null);
+
+  // Address Modal Form fields
+  const [formLabel, setFormLabel] = useState('Nhà riêng');
+  const [formRecipientName, setFormRecipientName] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formProvinceCode, setFormProvinceCode] = useState('');
+  const [formProvinceName, setFormProvinceName] = useState('');
+  const [formWardCode, setFormWardCode] = useState('');
+  const [formWardName, setFormWardName] = useState('');
+  const [formDetail, setFormDetail] = useState('');
+  const [formCoordinates, setFormCoordinates] = useState(null); // [lng, lat]
+  const [formIsDefault, setFormIsDefault] = useState(false);
+  const [fetchingGeo, setFetchingGeo] = useState(false);
+
+  // Administrative Master Data
+  const [provincesList, setProvincesList] = useState([]);
+  const [wardsList, setWardsList] = useState([]);
+  const [loadingWards, setLoadingWards] = useState(false);
 
   // UI states
   const [savingProfile, setSavingProfile] = useState(false);
@@ -72,7 +109,7 @@ export const ProfilePage = () => {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  // Đồng bộ thông tin từ AuthContext vào Form
+  // Đồng bộ thông tin từ AuthContext vào Form Thông tin cá nhân
   useEffect(() => {
     if (user) {
       setFullName(user.fullName || '');
@@ -80,16 +117,260 @@ export const ProfilePage = () => {
       setGender(user.gender || 'OTHER');
       setAvatarUrl(user.avatarUrl || '');
       if (user.dateOfBirth) {
-        setDateOfBirth(new Date(user.dateOfBirth).toISOString().split('T')[0]);
-      }
-      if (user.defaultAddress) {
-        setCity(user.defaultAddress.city || '');
-        setDistrict(user.defaultAddress.district || '');
-        setWard(user.defaultAddress.ward || '');
-        setDetailAddress(user.defaultAddress.detail || '');
+        try {
+          setDateOfBirth(new Date(user.dateOfBirth).toISOString().split('T')[0]);
+        } catch {
+          setDateOfBirth('');
+        }
       }
     }
   }, [user]);
+
+  // Tải danh sách địa chỉ và danh mục 63 tỉnh/thành khi đăng nhập
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAddresses();
+      fetchProvinces();
+    }
+  }, [isAuthenticated]);
+
+  const fetchAddresses = async () => {
+    try {
+      setLoadingAddresses(true);
+      const list = await userService.getUserAddresses();
+      setAddresses(list);
+    } catch (err) {
+      console.warn('Lỗi khi tải sổ địa chỉ:', err?.message);
+    } finally {
+      setLoadingAddresses(false);
+    }
+  };
+
+  const fetchProvinces = async () => {
+    try {
+      const list = await userService.getAdministrativeProvinces();
+      setProvincesList(list);
+    } catch (err) {
+      console.warn('Lỗi khi tải danh mục tỉnh/thành:', err?.message);
+    }
+  };
+
+  // Tải danh sách phường/xã khi tỉnh thành thay đổi
+  const handleProvinceChange = async (provCode) => {
+    setFormProvinceCode(provCode);
+    const prov = provincesList.find((p) => p.code === provCode);
+    setFormProvinceName(prov ? prov.name : '');
+    setFormWardCode('');
+    setFormWardName('');
+    setWardsList([]);
+
+    if (!provCode) return;
+
+    try {
+      setLoadingWards(true);
+      const list = await userService.getAdministrativeWards(provCode);
+      setWardsList(list);
+    } catch (err) {
+      console.warn('Lỗi khi tải phường xã:', err?.message);
+    } finally {
+      setLoadingWards(false);
+    }
+  };
+
+  // Mở modal thêm địa chỉ mới
+  const handleOpenAddModal = () => {
+    setEditingAddress(null);
+    setFormLabel('Nhà riêng');
+    setFormRecipientName(fullName || '');
+    setFormPhone(phone || '');
+    setFormProvinceCode('');
+    setFormProvinceName('');
+    setFormWardCode('');
+    setFormWardName('');
+    setFormDetail('');
+    setFormCoordinates(null);
+    // Nếu chưa có địa chỉ nào, tự động chọn làm mặc định
+    setFormIsDefault(addresses.length === 0);
+    setWardsList([]);
+    setAddressModalOpen(true);
+  };
+
+  // Mở modal chỉnh sửa địa chỉ
+  const handleOpenEditModal = async (addr) => {
+    setEditingAddress(addr);
+    setFormLabel(addr.label || 'Nhà riêng');
+    setFormRecipientName(addr.recipientName || '');
+    setFormPhone(addr.phone || '');
+    setFormProvinceCode(addr.provinceCode || '');
+    setFormProvinceName(addr.provinceName || '');
+    setFormWardCode(addr.wardCode || '');
+    setFormWardName(addr.wardName || '');
+    setFormDetail(addr.detail || '');
+    setFormCoordinates(addr.location?.coordinates || null);
+    setFormIsDefault(Boolean(addr.isDefault));
+
+    setAddressModalOpen(true);
+
+    if (addr.provinceCode) {
+      try {
+        setLoadingWards(true);
+        const list = await userService.getAdministrativeWards(addr.provinceCode);
+        setWardsList(list);
+      } catch (err) {
+        console.warn('Lỗi tải phường xã cho địa chỉ:', err?.message);
+      } finally {
+        setLoadingWards(false);
+      }
+    } else {
+      setWardsList([]);
+    }
+  };
+
+  // Lấy tọa độ GPS thiết bị hiện tại (HTML5 Geolocation)
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Trình duyệt của bạn không hỗ trợ định vị GPS.');
+      return;
+    }
+
+    setFetchingGeo(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setFormCoordinates([longitude, latitude]);
+        setFetchingGeo(false);
+        toast.success(`Đã lấy vị trí GPS thành công! (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+      },
+      (err) => {
+        setFetchingGeo(false);
+        let errorMsg = 'Không thể lấy tọa độ vị trí.';
+        if (err.code === 1) errorMsg = 'Bạn đã từ chối cấp quyền truy cập vị trí.';
+        else if (err.code === 2) errorMsg = 'Vị trí hiện tại không khả dụng.';
+        else if (err.code === 3) errorMsg = 'Hết thời gian chờ lấy vị trí.';
+        toast.error(errorMsg);
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  // Lưu địa chỉ (Thêm mới hoặc Cập nhật)
+  const handleSaveAddress = async (e) => {
+    e.preventDefault();
+
+    if (!formRecipientName.trim()) {
+      toast.error('Vui lòng nhập họ tên người nhận.');
+      return;
+    }
+
+    if (!formPhone.trim()) {
+      toast.error('Vui lòng nhập số điện thoại người nhận.');
+      return;
+    }
+
+    if (!VIETNAMESE_PHONE_REGEX.test(formPhone.trim())) {
+      toast.error('Số điện thoại không đúng định dạng Việt Nam (VD: 0901234567 hoặc +84901234567).');
+      return;
+    }
+
+    if (!formProvinceName) {
+      toast.error('Vui lòng chọn Tỉnh / Thành phố.');
+      return;
+    }
+
+    if (!formWardName) {
+      toast.error('Vui lòng chọn hoặc nhập Phường / Xã.');
+      return;
+    }
+
+    if (!formDetail.trim()) {
+      toast.error('Vui lòng nhập địa chỉ chi tiết (số nhà, tên đường...).');
+      return;
+    }
+
+    const payload = {
+      label: formLabel,
+      recipientName: formRecipientName.trim(),
+      phone: formPhone.trim(),
+      provinceCode: formProvinceCode,
+      provinceName: formProvinceName,
+      wardCode: formWardCode,
+      wardName: formWardName,
+      detail: formDetail.trim(),
+      isDefault: formIsDefault,
+    };
+
+    if (formCoordinates && formCoordinates.length === 2) {
+      payload.location = {
+        coordinates: formCoordinates,
+      };
+    }
+
+    try {
+      setSavingAddress(true);
+      if (editingAddress) {
+        const res = await userService.updateUserAddress(editingAddress._id, payload);
+        toast.success(res?.message || 'Cập nhật địa chỉ thành công!');
+      } else {
+        const res = await userService.addUserAddress(payload);
+        toast.success(res?.message || 'Thêm địa chỉ mới thành công!');
+      }
+
+      setAddressModalOpen(false);
+      await fetchAddresses();
+
+      // Cập nhật lại user trong AuthContext để đồng bộ defaultAddress
+      const updatedProfile = await userService.getUserProfile();
+      if (updatedProfile?.user) {
+        updateUserData(updatedProfile.user);
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Không thể lưu địa chỉ. Vui lòng thử lại.';
+      toast.error(msg);
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  // Đặt làm địa chỉ mặc định
+  const handleSetDefault = async (addressId) => {
+    try {
+      setSettingDefaultId(addressId);
+      const res = await userService.setDefaultUserAddress(addressId);
+      toast.success(res?.message || 'Đã đặt làm địa chỉ mặc định!');
+      await fetchAddresses();
+
+      const updatedProfile = await userService.getUserProfile();
+      if (updatedProfile?.user) {
+        updateUserData(updatedProfile.user);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi khi đặt địa chỉ mặc định.');
+    } finally {
+      setSettingDefaultId(null);
+    }
+  };
+
+  // Xóa địa chỉ
+  const handleConfirmDelete = async () => {
+    if (!addressToDelete) return;
+    try {
+      setDeletingAddress(true);
+      const res = await userService.deleteUserAddress(addressToDelete._id);
+      toast.success(res?.message || 'Đã xóa địa chỉ thành công!');
+      setDeleteModalOpen(false);
+      setAddressToDelete(null);
+      await fetchAddresses();
+
+      const updatedProfile = await userService.getUserProfile();
+      if (updatedProfile?.user) {
+        updateUserData(updatedProfile.user);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi khi xóa địa chỉ.');
+    } finally {
+      setDeletingAddress(false);
+    }
+  };
 
   // Tải lịch sử biến động điểm uy tín khi mở tab REPUTATION
   useEffect(() => {
@@ -115,14 +396,27 @@ export const ProfilePage = () => {
   const handleSaveProfile = async (e) => {
     e.preventDefault();
 
-    if (!fullName.trim()) {
-      toast.error('Họ và tên không được để trống.');
+    if (!fullName.trim() || fullName.trim().length < 2) {
+      toast.error('Họ và tên phải có ít nhất 2 ký tự.');
       return;
     }
 
     if (!phone.trim()) {
       toast.error('Số điện thoại không được để trống.');
       return;
+    }
+
+    if (!VIETNAMESE_PHONE_REGEX.test(phone.trim())) {
+      toast.error('Số điện thoại không hợp lệ (VD: 0901234567 hoặc +84901234567).');
+      return;
+    }
+
+    if (dateOfBirth) {
+      const dob = new Date(dateOfBirth);
+      if (isNaN(dob.getTime()) || dob > new Date()) {
+        toast.error('Ngày sinh không hợp lệ hoặc đang ở tương lai.');
+        return;
+      }
     }
 
     try {
@@ -133,18 +427,12 @@ export const ProfilePage = () => {
         avatarUrl: avatarUrl.trim(),
         gender,
         dateOfBirth: dateOfBirth || null,
-        defaultAddress: {
-          city: city.trim(),
-          district: district.trim(),
-          ward: ward.trim(),
-          detail: detailAddress.trim(),
-        },
       };
 
-      const res = await axiosClient.put('/user/profile', payload);
-      if (res.success && res.data?.user) {
-        toast.success('Cập nhật hồ sơ cá nhân thành công!');
-        updateUserData(res.data.user);
+      const res = await userService.updateUserProfile(payload);
+      if (res.user) {
+        toast.success('Cập nhật thông tin cá nhân thành công!');
+        updateUserData(res.user);
       }
     } catch (err) {
       const msg = err.response?.data?.message || 'Có lỗi khi cập nhật hồ sơ.';
@@ -222,6 +510,13 @@ export const ProfilePage = () => {
     repText = 'Cảnh báo mức uy tín (50 - 69 điểm)';
     repIcon = <ShieldAlert size={20} className="text-amber-600" />;
   }
+
+  // Label tag color helper
+  const getLabelTagClass = (label) => {
+    if (label === 'Nhà riêng') return 'home';
+    if (label === 'Công ty') return 'work';
+    return 'other';
+  };
 
   return (
     <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -462,7 +757,7 @@ export const ProfilePage = () => {
             }}
           >
             <User size={16} />
-            <span>Thông tin cá nhân</span>
+            <span>Thông tin cá nhân & Địa chỉ</span>
           </button>
 
           <button
@@ -535,235 +830,696 @@ export const ProfilePage = () => {
         </div>
 
         {/* ========================================================= */}
-        {/* TAB 1: THÔNG TIN CÁ NHÂN (INFO) */}
+        {/* TAB 1: THÔNG TIN CÁ NHÂN & SỔ ĐỊA CHỈ (INFO) */}
         {/* ========================================================= */}
         {activeTab === 'INFO' && (
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '20px',
-              border: '1px solid #e2e8f0',
-              padding: '32px',
-              boxShadow: '0 4px 20px -2px rgba(0,0,0,0.04)',
-            }}
-          >
-            <form onSubmit={handleSaveProfile}>
-              <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0f172a', margin: '0 0 20px 0' }}>
-                Hồ sơ tài khoản
-              </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+            {/* KHU VỰC 1: THÔNG TIN HỒ SƠ CÁ NHÂN */}
+            <div className="profile-section-card">
+              <div className="profile-section-header">
+                <div className="profile-section-title-wrap">
+                  <User size={20} className="text-blue-600" />
+                  <div>
+                    <h3 className="profile-section-title">Thông tin cá nhân</h3>
+                    <p className="profile-section-desc">Cập nhật họ tên, liên hệ và thông tin cơ bản để nhận diện tài khoản</p>
+                  </div>
+                </div>
+              </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-                {/* Họ và tên */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                    Họ và tên <span style={{ color: '#ef4444' }}>*</span>
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <User size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                    <input
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                      placeholder="Nguyễn Văn A"
+              <form onSubmit={handleSaveProfile}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                  {/* Họ và tên */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                      Họ và tên <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <User size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                      <input
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                        placeholder="Nguyễn Văn A"
+                        style={{
+                          width: '100%',
+                          padding: '11px 12px 11px 40px',
+                          borderRadius: '10px',
+                          border: '1px solid #cbd5e1',
+                          fontSize: '14px',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Số điện thoại */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                      Số điện thoại <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <Phone size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        required
+                        placeholder="0901234567"
+                        style={{
+                          width: '100%',
+                          padding: '11px 12px 11px 40px',
+                          borderRadius: '10px',
+                          border: '1px solid #cbd5e1',
+                          fontSize: '14px',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email (Read-only) */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                      Địa chỉ Email (Đã xác thực)
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <Mail size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                      <input
+                        type="email"
+                        value={account?.email || ''}
+                        disabled
+                        style={{
+                          width: '100%',
+                          padding: '11px 12px 11px 40px',
+                          borderRadius: '10px',
+                          border: '1px solid #e2e8f0',
+                          backgroundColor: '#f1f5f9',
+                          color: '#64748b',
+                          fontSize: '14px',
+                          boxSizing: 'border-box',
+                          cursor: 'not-allowed',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Giới tính */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                      Giới tính
+                    </label>
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '11px 12px 11px 40px',
+                        padding: '11px 12px',
                         borderRadius: '10px',
                         border: '1px solid #cbd5e1',
                         fontSize: '14px',
+                        backgroundColor: '#ffffff',
                         boxSizing: 'border-box',
                       }}
-                    />
+                    >
+                      <option value="MALE">Nam</option>
+                      <option value="FEMALE">Nữ</option>
+                      <option value="OTHER">Khác</option>
+                    </select>
+                  </div>
+
+                  {/* Ngày sinh */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                      Ngày sinh
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                      <input
+                        type="date"
+                        value={dateOfBirth}
+                        max={new Date().toISOString().split('T')[0]}
+                        onChange={(e) => setDateOfBirth(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '11px 12px 11px 40px',
+                          borderRadius: '10px',
+                          border: '1px solid #cbd5e1',
+                          fontSize: '14px',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* Số điện thoại */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                    Số điện thoại <span style={{ color: '#ef4444' }}>*</span>
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <Phone size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                      placeholder="0901234567"
-                      style={{
-                        width: '100%',
-                        padding: '11px 12px 11px 40px',
-                        borderRadius: '10px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '14px',
-                        boxSizing: 'border-box',
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Email (Read-only) */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                    Địa chỉ Email (Đã xác thực)
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <Mail size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                    <input
-                      type="email"
-                      value={account?.email || ''}
-                      disabled
-                      style={{
-                        width: '100%',
-                        padding: '11px 12px 11px 40px',
-                        borderRadius: '10px',
-                        border: '1px solid #e2e8f0',
-                        backgroundColor: '#f1f5f9',
-                        color: '#64748b',
-                        fontSize: '14px',
-                        boxSizing: 'border-box',
-                        cursor: 'not-allowed',
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Giới tính */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                    Giới tính
-                  </label>
-                  <select
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
+                {/* Nút lưu hồ sơ */}
+                <div style={{ marginTop: '24px', textAlign: 'right' }}>
+                  <button
+                    type="submit"
+                    disabled={savingProfile}
                     style={{
-                      width: '100%',
-                      padding: '11px 12px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '11px 24px',
+                      backgroundColor: savingProfile ? '#93c5fd' : '#2563eb',
+                      color: '#ffffff',
+                      border: 'none',
                       borderRadius: '10px',
-                      border: '1px solid #cbd5e1',
                       fontSize: '14px',
-                      backgroundColor: '#ffffff',
-                      boxSizing: 'border-box',
+                      fontWeight: 700,
+                      cursor: savingProfile ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 2px 8px rgba(37,99,235,0.2)',
                     }}
                   >
-                    <option value="MALE">Nam</option>
-                    <option value="FEMALE">Nữ</option>
-                    <option value="OTHER">Khác</option>
-                  </select>
+                    <Save size={16} />
+                    <span>{savingProfile ? 'Đang lưu...' : 'Lưu thông tin cá nhân'}</span>
+                  </button>
                 </div>
+              </form>
+            </div>
 
-                {/* Ngày sinh */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                    Ngày sinh
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                    <input
-                      type="date"
-                      value={dateOfBirth}
-                      onChange={(e) => setDateOfBirth(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '11px 12px 11px 40px',
-                        borderRadius: '10px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '14px',
-                        boxSizing: 'border-box',
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Địa chỉ mặc định */}
-              <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #f1f5f9' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            {/* KHU VỰC 2: SỔ ĐỊA CHỈ (ADDRESS BOOK) */}
+            <div className="profile-section-card">
+              <div className="profile-section-header">
+                <div className="profile-section-title-wrap">
                   <MapPin size={20} className="text-blue-600" />
-                  <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
-                    Địa chỉ mặc định (Phục vụ đặt lịch & hỗ trợ tận nơi)
-                  </h4>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
-                      Tỉnh / Thành phố
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="VD: Cần Thơ"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
-                      Quận / Huyện
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="VD: Ninh Kiều"
-                      value={district}
-                      onChange={(e) => setDistrict(e.target.value)}
-                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
-                      Phường / Xã
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="VD: An Khánh"
-                      value={ward}
-                      onChange={(e) => setWard(e.target.value)}
-                      style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
-                    />
+                    <h3 className="profile-section-title">Sổ địa chỉ nhận dịch vụ</h3>
+                    <p className="profile-section-desc">
+                      Quản lý các địa chỉ gia đình để đặt lịch chăm sóc người thân nhanh chóng và thuận tiện
+                    </p>
                   </div>
                 </div>
 
-                <div style={{ marginTop: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#475569', marginBottom: '4px' }}>
-                    Địa chỉ chi tiết (Số nhà, tên đường, tòa nhà)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="VD: Số 123 Đường 30/4, Phường Hưng Lợi"
-                    value={detailAddress}
-                    onChange={(e) => setDetailAddress(e.target.value)}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box' }}
-                  />
-                </div>
-              </div>
-
-              {/* Nút lưu */}
-              <div style={{ marginTop: '32px', textAlign: 'right' }}>
                 <button
-                  type="submit"
-                  disabled={savingProfile}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 28px',
-                    backgroundColor: savingProfile ? '#93c5fd' : '#2563eb',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '14.5px',
-                    fontWeight: 700,
-                    cursor: savingProfile ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 2px 8px rgba(37,99,235,0.25)',
-                  }}
+                  type="button"
+                  className="btn-add-address"
+                  onClick={handleOpenAddModal}
                 >
-                  <Save size={18} />
-                  <span>{savingProfile ? 'Đang lưu...' : 'Lưu thay đổi hồ sơ'}</span>
+                  <Plus size={16} />
+                  <span>Thêm địa chỉ mới</span>
                 </button>
               </div>
-            </form>
+
+              {/* Danh sách địa chỉ */}
+              {loadingAddresses ? (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748b' }}>
+                  Đang tải danh sách địa chỉ...
+                </div>
+              ) : addresses.length === 0 ? (
+                <div className="address-empty-state">
+                  <MapPinned size={48} style={{ color: '#94a3b8', margin: '0 auto 12px' }} />
+                  <h4 style={{ margin: '0 0 6px 0', color: '#1e293b', fontSize: '16px', fontWeight: 700 }}>
+                    Bạn chưa lưu địa chỉ nào
+                  </h4>
+                  <p style={{ margin: '0 0 16px 0', color: '#64748b', fontSize: '13.5px' }}>
+                    Thêm địa chỉ nhà riêng hoặc nơi người thân đang sinh sống để CareLink kết nối người chăm sóc gần nhất.
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-add-address"
+                    onClick={handleOpenAddModal}
+                  >
+                    <Plus size={16} />
+                    <span>Thêm địa chỉ đầu tiên</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="address-grid">
+                  {addresses.map((addr) => {
+                    const tagClass = getLabelTagClass(addr.label);
+                    const hasCoordinates =
+                      addr.location?.coordinates &&
+                      Array.isArray(addr.location.coordinates) &&
+                      addr.location.coordinates.length === 2 &&
+                      addr.location.coordinates[0] !== 0;
+
+                    return (
+                      <div
+                        key={addr._id}
+                        className={`address-card ${addr.isDefault ? 'is-default' : ''}`}
+                      >
+                        <div>
+                          <div className="address-card-header">
+                            <div className="address-card-tags">
+                              <span className={`address-tag ${tagClass}`}>
+                                {addr.label || 'Nhà riêng'}
+                              </span>
+                              {addr.isDefault && (
+                                <span className="address-default-badge">
+                                  <Star size={11} fill="#ffffff" />
+                                  <span>Mặc định</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="address-card-body">
+                            <div className="address-recipient-name">
+                              {addr.recipientName}
+                            </div>
+                            <div className="address-phone">
+                              <Phone size={13} style={{ color: '#64748b' }} />
+                              <span>{addr.phone}</span>
+                            </div>
+                            <p className="address-full-text">
+                              {addr.fullAddress || `${addr.detail}, ${addr.wardName}, ${addr.provinceName}`}
+                            </p>
+
+                            {/* Badges bổ trợ */}
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+                              {hasCoordinates && (
+                                <div className="address-geo-badge">
+                                  <Navigation size={12} />
+                                  <span>
+                                    GPS: {addr.location.coordinates[1].toFixed(4)},{' '}
+                                    {addr.location.coordinates[0].toFixed(4)}
+                                  </span>
+                                </div>
+                              )}
+                              {addr.isLegacyMigrated && (
+                                <div className="address-legacy-badge">
+                                  <History size={12} />
+                                  <span>Đồng bộ từ tài khoản cũ</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Thanh thao tác card */}
+                        <div className="address-card-actions">
+                          {addr.isDefault ? (
+                            <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#16a34a', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <CheckCircle2 size={14} />
+                              <span>Địa chỉ nhận mặc định</span>
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn-address-default-action"
+                              disabled={settingDefaultId === addr._id}
+                              onClick={() => handleSetDefault(addr._id)}
+                            >
+                              <Star size={13} />
+                              <span>{settingDefaultId === addr._id ? 'Đang đặt...' : 'Đặt làm mặc định'}</span>
+                            </button>
+                          )}
+
+                          <div className="address-card-btn-group">
+                            <button
+                              type="button"
+                              className="btn-address-icon"
+                              title="Chỉnh sửa địa chỉ"
+                              onClick={() => handleOpenEditModal(addr)}
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-address-icon delete"
+                              title="Xóa địa chỉ"
+                              onClick={() => {
+                                setAddressToDelete(addr);
+                                setDeleteModalOpen(true);
+                              }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* MODAL THÊM / SỬA ĐỊA CHỈ */}
+        {addressModalOpen && (
+          <div className="address-modal-overlay">
+            <div className="address-modal-box">
+              <div className="address-modal-header">
+                <h3>{editingAddress ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ mới'}</h3>
+                <button
+                  type="button"
+                  onClick={() => setAddressModalOpen(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    borderRadius: '6px',
+                  }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveAddress}>
+                <div className="address-modal-body">
+                  {/* Chọn nhãn địa chỉ */}
+                  <div style={{ marginBottom: '18px' }}>
+                    <label className="address-form-label">Loại địa chỉ</label>
+                    <div className="address-chips-group" style={{ marginBottom: 0 }}>
+                      {['Nhà riêng', 'Công ty', 'Khác'].map((lbl) => (
+                        <button
+                          key={lbl}
+                          type="button"
+                          className={`address-chip-btn ${formLabel === lbl ? 'active' : ''}`}
+                          onClick={() => setFormLabel(lbl)}
+                        >
+                          {lbl}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Họ tên và SĐT người nhận */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '16px' }}>
+                    <div>
+                      <label className="address-form-label">
+                        Họ tên người nhận <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        className="address-form-input"
+                        placeholder="VD: Nguyễn Văn A"
+                        value={formRecipientName}
+                        onChange={(e) => setFormRecipientName(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="address-form-label">
+                        Số điện thoại người nhận <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        className="address-form-input"
+                        placeholder="VD: 0901234567"
+                        value={formPhone}
+                        onChange={(e) => setFormPhone(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Tỉnh/Thành và Phường/Xã */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '16px' }}>
+                    <div>
+                      <label className="address-form-label">
+                        Tỉnh / Thành phố <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <select
+                        className="address-form-select"
+                        value={formProvinceCode}
+                        onChange={(e) => handleProvinceChange(e.target.value)}
+                        required
+                      >
+                        <option value="">-- Chọn Tỉnh / Thành phố --</option>
+                        {provincesList.map((p) => (
+                          <option key={p.code} value={p.code}>
+                            {p.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="address-form-label">
+                        Phường / Xã <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      {wardsList.length > 0 ? (
+                        <select
+                          className="address-form-select"
+                          value={formWardCode}
+                          onChange={(e) => {
+                            setFormWardCode(e.target.value);
+                            const w = wardsList.find((item) => item.code === e.target.value);
+                            setFormWardName(w ? w.name : '');
+                          }}
+                          required
+                          disabled={!formProvinceCode || loadingWards}
+                        >
+                          <option value="">
+                            {loadingWards ? '-- Đang tải danh sách...' : '-- Chọn Phường / Xã --'}
+                          </option>
+                          {wardsList.map((w) => (
+                            <option key={w.code} value={w.code}>
+                              {w.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="address-form-input"
+                          placeholder={
+                            !formProvinceCode
+                              ? 'Vui lòng chọn Tỉnh/Thành trước'
+                              : loadingWards
+                              ? 'Đang tải danh sách...'
+                              : 'Nhập Phường / Xã'
+                          }
+                          value={formWardName}
+                          onChange={(e) => setFormWardName(e.target.value)}
+                          required
+                          disabled={!formProvinceCode || loadingWards}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Địa chỉ chi tiết */}
+                  <div style={{ marginBottom: '18px' }}>
+                    <label className="address-form-label">
+                      Địa chỉ cụ thể (Số nhà, tên đường, tòa nhà...) <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      className="address-form-input"
+                      placeholder="VD: Số 123 Đường 30/4, Tòa nhà A"
+                      value={formDetail}
+                      onChange={(e) => setFormDetail(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Định vị GPS */}
+                  <div
+                    style={{
+                      padding: '14px',
+                      backgroundColor: '#f8fafc',
+                      borderRadius: '12px',
+                      border: '1px solid #e2e8f0',
+                      marginBottom: '18px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Compass size={18} className="text-blue-600" />
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>
+                            Tọa độ vị trí địa lý (GPS)
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>
+                            Hỗ trợ thuật toán tìm Caregiver gần nhất và tính khoảng cách di chuyển chính xác
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleGetCurrentLocation}
+                        disabled={fetchingGeo}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '7px 14px',
+                          backgroundColor: '#ffffff',
+                          color: '#2563eb',
+                          border: '1px solid #bfdbfe',
+                          borderRadius: '8px',
+                          fontSize: '12.5px',
+                          fontWeight: 600,
+                          cursor: fetchingGeo ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        <Navigation size={13} />
+                        <span>{fetchingGeo ? 'Đang định vị...' : 'Lấy vị trí hiện tại'}</span>
+                      </button>
+                    </div>
+
+                    {formCoordinates && (
+                      <div
+                        style={{
+                          marginTop: '10px',
+                          padding: '8px 12px',
+                          backgroundColor: '#eff6ff',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          fontSize: '12.5px',
+                          color: '#1e40af',
+                        }}
+                      >
+                        <span>
+                          📍 Tọa độ đã lưu: Kinh độ {formCoordinates[0].toFixed(5)}, Vĩ độ {formCoordinates[1].toFixed(5)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setFormCoordinates(null)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#ef4444',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                          }}
+                        >
+                          Xóa tọa độ
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Đặt làm mặc định checkbox */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="checkbox"
+                      id="defaultCheckbox"
+                      checked={formIsDefault}
+                      onChange={(e) => setFormIsDefault(e.target.checked)}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    <label
+                      htmlFor="defaultCheckbox"
+                      style={{ fontSize: '13.5px', fontWeight: 600, color: '#334155', cursor: 'pointer' }}
+                    >
+                      Đặt địa chỉ này làm địa chỉ nhận dịch vụ mặc định
+                    </label>
+                  </div>
+                </div>
+
+                <div className="address-modal-footer">
+                  <button
+                    type="button"
+                    onClick={() => setAddressModalOpen(false)}
+                    style={{
+                      padding: '9px 18px',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      fontSize: '13.5px',
+                      fontWeight: 600,
+                      color: '#475569',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingAddress}
+                    style={{
+                      padding: '9px 20px',
+                      backgroundColor: savingAddress ? '#93c5fd' : '#2563eb',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '13.5px',
+                      fontWeight: 700,
+                      cursor: savingAddress ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {savingAddress ? 'Đang lưu...' : editingAddress ? 'Cập nhật địa chỉ' : 'Lưu địa chỉ'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL XÁC NHẬN XÓA ĐỊA CHỈ */}
+        {deleteModalOpen && addressToDelete && (
+          <div className="address-modal-overlay">
+            <div className="address-modal-box" style={{ maxWidth: '440px' }}>
+              <div className="address-modal-header">
+                <h3 style={{ color: '#dc2626' }}>Xác nhận xóa địa chỉ</h3>
+                <button
+                  type="button"
+                  onClick={() => setDeleteModalOpen(false)}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="address-modal-body">
+                <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#334155', lineHeight: 1.5 }}>
+                  Bạn có chắc chắn muốn xóa địa chỉ:
+                </p>
+                <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '14px' }}>
+                  <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '14px' }}>
+                    {addressToDelete.recipientName} ({addressToDelete.label})
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#64748b', marginTop: '2px' }}>
+                    {addressToDelete.fullAddress}
+                  </div>
+                </div>
+
+                {addressToDelete.isDefault && (
+                  <div style={{ fontSize: '12.5px', color: '#b45309', backgroundColor: '#fffbeb', padding: '10px 12px', borderRadius: '8px', border: '1px solid #fde68a' }}>
+                    ⚠️ Đây là địa chỉ mặc định hiện tại. Nếu xóa, hệ thống sẽ tự động gán địa chỉ tiếp theo trong danh sách làm mặc định.
+                  </div>
+                )}
+              </div>
+
+              <div className="address-modal-footer">
+                <button
+                  type="button"
+                  onClick={() => setDeleteModalOpen(false)}
+                  style={{
+                    padding: '9px 18px',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    fontSize: '13.5px',
+                    fontWeight: 600,
+                    color: '#475569',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  disabled={deletingAddress}
+                  onClick={handleConfirmDelete}
+                  style={{
+                    padding: '9px 20px',
+                    backgroundColor: deletingAddress ? '#fca5a5' : '#dc2626',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '13.5px',
+                    fontWeight: 700,
+                    cursor: deletingAddress ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {deletingAddress ? 'Đang xóa...' : 'Đồng ý xóa'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -848,56 +1604,58 @@ export const ProfilePage = () => {
                   style={{
                     textAlign: 'center',
                     padding: '36px 20px',
+                    color: '#94a3b8',
                     backgroundColor: '#f8fafc',
                     borderRadius: '12px',
                     border: '1px dashed #cbd5e1',
                   }}
                 >
-                  <CheckCircle2 size={36} className="text-emerald-500" style={{ margin: '0 auto 10px' }} />
-                  <div style={{ fontWeight: 700, color: '#334155', fontSize: '15px' }}>
-                    Tài khoản của bạn đang có điểm uy tín tuyệt đối (100/100)
-                  </div>
-                  <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
-                    Chưa có bất kỳ vi phạm hay lịch sử trừ điểm nào được ghi nhận.
-                  </div>
+                  <History size={36} style={{ margin: '0 auto 10px', opacity: 0.6 }} />
+                  <p style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>
+                    Chưa có lịch sử thay đổi điểm nào. Tài khoản của bạn luôn giữ trạng thái uy tín tốt nhất!
+                  </p>
                 </div>
               ) : (
                 <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13.5px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
                     <thead>
-                      <tr style={{ borderBottom: '2px solid #e2e8f0', color: '#64748b' }}>
-                        <th style={{ padding: '10px 12px' }}>Thời gian</th>
-                        <th style={{ padding: '10px 12px' }}>Biến động</th>
-                        <th style={{ padding: '10px 12px' }}>Điểm số</th>
-                        <th style={{ padding: '10px 12px' }}>Lý do chi tiết</th>
+                      <tr style={{ borderBottom: '2px solid #f1f5f9', color: '#64748b' }}>
+                        <th style={{ padding: '12px 16px', fontWeight: 600 }}>Thời gian</th>
+                        <th style={{ padding: '12px 16px', fontWeight: 600 }}>Hành vi / Nguyên nhân</th>
+                        <th style={{ padding: '12px 16px', fontWeight: 600 }}>Biến động</th>
+                        <th style={{ padding: '12px 16px', fontWeight: 600 }}>Điểm sau biến động</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {reputationLogs.map((log) => (
-                        <tr key={log._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                          <td style={{ padding: '12px', color: '#64748b', whiteSpace: 'nowrap' }}>
-                            {new Date(log.createdAt).toLocaleString('vi-VN')}
-                          </td>
-                          <td style={{ padding: '12px', fontWeight: 700 }}>
-                            <span
-                              style={{
-                                color: log.changeAmount >= 0 ? '#16a34a' : '#dc2626',
-                                backgroundColor: log.changeAmount >= 0 ? '#dcfce7' : '#fee2e2',
-                                padding: '3px 8px',
-                                borderRadius: '6px',
-                              }}
-                            >
-                              {log.changeAmount > 0 ? `+${log.changeAmount}` : log.changeAmount}
-                            </span>
-                          </td>
-                          <td style={{ padding: '12px', color: '#334155', fontWeight: 600 }}>
-                            {log.previousScore} → {log.newScore}
-                          </td>
-                          <td style={{ padding: '12px', color: '#1e293b' }}>
-                            {log.reason}
-                          </td>
-                        </tr>
-                      ))}
+                      {reputationLogs.map((log, index) => {
+                        const isPositive = log.delta > 0;
+                        return (
+                          <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '14px 16px', color: '#64748b', fontSize: '13px' }}>
+                              {new Date(log.createdAt).toLocaleString('vi-VN')}
+                            </td>
+                            <td style={{ padding: '14px 16px', color: '#1e293b', fontWeight: 500 }}>
+                              {log.reason || 'Cập nhật hệ thống'}
+                            </td>
+                            <td style={{ padding: '14px 16px', fontWeight: 700 }}>
+                              <span
+                                style={{
+                                  color: isPositive ? '#16a34a' : '#dc2626',
+                                  backgroundColor: isPositive ? '#f0fdf4' : '#fef2f2',
+                                  padding: '4px 10px',
+                                  borderRadius: '9999px',
+                                  fontSize: '13px',
+                                }}
+                              >
+                                {isPositive ? `+${log.delta}` : log.delta} điểm
+                              </span>
+                            </td>
+                            <td style={{ padding: '14px 16px', fontWeight: 700, color: '#0f172a' }}>
+                              {log.scoreAfter} / 100
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -916,30 +1674,33 @@ export const ProfilePage = () => {
               borderRadius: '20px',
               border: '1px solid #e2e8f0',
               padding: '32px',
+              maxWidth: '680px',
               boxShadow: '0 4px 20px -2px rgba(0,0,0,0.04)',
-              maxWidth: '600px',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-              <KeyRound size={22} className="text-blue-600" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+              <KeyRound size={20} className="text-blue-600" />
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>
-                Đổi mật khẩu đăng nhập
+                Thay đổi mật khẩu đăng nhập
               </h3>
             </div>
+            <p style={{ margin: '0 0 24px 0', color: '#64748b', fontSize: '14px' }}>
+              Để bảo mật tài khoản, vui lòng sử dụng mật khẩu mạnh kết hợp chữ cái, số và ký tự đặc biệt.
+            </p>
 
             <form onSubmit={handleChangePassword}>
               <div style={{ marginBottom: '18px' }}>
                 <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                  Mật khẩu hiện tại
+                  Mật khẩu hiện tại <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                   <input
                     type="password"
-                    placeholder="Nhập mật khẩu đang dùng"
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                     required
+                    placeholder="••••••••"
                     style={{
                       width: '100%',
                       padding: '11px 12px 11px 40px',
@@ -954,16 +1715,16 @@ export const ProfilePage = () => {
 
               <div style={{ marginBottom: '18px' }}>
                 <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                  Mật khẩu mới
+                  Mật khẩu mới (Tối thiểu 6 ký tự) <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                   <input
                     type="password"
-                    placeholder="Ít nhất 6 ký tự"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
+                    placeholder="••••••••"
                     style={{
                       width: '100%',
                       padding: '11px 12px 11px 40px',
@@ -976,18 +1737,18 @@ export const ProfilePage = () => {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '24px' }}>
+              <div style={{ marginBottom: '26px' }}>
                 <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                  Xác nhận lại mật khẩu mới
+                  Xác nhận lại mật khẩu mới <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                   <input
                     type="password"
-                    placeholder="Nhập lại mật khẩu mới"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
+                    placeholder="••••••••"
                     style={{
                       width: '100%',
                       padding: '11px 12px 11px 40px',

@@ -4,20 +4,36 @@ const router = express.Router();
 const {
   getProfile,
   updateProfile,
+  getAddresses,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
+  getAdministrativeProvinces,
+  getAdministrativeWards,
   changePassword,
   getReputationLogs,
 } = require('../controllers/user.controller');
 
 const { verifyToken } = require('../middlewares/auth.middleware');
 
-// Tất cả các route về user profile đều yêu cầu đăng nhập
+// Các route hành chính có thể xem mà không nhất thiết phải xác thực hoặc có xác thực
+router.get('/administrative/provinces', getAdministrativeProvinces);
+router.get('/administrative/wards', getAdministrativeWards);
+
+// Tất cả các route thao tác tài khoản & sổ địa chỉ đều yêu cầu đăng nhập
 router.use(verifyToken);
 
-// 1. Lấy thông tin hồ sơ
+// 1. Hồ sơ cá nhân
 router.get('/profile', getProfile);
-
-// 2. Cập nhật thông tin hồ sơ
 router.put('/profile', updateProfile);
+
+// 2. Sổ địa chỉ (Address Management)
+router.get('/addresses', getAddresses);
+router.post('/addresses', addAddress);
+router.put('/addresses/:addressId', updateAddress);
+router.delete('/addresses/:addressId', deleteAddress);
+router.patch('/addresses/:addressId/default', setDefaultAddress);
 
 // 3. Đổi mật khẩu
 router.put('/change-password', changePassword);
