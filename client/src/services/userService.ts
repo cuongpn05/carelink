@@ -110,3 +110,4 @@ export const getAdministrativeWards = async (provinceCode: string): Promise<Ward
   const res: any = await axiosClient.get(`/user/administrative/wards?provinceCode=${encodeURIComponent(provinceCode)}`);
   return res.data?.wards || [];
 };
+

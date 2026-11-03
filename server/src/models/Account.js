@@ -28,6 +28,7 @@ const accountSchema = new mongoose.Schema(
       type: String,
       enum: ['CUSTOMER', 'CAREGIVER', 'ADMIN'],
       default: 'CUSTOMER',
+      index: true,
     },
 
     // Xử lý xác thực Email OTP lúc đăng ký / quên mật khẩu
@@ -56,6 +57,7 @@ const accountSchema = new mongoose.Schema(
       default: 100,
       min: [0, 'reputationScore tối thiểu là 0'],
       max: [100, 'reputationScore tối đa là 100'],
+      index: true,
     },
     status: {
       type: String,
@@ -67,6 +69,7 @@ const accountSchema = new mongoose.Schema(
         'BANNED', // Admin khóa vĩnh viễn
       ],
       default: 'UNVERIFIED',
+      index: true,
     },
 
     lastLoginAt: {
@@ -77,6 +80,9 @@ const accountSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+accountSchema.index({ role: 1, status: 1 });
+accountSchema.index({ status: 1, reputationScore: 1 });
 
 // Pre-save hook: Mã hóa password & Tự động cập nhật status theo reputationScore
 accountSchema.pre('save', async function (next) {
@@ -124,4 +130,3 @@ if (!mongoose.models.Accounts) {
 }
 
 module.exports = Account;
-

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { CareRequest, Account, User, CaregiverProfile } = require('../models');
+const { checkCaregiverAvailability } = require('../services/availabilityService');
 
 /**
  * Helper: Bổ sung thông tin chi tiết người dùng và người chăm sóc vào CareRequest
@@ -464,7 +465,53 @@ const acceptCareRequest = async (req, res) => {
       });
     }
 
-    // 2. ATOMIC CONDITIONAL UPDATE: Chỉ update nếu status ĐANG LÀ 'OPEN'
+    // 2. Kiểm tra trùng ca qua Availability Service trước khi tiếp nhận
+    let existingReq = null;
+    try {
+      const findRes = CareRequest.findById(id);
+      if (findRes && typeof findRes.lean === 'function') {
+        existingReq = await findRes.lean();
+      } else if (findRes && typeof findRes.then === 'function') {
+        existingReq = await findRes;
+      }
+    } catch {
+      existingReq = null;
+    }
+
+    if (existingReq) {
+      if (existingReq.status !== 'OPEN') {
+        return res.status(409).json({
+          success: false,
+          message: 'Rất tiếc! Yêu cầu chăm sóc này đã được tiếp nhận bởi người chăm sóc khác hoặc không còn ở trạng thái mở.',
+          currentStatus: existingReq.status,
+        });
+      }
+
+      const reqStartTime = existingReq.startTime || existingReq.schedule?.startDate;
+      let reqEndTime = existingReq.endTime || existingReq.schedule?.endDate;
+      if (!reqEndTime && reqStartTime) {
+        const dailyHours = existingReq.schedule?.dailyHours || 4;
+        reqEndTime = new Date(new Date(reqStartTime).getTime() + dailyHours * 60 * 60 * 1000);
+      }
+
+      if (reqStartTime && reqEndTime) {
+        const isAvailable = await checkCaregiverAvailability(
+          caregiverAccountId,
+          reqStartTime,
+          reqEndTime,
+          { excludeCareRequestId: id }
+        );
+
+        if (!isAvailable) {
+          return res.status(409).json({
+            success: false,
+            message: 'Bạn đã có một lịch làm việc khác trùng với khung giờ của yêu cầu này (trên đơn trực tiếp hoặc marketplace).',
+          });
+        }
+      }
+    }
+
+    // 3. ATOMIC CONDITIONAL UPDATE: Chỉ update nếu status ĐANG LÀ 'OPEN'
     const updatedRequest = await CareRequest.findOneAndUpdate(
       {
         _id: id,

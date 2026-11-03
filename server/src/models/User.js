@@ -181,6 +181,27 @@ const userSchema = new mongoose.Schema(
 // Sparse 2dsphere index phục vụ tìm kiếm địa lý
 userSchema.index({ 'addresses.location': '2dsphere' }, { sparse: true });
 
+// Pre-validate hook để dọn dẹp location nếu không có tọa độ hợp lệ (giữ strict undefined cho sparse 2dsphere index)
+userSchema.pre('validate', function (next) {
+  if (this.addresses && Array.isArray(this.addresses)) {
+    this.addresses.forEach((addr) => {
+      if (
+        addr.location &&
+        (!addr.location.coordinates ||
+          !Array.isArray(addr.location.coordinates) ||
+          addr.location.coordinates.length !== 2 ||
+          typeof addr.location.coordinates[0] !== 'number' ||
+          typeof addr.location.coordinates[1] !== 'number' ||
+          isNaN(addr.location.coordinates[0]) ||
+          isNaN(addr.location.coordinates[1]))
+      ) {
+        addr.location = undefined;
+      }
+    });
+  }
+  next();
+});
+
 // Pre-save hook đảm bảo tối đa 1 địa chỉ mặc định và đồng bộ sang defaultAddress
 userSchema.pre('save', function (next) {
   if (this.addresses && this.addresses.length > 0) {

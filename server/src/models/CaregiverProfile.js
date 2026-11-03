@@ -87,11 +87,47 @@ const caregiverProfileSchema = new mongoose.Schema(
       min: [0, 'experienceYears không được âm'],
     },
 
+    // VỊ TRÍ & BÁN KÍNH HOẠT ĐỘNG
+    serviceLocation: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point',
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        default: undefined,
+        validate: {
+          validator: function (val) {
+            if (!val) return true;
+            return (
+              Array.isArray(val) &&
+              val.length === 2 &&
+              typeof val[0] === 'number' &&
+              typeof val[1] === 'number' &&
+              val[0] >= -180 &&
+              val[0] <= 180 &&
+              val[1] >= -90 &&
+              val[1] <= 90
+            );
+          },
+          message: 'Tọa độ coordinates phải là mảng [kinh độ, vĩ độ] hợp lệ.',
+        },
+      },
+    },
+
+    serviceRadius: {
+      type: Number,
+      default: 15, // km
+      min: [1, 'Bán kính tối thiểu là 1 km'],
+      max: [100, 'Bán kính tối đa là 100 km'],
+    },
+
     serviceAreas: {
       type: [String],
       default: [],
       index: true,
-    }, // VD: ['Quận 1', 'Quận 3', 'Ninh Kiều'] -> Lọc theo khu vực
+    }, // VD: ['Cần Thơ', 'Ninh Kiều', 'Cái Răng'] -> Lọc theo khu vực/mã hành chính
 
     skills: {
       type: [String],
@@ -170,6 +206,25 @@ const caregiverProfileSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Tự động làm sạch serviceLocation nếu không có tọa độ hợp lệ để tránh lỗi sparse 2dsphere
+caregiverProfileSchema.pre('validate', function (next) {
+  if (
+    this.serviceLocation &&
+    (!this.serviceLocation.coordinates ||
+      !Array.isArray(this.serviceLocation.coordinates) ||
+      this.serviceLocation.coordinates.length !== 2 ||
+      this.serviceLocation.coordinates[0] === null ||
+      this.serviceLocation.coordinates[1] === null)
+  ) {
+    this.serviceLocation = undefined;
+  }
+  next();
+});
+
+// Sparse 2dsphere index phục vụ tìm kiếm theo bán kính
+caregiverProfileSchema.index({ serviceLocation: '2dsphere' }, { sparse: true });
+caregiverProfileSchema.index({ priorityScore: -1, ratingAvg: -1 });
 
 const CaregiverProfile =
   mongoose.models.CaregiverProfile ||

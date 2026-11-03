@@ -17,6 +17,80 @@ const applicantSchema = new mongoose.Schema(
   }
 );
 
+// Snapshot địa điểm phục vụ tại nhà hoặc tại bệnh viện
+const locationSnapshotSchema = new mongoose.Schema(
+  {
+    placeType: {
+      type: String,
+      enum: ['home', 'hospital'],
+      default: 'home',
+      required: true,
+    },
+    // Thông tin địa chỉ hành chính
+    provinceCode: { type: String, default: '', trim: true },
+    provinceName: { type: String, default: '', trim: true },
+    wardCode: { type: String, default: '', trim: true },
+    wardName: { type: String, default: '', trim: true },
+    detail: { type: String, default: '', trim: true },
+    fullAddress: { type: String, default: '', trim: true },
+    // Dành riêng cho địa điểm tại bệnh viện
+    hospitalId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Hospital',
+      default: null,
+    },
+    hospitalName: { type: String, default: '', trim: true },
+    department: { type: String, default: '', trim: true }, // Khoa/Phòng khám
+    roomNumber: { type: String, default: '', trim: true }, // Số phòng
+    bedNumber: { type: String, default: '', trim: true },  // Số giường bệnh
+    // Tọa độ GPS GeoJSON [longitude, latitude]
+    coordinates: {
+      type: [Number],
+      default: undefined,
+      validate: {
+        validator: function (val) {
+          if (!val) return true;
+          return (
+            Array.isArray(val) &&
+            val.length === 2 &&
+            typeof val[0] === 'number' &&
+            typeof val[1] === 'number' &&
+            val[0] >= -180 &&
+            val[0] <= 180 &&
+            val[1] >= -90 &&
+            val[1] <= 90
+          );
+        },
+        message: 'Tọa độ coordinates phải là mảng [kinh độ, vĩ độ] hợp lệ.',
+      },
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+// Snapshot cấu trúc chi phí & bảng giá tại thời điểm đặt đơn
+const pricingSnapshotSchema = new mongoose.Schema(
+  {
+    baseRate: { type: Number, default: 0 },
+    durationUnit: {
+      type: String,
+      enum: ['HOURLY', 'DAILY', 'WEEKLY', 'MONTHLY'],
+      default: 'HOURLY',
+    },
+    durationValue: { type: Number, default: 1 },
+    subtotal: { type: Number, default: 0 },
+    serviceFee: { type: Number, default: 0 },
+    discountAmount: { type: Number, default: 0 },
+    totalPrice: { type: Number, default: 0 },
+    currency: { type: String, default: 'VND' },
+  },
+  {
+    _id: false,
+  }
+);
+
 const bookingSchema = new mongoose.Schema(
   {
     customerId: {
@@ -62,7 +136,7 @@ const bookingSchema = new mongoose.Schema(
       default: 'ANY',
     },
 
-    // 3. Danh sách Cộng tác viên ứng tuyển (Đăng bài -> Nhiều người bấm "Ứng tuyển" -> Khách xem hồ sơ + điểm uy tín rồi bấm "Chọn")
+    // 3. Danh sách Cộng tác viên ứng tuyển
     applicants: {
       type: [applicantSchema],
       default: [],
@@ -79,7 +153,7 @@ const bookingSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'durationValue là bắt buộc'],
       min: [1, 'durationValue tối thiểu là 1'],
-    }, // VD: Nếu HOURLY thì lưu 2, 4, 6, 8, 10, 12. Nếu DAILY/WEEKLY/MONTHLY thì lưu 1, 2...
+    },
 
     // Thời gian bắt đầu và kết thúc thực tế (Server tự cộng durationValue vào startTime để ra endTime)
     // RẤT QUAN TRỌNG: Dùng cặp (startTime, endTime) này để query chặn TRÙNG LỊCH
@@ -95,10 +169,16 @@ const bookingSchema = new mongoose.Schema(
       index: true,
     },
 
-    // Địa điểm và ghi chú công việc
+    // Snapshot địa điểm phục vụ (Hỗ trợ cả tại nhà và tại bệnh viện)
+    locationSnapshot: {
+      type: locationSnapshotSchema,
+      default: () => ({ placeType: 'home' }),
+    },
+
+    // Giữ trường serviceAddress cũ để tương thích ngược 100%
     serviceAddress: {
       type: String,
-      required: [true, 'serviceAddress là bắt buộc'],
+      default: '',
       trim: true,
     },
 
@@ -113,7 +193,13 @@ const bookingSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Chi phí & Thanh toán (Demo)
+    // Snapshot chi phí
+    pricingSnapshot: {
+      type: pricingSnapshotSchema,
+      default: undefined,
+    },
+
+    // Chi phí tổng (VNĐ)
     totalPrice: {
       type: Number,
       required: [true, 'totalPrice là bắt buộc'],
@@ -187,7 +273,7 @@ const bookingSchema = new mongoose.Schema(
         type: Number,
         default: 0,
         min: 0,
-      }, // Số điểm uy tín đã bị trừ ở lần hủy này
+      },
     },
   },
   {
@@ -195,12 +281,15 @@ const bookingSchema = new mongoose.Schema(
   }
 );
 
-// Compound index để tối ưu query tìm kiếm, bộ lọc khu vực và chặn trùng lịch
+// Compound indexes để tối ưu query tìm kiếm, bộ lọc khu vực và chặn trùng lịch
 bookingSchema.index({ caregiverId: 1, startTime: 1, endTime: 1, status: 1 });
+bookingSchema.index({ caregiverProfileId: 1, startTime: 1, endTime: 1, status: 1 });
 bookingSchema.index({ serviceArea: 1, status: 1, bookingType: 1 });
+bookingSchema.index({ 'locationSnapshot.coordinates': '2dsphere' }, { sparse: true });
 
-// Tự động tính endTime dựa vào startTime, packageType, durationValue nếu endTime chưa được cung cấp
+// Pre-validate hook: tính endTime nếu chưa có, và đồng bộ dữ liệu địa chỉ & giá tiền
 bookingSchema.pre('validate', function (next) {
+  // 1. Tính toán endTime tự động nếu chưa có
   if (this.startTime && this.durationValue && this.packageType) {
     if (!this.endTime) {
       let durationMs = 0;
@@ -224,6 +313,42 @@ bookingSchema.pre('validate', function (next) {
 
   if (this.startTime && this.endTime && this.startTime >= this.endTime) {
     return next(new Error('Thời gian bắt đầu (startTime) phải nhỏ hơn thời gian kết thúc (endTime)'));
+  }
+
+  // 2. Đồng bộ 2 chiều giữa serviceAddress và locationSnapshot.fullAddress
+  if (this.serviceAddress && (!this.locationSnapshot || !this.locationSnapshot.fullAddress)) {
+    if (!this.locationSnapshot) {
+      this.locationSnapshot = { placeType: 'home' };
+    }
+    this.locationSnapshot.fullAddress = this.serviceAddress;
+    this.locationSnapshot.detail = this.serviceAddress;
+  } else if (this.locationSnapshot?.fullAddress && !this.serviceAddress) {
+    this.serviceAddress = this.locationSnapshot.fullAddress;
+  }
+
+  // 3. Làm sạch tọa độ coordinates nếu không hợp lệ để tránh lỗi sparse 2dsphere
+  if (
+    this.locationSnapshot &&
+    (!this.locationSnapshot.coordinates ||
+      !Array.isArray(this.locationSnapshot.coordinates) ||
+      this.locationSnapshot.coordinates.length !== 2 ||
+      this.locationSnapshot.coordinates[0] === null ||
+      this.locationSnapshot.coordinates[1] === null)
+  ) {
+    this.locationSnapshot.coordinates = undefined;
+  }
+
+  // 4. Đồng bộ totalPrice và pricingSnapshot
+  if (typeof this.totalPrice === 'number' && !this.pricingSnapshot) {
+    this.pricingSnapshot = {
+      baseRate: this.totalPrice,
+      durationUnit: this.packageType || 'HOURLY',
+      durationValue: this.durationValue || 1,
+      subtotal: this.totalPrice,
+      totalPrice: this.totalPrice,
+    };
+  } else if (this.pricingSnapshot && typeof this.pricingSnapshot.totalPrice === 'number' && !this.totalPrice) {
+    this.totalPrice = this.pricingSnapshot.totalPrice;
   }
 
   next();

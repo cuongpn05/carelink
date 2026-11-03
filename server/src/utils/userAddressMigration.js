@@ -53,3 +53,4 @@ const migrateSingleUserAddresses = async (user) => {
 module.exports = {
   migrateSingleUserAddresses,
 };
+

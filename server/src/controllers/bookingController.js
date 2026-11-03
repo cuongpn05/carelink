@@ -8,6 +8,7 @@ const {
   calculateBookingDetails,
   calculateCaregiverCancellationPenalty,
 } = require('../utils/booking.util');
+const { checkCaregiverAvailability } = require('../services/availabilityService');
 
 const enrichBooking = async (booking, viewerAccountId) => {
   const bookingData = typeof booking.toObject === 'function' ? booking.toObject() : booking;
@@ -266,24 +267,17 @@ const createBooking = async (req, res) => {
       });
     }
 
-    const caregiverBookingIds = [
+    // Kiểm tra rảnh lịch chéo qua Availability Service (quét cả Booking và CareRequest)
+    const isAvailable = await checkCaregiverAvailability(
       caregiverAccountId,
-      caregiver._id,
-      caregiver.userId,
-      req.account._id,
-      req.user?._id,
-    ].filter(Boolean);
-    const overlappingBooking = await Booking.findOne({
-      caregiverId: { $in: caregiverBookingIds },
-      status: { $in: ['CONFIRMED', 'IN_PROGRESS'] },
-      startTime: { $lt: bookingDetails.endTime },
-      endTime: { $gt: bookingDetails.startTime },
-    });
+      bookingDetails.startTime,
+      bookingDetails.endTime
+    );
 
-    if (overlappingBooking) {
+    if (!isAvailable) {
       return res.status(409).json({
         success: false,
-        message: 'Người chăm sóc đã xác nhận lịch trong khoảng thời gian này.',
+        message: 'Người chăm sóc đã có ca làm việc khác trong khoảng thời gian này (trên đơn trực tiếp hoặc marketplace).',
       });
     }
 
@@ -589,18 +583,18 @@ const confirmCaregiverBooking = async (req, res) => {
       });
     }
 
-    const conflictingBooking = await Booking.findOne({
-      _id: { $ne: requestedBooking._id },
-      ...getCaregiverBookingOwnerFilter(caregiverIdentity),
-      status: { $in: ['CONFIRMED', 'IN_PROGRESS'] },
-      startTime: { $lt: requestedBooking.endTime },
-      endTime: { $gt: requestedBooking.startTime },
-    }).select('_id');
+    // Kiểm tra rảnh lịch chéo qua Availability Service (quét cả Booking và CareRequest)
+    const isAvailable = await checkCaregiverAvailability(
+      caregiverIdentity.profileIds[0] || req.account._id,
+      requestedBooking.startTime,
+      requestedBooking.endTime,
+      { excludeBookingId: requestedBooking._id }
+    );
 
-    if (conflictingBooking) {
+    if (!isAvailable) {
       return res.status(409).json({
         success: false,
-        message: 'Bạn đã xác nhận một lịch khác trùng thời gian này.',
+        message: 'Bạn đã có một lịch làm việc khác trùng với thời gian này (trên đơn trực tiếp hoặc chợ việc).',
       });
     }
 
