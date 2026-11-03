@@ -7,8 +7,8 @@ const PACKAGE_DURATION_MS = {
 
 const HOURLY_DURATIONS = [2, 4, 6, 8, 10, 12];
 
-const calculateCaregiverCancellationPenalty = (cancellationCount) =>
-  Math.min(cancellationCount, 3) * 5;
+const calculateCancellationPenalty = (cancellationCount) =>
+  Math.min(Math.max(cancellationCount, 0), 3) * 5;
 
 const calculateBookingDetails = ({
   startTime,
@@ -60,5 +60,5 @@ const calculateBookingDetails = ({
 
 module.exports = {
   calculateBookingDetails,
-  calculateCaregiverCancellationPenalty,
+  calculateCancellationPenalty,
 };

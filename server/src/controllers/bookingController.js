@@ -6,7 +6,7 @@ const Account = require('../models/Account');
 const ReputationLog = require('../models/ReputationLog');
 const {
   calculateBookingDetails,
-  calculateCaregiverCancellationPenalty,
+  calculateCancellationPenalty,
 } = require('../utils/booking.util');
 const { checkCaregiverAvailability } = require('../services/availabilityService');
 const {
@@ -839,27 +839,19 @@ const cancelBooking = async (req, res) => {
       });
     }
 
-    let caregiverCancellationCount = null;
-    if (req.account.role === 'CAREGIVER' && requestedBooking.status === 'CONFIRMED') {
-      caregiverCancellationCount = (await Booking.countDocuments({
+    let cancellationCount = null;
+    if (requestedBooking.status === 'CONFIRMED') {
+      cancellationCount = (await Booking.countDocuments({
         status: 'CANCELLED',
         confirmedAt: { $ne: null },
         'cancellationInfo.cancelledBy': req.account._id,
-        'cancellationInfo.cancelledByRole': 'CAREGIVER',
+        'cancellationInfo.cancelledByRole': req.account.role,
       })) + 1;
     }
 
-    const hoursUntilStart =
-      (new Date(requestedBooking.startTime).getTime() - Date.now()) / (60 * 60 * 1000);
     let penaltyPoints = 0;
     if (requestedBooking.status === 'CONFIRMED') {
-      if (req.account.role === 'CAREGIVER') {
-        penaltyPoints = calculateCaregiverCancellationPenalty(
-          caregiverCancellationCount,
-        );
-      } else {
-        penaltyPoints = hoursUntilStart < 2 ? 15 : 5;
-      }
+      penaltyPoints = calculateCancellationPenalty(cancellationCount);
     }
 
     const now = new Date();
@@ -906,19 +898,26 @@ const cancelBooking = async (req, res) => {
         changeAmount: currentReputationScore - previousScore,
         previousScore,
         newScore: currentReputationScore,
-        reason: `Hủy lịch #${booking._id.toString().slice(-8)}: ${reason}`,
+        reason: `${
+          req.account.role === 'CUSTOMER' ? 'Khách hàng' : 'Người chăm sóc'
+        } hủy lịch #${booking._id.toString().slice(-8)}: ${reason}`,
       });
     }
+
+    const cancellationActorLabel =
+      req.account.role === 'CUSTOMER' ? 'khách hàng' : 'caregiver';
 
     return res.status(200).json({
       success: true,
       message: penaltyPoints
-        ? `Đã hủy lịch và trừ ${penaltyPoints} điểm uy tín.`
+        ? `Đã hủy lịch lần ${cancellationCount} và trừ ${penaltyPoints} điểm uy tín của tài khoản ${cancellationActorLabel}.`
         : 'Đã hủy lịch thành công, không bị trừ điểm uy tín.',
       data: {
         booking: await enrichBooking(booking, req.account._id),
         currentReputationScore,
-        caregiverCancellationCount,
+        cancellationCount,
+        caregiverCancellationCount:
+          req.account.role === 'CAREGIVER' ? cancellationCount : null,
         penaltyPointsDeducted: penaltyPoints,
       },
     });

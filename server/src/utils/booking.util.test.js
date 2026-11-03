@@ -1,16 +1,17 @@
 const {
   calculateBookingDetails,
-  calculateCaregiverCancellationPenalty,
+  calculateCancellationPenalty,
 } = require('./booking.util');
 
-describe('calculateCaregiverCancellationPenalty', () => {
+describe('calculateCancellationPenalty', () => {
   it.each([
+    [0, 0],
     [1, 5],
     [2, 10],
     [3, 15],
     [4, 15],
   ])('deducts the expected amount on cancellation %i', (count, expectedPenalty) => {
-    expect(calculateCaregiverCancellationPenalty(count)).toBe(expectedPenalty);
+    expect(calculateCancellationPenalty(count)).toBe(expectedPenalty);
   });
 });
 

@@ -99,7 +99,7 @@ export const setDefaultUserAddress = async (addressId: string) => {
   return res.data;
 };
 
-// 8. Lấy danh mục 63 Tỉnh/Thành phố
+// 8. Lấy danh mục tỉnh/thành sau sáp nhập qua API backend
 export const getAdministrativeProvinces = async (): Promise<ProvinceItem[]> => {
   const res: any = await axiosClient.get('/user/administrative/provinces');
   return res.data?.provinces || [];
@@ -110,4 +110,3 @@ export const getAdministrativeWards = async (provinceCode: string): Promise<Ward
   const res: any = await axiosClient.get(`/user/administrative/wards?provinceCode=${encodeURIComponent(provinceCode)}`);
   return res.data?.wards || [];
 };
-

@@ -118,21 +118,6 @@ export const BookingsPage = () => {
     return diffMs / (1000 * 60 * 60);
   };
 
-  // Ước tính số điểm uy tín bị trừ nếu hủy
-  const estimatePenalty = (booking) => {
-    if (!booking) return 0;
-    if (booking.status === 'PENDING') return 0;
-
-    const hours = getHoursUntilStart(booking.startTime);
-    const isCaregiver = account?.role === 'CAREGIVER';
-
-    if (isCaregiver) {
-      return null;
-    } else {
-      return hours < 2 ? 15 : 5;
-    }
-  };
-
   // Xử lý mở Modal Hủy
   const handleOpenCancelModal = (booking) => {
     setSelectedBooking(booking);
@@ -1143,18 +1128,14 @@ export const BookingsPage = () => {
 
             {/* Reputation Rule Alert */}
             {(() => {
-              const penalty = estimatePenalty(selectedBooking);
-              const hours = getHoursUntilStart(selectedBooking.startTime);
-              const isCaregiverCancellation =
-                isCaregiver && selectedBooking.status !== 'PENDING';
+              const isConfirmedCancellation = selectedBooking.status !== 'PENDING';
 
               return (
                 <div
                   style={{
-                    backgroundColor:
-                      penalty > 0 || isCaregiverCancellation ? '#fff1f2' : '#f0fdf4',
+                    backgroundColor: isConfirmedCancellation ? '#fff1f2' : '#f0fdf4',
                     border: `1px solid ${
-                      penalty > 0 || isCaregiverCancellation ? '#fecdd3' : '#bbf7d0'
+                      isConfirmedCancellation ? '#fecdd3' : '#bbf7d0'
                     }`,
                     padding: '14px 16px',
                     borderRadius: '12px',
@@ -1165,39 +1146,31 @@ export const BookingsPage = () => {
                     style={{
                       fontSize: '13.5px',
                       fontWeight: 700,
-                      color:
-                        penalty > 0 || isCaregiverCancellation ? '#9f1239' : '#15803d',
+                      color: isConfirmedCancellation ? '#9f1239' : '#15803d',
                       marginBottom: '6px',
                     }}
                   >
-                    {isCaregiverCancellation
+                    {isConfirmedCancellation
                       ? '⚠️ Hủy lịch sẽ bị trừ điểm uy tín'
-                      : penalty > 0
-                      ? `⚠️ Cảnh báo: Bạn sẽ bị trừ -${penalty} Điểm Uy Tín`
                       : '✓ Hủy miễn trừ: Không bị trừ điểm uy tín'}
                   </div>
 
                   <div
                     style={{
                       fontSize: '12.5px',
-                      color:
-                        penalty > 0 || isCaregiverCancellation ? '#881337' : '#166534',
+                      color: isConfirmedCancellation ? '#881337' : '#166534',
                       lineHeight: 1.5,
                     }}
                   >
                     {selectedBooking.status === 'PENDING' ? (
                       <span>Đơn hàng đang ở trạng thái chờ xác nhận. Bạn có thể hủy miễn phí mà không ảnh hưởng điểm uy tín.</span>
-                    ) : isCaregiver ? (
-                      <span>
-                        Mức trừ lũy tiến theo số lần hủy lịch đã xác nhận: lần 1 trừ 5 điểm,
-                        lần 2 trừ 10 điểm, từ lần 3 trừ 15 điểm. Hệ thống sẽ áp dụng mức
-                        tương ứng khi bạn xác nhận hủy.
-                      </span>
                     ) : (
                       <span>
-                        Ca hẹn bắt đầu lúc {formatDateTime(selectedBooking.startTime)} (còn{' '}
-                        {Math.max(0, Math.round(hours))} giờ). Theo quy định, hủy trước 6h trừ 5 điểm; hủy sát giờ (&lt;
-                        2h) trừ 15 điểm uy tín.
+                        {isCaregiver
+                          ? 'Khi bạn hủy lịch đã xác nhận, điểm uy tín caregiver bị trừ vào tài khoản của bạn.'
+                          : 'Khi bạn hủy lịch đã được caregiver xác nhận, điểm uy tín bị trừ vào tài khoản khách hàng của bạn.'}{' '}
+                        Mức trừ: lần 1 trừ 5 điểm, lần 2 trừ 10 điểm, từ lần 3 trừ 15 điểm.
+                        Hủy lịch đang chờ không bị tính.
                       </span>
                     )}
                   </div>
