@@ -171,8 +171,34 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
     event.preventDefault();
     setBookingError('');
 
+    const trimmedServiceArea = serviceArea.trim();
+    const trimmedServiceAddress = serviceAddress.trim();
+    if (!trimmedServiceArea || !trimmedServiceAddress) {
+      setBookingError('Vui lòng nhập khu vực và địa chỉ chăm sóc.');
+      return;
+    }
+
+    if (
+      !Number.isInteger(durationValue) ||
+      durationValue < 1 ||
+      (packageType === 'HOURLY' && ![2, 4, 6, 8, 10, 12].includes(durationValue))
+    ) {
+      setBookingError('Vui lòng chọn thời lượng dịch vụ hợp lệ.');
+      return;
+    }
+
+    if (!selectedPackage || typeof selectedPackage.rate !== 'number') {
+      setBookingError('Gói dịch vụ này hiện chưa có giá. Vui lòng chọn gói khác.');
+      return;
+    }
+
     const selectedStart = new Date(`${startDate}T${startHour}`);
-    if (!Number.isFinite(selectedStart.getTime()) || selectedStart <= new Date()) {
+    if (
+      !startDate ||
+      !startHour ||
+      !Number.isFinite(selectedStart.getTime()) ||
+      selectedStart <= new Date()
+    ) {
       setBookingError('Vui lòng chọn ngày và giờ bắt đầu trong tương lai.');
       return;
     }
@@ -184,8 +210,8 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
         packageType,
         durationValue,
         startTime: selectedStart.toISOString(),
-        serviceArea: serviceArea.trim(),
-        serviceAddress: serviceAddress.trim(),
+        serviceArea: trimmedServiceArea,
+        serviceAddress: trimmedServiceAddress,
         note: note.trim(),
         paymentMethod,
       });
@@ -410,7 +436,11 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                     >
                       Đóng
                     </button>
-                    <button type="submit" className="btn-modal-book" disabled={bookingLoading}>
+                    <button
+                      type="submit"
+                      className="btn-modal-book"
+                      disabled={bookingLoading || detailLoading || availablePackages.length === 0}
+                    >
                       {bookingLoading ? 'Đang gửi...' : 'Xác nhận đặt lịch'}
                     </button>
                   </div>

@@ -263,9 +263,9 @@ export const CaregiverBookingsPage: React.FC = () => {
       await refreshAuthProfile();
 
       const { caregiverCancellationCount, penaltyPointsDeducted } = response.data;
-      if (caregiverCancellationCount !== null && caregiverCancellationCount <= 2) {
+      if (penaltyPointsDeducted > 0 && caregiverCancellationCount !== null) {
         toast.success(
-          `Đã hủy lịch. Đây là lần ${caregiverCancellationCount}, chưa bị trừ điểm uy tín.`
+          `Đã hủy lịch. Đây là lần ${caregiverCancellationCount}, bị trừ ${penaltyPointsDeducted} điểm uy tín.`
         );
       } else if (penaltyPointsDeducted > 0) {
         toast.success(`Đã hủy lịch và bị trừ ${penaltyPointsDeducted} điểm uy tín.`);
@@ -583,9 +583,9 @@ export const CaregiverBookingsPage: React.FC = () => {
           >
             <h2 id="caregiver-cancel-title">Xác nhận hủy lịch</h2>
             <p>
-              Hủy lịch đã xác nhận có thể ảnh hưởng đến điểm uy tín. Hai lần hủy đầu tiên
-              không bị trừ điểm; từ lần thứ ba, hệ thống sẽ trừ 5 hoặc 15 điểm tùy thời
-              gian còn lại trước giờ bắt đầu.
+              Khi hủy lịch đã xác nhận, điểm uy tín bị trừ lũy tiến: lần 1 trừ 5 điểm,
+              lần 2 trừ 10 điểm và từ lần 3 trừ 15 điểm. Từ chối lịch đang chờ xác nhận
+              không bị tính là hủy.
             </p>
             <label htmlFor="caregiver-cancel-reason">Lý do hủy</label>
             <textarea

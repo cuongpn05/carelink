@@ -33,7 +33,7 @@ import {
 
 export const BookingsPage = () => {
   const navigate = useNavigate();
-  const { account, user, isAuthenticated, loading: authLoading, updateUserData } = useAuth();
+  const { account, user, isAuthenticated, loading: authLoading, updateAccount } = useAuth();
 
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -127,7 +127,7 @@ export const BookingsPage = () => {
     const isCaregiver = account?.role === 'CAREGIVER';
 
     if (isCaregiver) {
-      return hours < 12 ? 15 : 5;
+      return null;
     } else {
       return hours < 2 ? 15 : 5;
     }
@@ -158,11 +158,9 @@ export const BookingsPage = () => {
 
       // Cập nhật lại số điểm uy tín trong Auth Context nếu có trả về
       if (res?.data?.currentReputationScore !== undefined && account) {
-        updateUserData({
-          account: {
-            ...account,
-            reputationScore: res.data.currentReputationScore,
-          },
+        updateAccount({
+          ...account,
+          reputationScore: res.data.currentReputationScore,
         });
       }
 
@@ -1147,12 +1145,17 @@ export const BookingsPage = () => {
             {(() => {
               const penalty = estimatePenalty(selectedBooking);
               const hours = getHoursUntilStart(selectedBooking.startTime);
+              const isCaregiverCancellation =
+                isCaregiver && selectedBooking.status !== 'PENDING';
 
               return (
                 <div
                   style={{
-                    backgroundColor: penalty > 0 ? '#fff1f2' : '#f0fdf4',
-                    border: `1px solid ${penalty > 0 ? '#fecdd3' : '#bbf7d0'}`,
+                    backgroundColor:
+                      penalty > 0 || isCaregiverCancellation ? '#fff1f2' : '#f0fdf4',
+                    border: `1px solid ${
+                      penalty > 0 || isCaregiverCancellation ? '#fecdd3' : '#bbf7d0'
+                    }`,
                     padding: '14px 16px',
                     borderRadius: '12px',
                     marginBottom: '18px',
@@ -1162,23 +1165,33 @@ export const BookingsPage = () => {
                     style={{
                       fontSize: '13.5px',
                       fontWeight: 700,
-                      color: penalty > 0 ? '#9f1239' : '#15803d',
+                      color:
+                        penalty > 0 || isCaregiverCancellation ? '#9f1239' : '#15803d',
                       marginBottom: '6px',
                     }}
                   >
-                    {penalty > 0
+                    {isCaregiverCancellation
+                      ? '⚠️ Hủy lịch sẽ bị trừ điểm uy tín'
+                      : penalty > 0
                       ? `⚠️ Cảnh báo: Bạn sẽ bị trừ -${penalty} Điểm Uy Tín`
                       : '✓ Hủy miễn trừ: Không bị trừ điểm uy tín'}
                   </div>
 
-                  <div style={{ fontSize: '12.5px', color: penalty > 0 ? '#881337' : '#166534', lineHeight: 1.5 }}>
+                  <div
+                    style={{
+                      fontSize: '12.5px',
+                      color:
+                        penalty > 0 || isCaregiverCancellation ? '#881337' : '#166534',
+                      lineHeight: 1.5,
+                    }}
+                  >
                     {selectedBooking.status === 'PENDING' ? (
                       <span>Đơn hàng đang ở trạng thái chờ xác nhận. Bạn có thể hủy miễn phí mà không ảnh hưởng điểm uy tín.</span>
                     ) : isCaregiver ? (
                       <span>
-                        Ca hẹn bắt đầu lúc {formatDateTime(selectedBooking.startTime)} (còn{' '}
-                        {Math.max(0, Math.round(hours))} giờ). Theo quy định CTV, hủy trước 12h trừ 5 điểm; hủy sát giờ
-                        (&lt; 12h) trừ 15 điểm uy tín.
+                        Mức trừ lũy tiến theo số lần hủy lịch đã xác nhận: lần 1 trừ 5 điểm,
+                        lần 2 trừ 10 điểm, từ lần 3 trừ 15 điểm. Hệ thống sẽ áp dụng mức
+                        tương ứng khi bạn xác nhận hủy.
                       </span>
                     ) : (
                       <span>
@@ -1298,4 +1311,3 @@ export const BookingsPage = () => {
 };
 
 export default BookingsPage;
-

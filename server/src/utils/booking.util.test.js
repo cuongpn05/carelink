@@ -1,4 +1,18 @@
-const { calculateBookingDetails } = require('./booking.util');
+const {
+  calculateBookingDetails,
+  calculateCaregiverCancellationPenalty,
+} = require('./booking.util');
+
+describe('calculateCaregiverCancellationPenalty', () => {
+  it.each([
+    [1, 5],
+    [2, 10],
+    [3, 15],
+    [4, 15],
+  ])('deducts the expected amount on cancellation %i', (count, expectedPenalty) => {
+    expect(calculateCaregiverCancellationPenalty(count)).toBe(expectedPenalty);
+  });
+});
 
 describe('calculateBookingDetails', () => {
   const startTime = '2027-01-01T08:00:00.000Z';

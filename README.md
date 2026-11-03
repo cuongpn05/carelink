@@ -15,7 +15,7 @@
 | **Xem chi tiết người chăm sóc** | ✅ Có | Xem kỹ năng, kinh nghiệm, biểu phí, khu vực và đánh giá của khách hàng. |
 | **Đặt lịch chăm sóc** | ✅ Có | Chọn ngày, giờ bắt đầu/kết thúc, địa điểm, dịch vụ cần thực hiện và tự động tính tổng phí. |
 | **Xem lịch sử và trạng thái đặt lịch**| ✅ Có | Theo dõi lịch đặt: `pending` (chờ duyệt), `confirmed` (đã nhận), `completed` (hoàn thành), `cancelled` (đã hủy). |
-| **Hủy lịch theo quy tắc** | ✅ Có | Kiểm tra điều kiện thời gian trước khi cho phép hủy (ví dụ: chỉ được hủy trước 12h/24h). |
+| **Hủy lịch theo quy tắc** | ✅ Có | Khách hàng chịu mức trừ theo thời gian hủy; caregiver hủy lịch đã xác nhận bị trừ lũy tiến 5/10/15 điểm theo số lần hủy. Từ chối lịch đang chờ không bị tính. |
 | **Đánh giá sau dịch vụ** | ✅ Có | Chấm điểm (1-5 sao) và để lại nhận xét sau khi lịch chăm sóc chuyển sang `completed`. |
 
 ---
