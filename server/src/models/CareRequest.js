@@ -110,7 +110,6 @@ const careRequestSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Mô tả nhu cầu chăm sóc là bắt buộc'],
       trim: true,
-      maxlength: [2000, 'Mô tả tối đa 2000 ký tự'],
     },
 
     recipient: {
