@@ -43,3 +43,4 @@ export const getHospitalById = async (id: string): Promise<HospitalItem | null> 
   const res: any = await axiosClient.get(`/hospitals/${id}`);
   return res.data?.data || null;
 };
+

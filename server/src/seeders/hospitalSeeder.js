@@ -183,3 +183,4 @@ module.exports = {
   seedHospitals,
   defaultHospitals,
 };
+

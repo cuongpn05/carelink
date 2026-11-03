@@ -9,3 +9,4 @@ router.get('/', getHospitals);
 router.get('/:id', getHospitalById);
 
 module.exports = router;
+
