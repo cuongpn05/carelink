@@ -1,0 +1,468 @@
+[
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d51b" },
+    "fullName": "Phạm Thị Bích Ngọc",
+    "gender": "FEMALE",
+    "phone": "0912345601",
+    "avatarUrl": "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=300&q=80",
+    "bio": "Cử nhân điều dưỡng lão khoa với 8 năm kinh nghiệm chăm sóc người già tai biến, đặt sonde tiểu, ăn qua ống thông dạ dày.",
+    "idCardNumber": "092190001122",
+    "idCardImages": [],
+    "experienceYears": 8,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 120000,
+    "pricing": {
+      "hourlyRate": 120000,
+      "dailyRate": 850000,
+      "weeklyRate": 5500000,
+      "monthlyRate": 21000000
+    },
+    "serviceAreas": ["Ninh Kiều", "Cái Răng"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Chăm sóc sau điều trị",
+      "Chăm bệnh nhân tại viện",
+      "Vật lý trị liệu & Phục hồi chức năng"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.7752, 10.0315]
+    },
+    "serviceRadius": 20,
+    "priorityScore": 100,
+    "ratingAvg": 5.0,
+    "reviewCount": 48,
+    "totalReviews": 48,
+    "totalCompletedBookings": 62,
+    "createdAt": { "$date": "2026-11-01T08:00:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d51c" },
+    "fullName": "Võ Văn Hùng",
+    "gender": "MALE",
+    "phone": "0912345602",
+    "avatarUrl": "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=300&q=80",
+    "bio": "Kỹ thuật viên vật lý trị liệu 6 năm kinh nghiệm, chuyên xoa bóp bấm huyệt, tập vận động tại giường cho các cụ liệt nửa người.",
+    "idCardNumber": "092192003344",
+    "idCardImages": [],
+    "experienceYears": 6,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 110000,
+    "pricing": {
+      "hourlyRate": 110000,
+      "dailyRate": 780000,
+      "weeklyRate": 5000000,
+      "monthlyRate": 19500000
+    },
+    "serviceAreas": ["Ninh Kiều", "Bình Thủy", "Phong Điền"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Vật lý trị liệu & Phục hồi chức năng",
+      "Hỗ trợ đi lại"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.7540, 10.0520]
+    },
+    "serviceRadius": 18,
+    "priorityScore": 95,
+    "ratingAvg": 4.9,
+    "reviewCount": 37,
+    "totalReviews": 37,
+    "totalCompletedBookings": 41,
+    "createdAt": { "$date": "2026-11-01T08:30:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d51d" },
+    "fullName": "Đặng Thị Mai Hương",
+    "gender": "FEMALE",
+    "phone": "0912345603",
+    "avatarUrl": "https://images.unsplash.com/photo-1527613426441-4da17471b66d?auto=format&fit=crop&w=300&q=80",
+    "bio": "Cô chăm sóc hiền lành, kiên nhẫn, có 10 năm kinh nghiệm bầu bạn và chăm sóc người cao tuổi mắc chứng suy giảm trí nhớ (Alzheimer).",
+    "idCardNumber": "092185005566",
+    "idCardImages": [],
+    "experienceYears": 10,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 85000,
+    "pricing": {
+      "hourlyRate": 85000,
+      "dailyRate": 600000,
+      "weeklyRate": 3900000,
+      "monthlyRate": 15500000
+    },
+    "serviceAreas": ["Ninh Kiều", "Cái Răng"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Chăm sóc tại nhà",
+      "Nấu ăn dinh dưỡng",
+      "Hỗ trợ sinh hoạt"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.7880, 10.0150]
+    },
+    "serviceRadius": 10,
+    "priorityScore": 94,
+    "ratingAvg": 4.7,
+    "reviewCount": 40,
+    "totalReviews": 40,
+    "totalCompletedBookings": 53,
+    "createdAt": { "$date": "2026-11-01T09:00:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d51e" },
+    "fullName": "Huỳnh Thanh Tùng",
+    "gender": "MALE",
+    "phone": "0912345604",
+    "avatarUrl": "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=300&q=80",
+    "bio": "Điều dưỡng nam khỏe mạnh, nhận trực đêm 24/24 tại Bệnh viện Đa khoa Trung ương Cần Thơ và Bệnh viện Đa khoa TP.",
+    "idCardNumber": "092195007788",
+    "idCardImages": [],
+    "experienceYears": 3,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 95000,
+    "pricing": {
+      "hourlyRate": 95000,
+      "dailyRate": 680000,
+      "weeklyRate": 4400000,
+      "monthlyRate": 17500000
+    },
+    "serviceAreas": ["Ninh Kiều", "Cái Răng", "Bình Thủy"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Chăm bệnh nhân tại viện",
+      "Chăm sóc sau điều trị",
+      "Hỗ trợ đi lại"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.7621, 10.0195]
+    },
+    "serviceRadius": 15,
+    "priorityScore": 92,
+    "ratingAvg": 4.6,
+    "reviewCount": 18,
+    "totalReviews": 18,
+    "totalCompletedBookings": 22,
+    "createdAt": { "$date": "2026-11-01T09:30:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d51f" },
+    "fullName": "Ngô Thị Kim Liên",
+    "gender": "FEMALE",
+    "phone": "0912345605",
+    "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80",
+    "bio": "Chuyên gia dinh dưỡng và chăm sóc người già mắc bệnh tiểu đường, cao huyết áp, suy thận. Biết đo đường huyết và tiêm insulin.",
+    "idCardNumber": "092188009900",
+    "idCardImages": [],
+    "experienceYears": 7,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 105000,
+    "pricing": {
+      "hourlyRate": 105000,
+      "dailyRate": 750000,
+      "weeklyRate": 4800000,
+      "monthlyRate": 19000000
+    },
+    "serviceAreas": ["Cái Răng", "Ninh Kiều"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Chăm sóc tại nhà",
+      "Nấu ăn dinh dưỡng",
+      "Theo dõi sinh hiệu & Cho uống thuốc"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.8050, 9.9980]
+    },
+    "serviceRadius": 12,
+    "priorityScore": 97,
+    "ratingAvg": 4.9,
+    "reviewCount": 29,
+    "totalReviews": 29,
+    "totalCompletedBookings": 35,
+    "createdAt": { "$date": "2026-11-01T10:00:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d520" },
+    "fullName": "Bùi Quốc Khánh",
+    "gender": "MALE",
+    "phone": "0912345606",
+    "avatarUrl": "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=300&q=80",
+    "bio": "Điều dưỡng hồi sức cấp cứu 9 năm kinh nghiệm. Nhận chăm sóc người cao tuổi thở oxy, mở khí quản, hút đờm tại nhà.",
+    "idCardNumber": "092187001212",
+    "idCardImages": [],
+    "experienceYears": 9,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 130000,
+    "pricing": {
+      "hourlyRate": 130000,
+      "dailyRate": 950000,
+      "weeklyRate": 6200000,
+      "monthlyRate": 24000000
+    },
+    "serviceAreas": ["Ninh Kiều", "Bình Thủy", "Cái Răng", "Phong Điền"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Chăm sóc sau điều trị",
+      "Chăm bệnh nhân tại viện",
+      "Chăm sóc vết thương & Thay băng"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.7790, 10.0410]
+    },
+    "serviceRadius": 25,
+    "priorityScore": 99,
+    "ratingAvg": 5.0,
+    "reviewCount": 54,
+    "totalReviews": 54,
+    "totalCompletedBookings": 70,
+    "createdAt": { "$date": "2026-11-01T10:30:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d521" },
+    "fullName": "Lý Thị Thanh Thảo",
+    "gender": "FEMALE",
+    "phone": "0912345607",
+    "avatarUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80",
+    "bio": "Nhận chăm người già theo ca giờ hành chính tại khu vực Bình Thủy và Ninh Kiều. Chu đáo, sạch sẽ, nấu ăn hợp khẩu vị người miền Tây.",
+    "idCardNumber": "092196003434",
+    "idCardImages": [],
+    "experienceYears": 3,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 80000,
+    "pricing": {
+      "hourlyRate": 80000,
+      "dailyRate": 550000,
+      "weeklyRate": 3600000,
+      "monthlyRate": 14000000
+    },
+    "serviceAreas": ["Bình Thủy", "Ninh Kiều"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Chăm sóc tại nhà",
+      "Hỗ trợ sinh hoạt",
+      "Nấu ăn dinh dưỡng"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.7380, 10.0680]
+    },
+    "serviceRadius": 10,
+    "priorityScore": 90,
+    "ratingAvg": 4.7,
+    "reviewCount": 15,
+    "totalReviews": 15,
+    "totalCompletedBookings": 19,
+    "createdAt": { "$date": "2026-11-01T11:00:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d522" },
+    "fullName": "Trương Văn Đạt",
+    "gender": "MALE",
+    "phone": "0912345608",
+    "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+    "bio": "Có 4 năm kinh nghiệm chăm sóc các cụ ông bị gãy xương đùi, thoái hóa khớp gối, hỗ trợ tập đi bằng khung tập đi và xe lăn.",
+    "idCardNumber": "092194005656",
+    "idCardImages": [],
+    "experienceYears": 4,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 95000,
+    "pricing": {
+      "hourlyRate": 95000,
+      "dailyRate": 670000,
+      "weeklyRate": 4300000,
+      "monthlyRate": 17000000
+    },
+    "serviceAreas": ["Phong Điền", "Ninh Kiều", "Cái Răng"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Vật lý trị liệu & Phục hồi chức năng",
+      "Hỗ trợ đi lại",
+      "Chăm sóc sau điều trị"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.6950, 9.9920]
+    },
+    "serviceRadius": 18,
+    "priorityScore": 91,
+    "ratingAvg": 4.8,
+    "reviewCount": 21,
+    "totalReviews": 21,
+    "totalCompletedBookings": 26,
+    "createdAt": { "$date": "2026-11-01T11:30:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d523" },
+    "fullName": "Phan Thị Tuyết Nhung",
+    "gender": "FEMALE",
+    "phone": "0912345609",
+    "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80",
+    "bio": "Điều dưỡng 12 năm kinh nghiệm từng công tác tại khoa Nội Lão học. Nhận chăm sóc người già bệnh nặng, thay băng vết loét tỳ đè.",
+    "idCardNumber": "092182007878",
+    "idCardImages": [],
+    "experienceYears": 12,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 125000,
+    "pricing": {
+      "hourlyRate": 125000,
+      "dailyRate": 900000,
+      "weeklyRate": 5800000,
+      "monthlyRate": 22500000
+    },
+    "serviceAreas": ["Ninh Kiều", "Bình Thủy", "Cái Răng"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Chăm sóc vết thương & Thay băng",
+      "Chăm bệnh nhân tại viện",
+      "Chăm sóc sau điều trị"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.7810, 10.0380]
+    },
+    "serviceRadius": 15,
+    "priorityScore": 100,
+    "ratingAvg": 5.0,
+    "reviewCount": 63,
+    "totalReviews": 63,
+    "totalCompletedBookings": 85,
+    "createdAt": { "$date": "2026-11-01T12:00:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d524" },
+    "fullName": "Đỗ Minh Quân",
+    "gender": "MALE",
+    "phone": "0912345610",
+    "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
+    "bio": "Nhận chăm sóc người cao tuổi khu vực Ô Môn, Bình Thủy. Nhiệt tình, chịu khó, có kinh nghiệm xoay trở chống loét và vệ sinh tại giường.",
+    "idCardNumber": "092197009090",
+    "idCardImages": [],
+    "experienceYears": 2,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 75000,
+    "pricing": {
+      "hourlyRate": 75000,
+      "dailyRate": 520000,
+      "weeklyRate": 3400000,
+      "monthlyRate": 13500000
+    },
+    "serviceAreas": ["Ô Môn", "Bình Thủy"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Hỗ trợ sinh hoạt",
+      "Chăm sóc tại nhà"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.6320, 10.1150]
+    },
+    "serviceRadius": 12,
+    "priorityScore": 86,
+    "ratingAvg": 4.5,
+    "reviewCount": 11,
+    "totalReviews": 11,
+    "totalCompletedBookings": 14,
+    "createdAt": { "$date": "2026-11-01T12:30:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d525" },
+    "fullName": "Hoàng Thị Thu Thủy",
+    "gender": "FEMALE",
+    "phone": "0912345611",
+    "avatarUrl": "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=300&q=80",
+    "bio": "Y sĩ Y học cổ truyền 6 năm kinh nghiệm, kết hợp chăm sóc người cao tuổi với ngâm chân thảo dược, xoa bóp giảm đau nhức xương khớp.",
+    "idCardNumber": "092191002323",
+    "idCardImages": [],
+    "experienceYears": 6,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 100000,
+    "pricing": {
+      "hourlyRate": 100000,
+      "dailyRate": 720000,
+      "weeklyRate": 4600000,
+      "monthlyRate": 18200000
+    },
+    "serviceAreas": ["Ninh Kiều", "Cái Răng", "Phong Điền"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Vật lý trị liệu & Phục hồi chức năng",
+      "Chăm sóc tại nhà",
+      "Hỗ trợ sinh hoạt"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.7710, 10.0240]
+    },
+    "serviceRadius": 15,
+    "priorityScore": 95,
+    "ratingAvg": 4.9,
+    "reviewCount": 34,
+    "totalReviews": 34,
+    "totalCompletedBookings": 39,
+    "createdAt": { "$date": "2026-11-01T13:00:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "6ae61fc4f7335868b707d526" },
+    "fullName": "Nguyễn Thị Hồng Nhung",
+    "gender": "FEMALE",
+    "phone": "0912345612",
+    "avatarUrl": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=300&q=80",
+    "bio": "Có 5 năm kinh nghiệm nuôi bệnh người già tại Bệnh viện Đa khoa Trung ương và Bệnh viện Tim Mạch Cần Thơ. Cẩn thận, thức đêm tốt.",
+    "idCardNumber": "092193004545",
+    "idCardImages": [],
+    "experienceYears": 5,
+    "approvalStatus": "APPROVED",
+    "verificationStatus": "VERIFIED",
+    "hourlyRate": 90000,
+    "pricing": {
+      "hourlyRate": 90000,
+      "dailyRate": 650000,
+      "weeklyRate": 4200000,
+      "monthlyRate": 16800000
+    },
+    "serviceAreas": ["Ninh Kiều", "Cái Răng"],
+    "skills": [
+      "Chăm sóc người cao tuổi",
+      "Chăm bệnh nhân tại viện",
+      "Theo dõi sinh hiệu & Cho uống thuốc",
+      "Hỗ trợ sinh hoạt"
+    ],
+    "serviceLocation": {
+      "type": "Point",
+      "coordinates": [105.7595, 10.0178]
+    },
+    "serviceRadius": 15,
+    "priorityScore": 93,
+    "ratingAvg": 4.8,
+    "reviewCount": 27,
+    "totalReviews": 27,
+    "totalCompletedBookings": 33,
+    "createdAt": { "$date": "2026-11-01T13:30:00.000Z" },
+    "updatedAt": { "$date": "2026-11-03T16:00:00.000Z" }
+  }
+]

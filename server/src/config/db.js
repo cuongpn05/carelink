@@ -23,6 +23,18 @@ const connectDB = async () => {
     } catch (seedErr) {
       console.warn("Could not auto-seed hospitals:", seedErr.message);
     }
+
+    // Auto-seed caregivers if collection is empty
+    try {
+      const CaregiverProfile = require('../models/CaregiverProfile');
+      const caregiverCount = await CaregiverProfile.countDocuments();
+      if (caregiverCount === 0) {
+        const { seedCaregiverList } = require('../seeders/caregiverListSeeder');
+        await seedCaregiverList();
+      }
+    } catch (caregiverErr) {
+      console.warn("Could not auto-seed caregivers:", caregiverErr.message);
+    }
   } catch (error) {
     console.error("Database connection error:", error.message);
     throw error;
