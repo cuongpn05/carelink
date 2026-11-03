@@ -55,7 +55,7 @@ export const ElderlyBookingModal: React.FC<ElderlyBookingModalProps> = ({
     placeType: 'home',
     recipientName: '',
     recipientPhone: '',
-    provinceCode: 'CT',
+    provinceCode: '92',
     provinceName: 'Cần Thơ',
     wardCode: 'NK',
     wardName: 'Ninh Kiều',
@@ -104,16 +104,8 @@ export const ElderlyBookingModal: React.FC<ElderlyBookingModalProps> = ({
       return;
     }
 
-    if (locationValue.placeType === 'home' && !locationValue.detail) {
+    if (!locationValue.detail) {
       setError('Vui lòng nhập số nhà, tên đường hoặc chọn từ Sổ địa chỉ.');
-      return;
-    }
-
-    if (
-      locationValue.placeType === 'hospital' &&
-      (!locationValue.department || !locationValue.roomNumber || !locationValue.bedNumber)
-    ) {
-      setError('Vui lòng nhập đầy đủ Khoa điều trị, Số phòng và Số giường.');
       return;
     }
 
@@ -136,7 +128,7 @@ export const ElderlyBookingModal: React.FC<ElderlyBookingModalProps> = ({
         note: careNotes.trim(),
         paymentMethod: 'CASH',
         location: {
-          placeType: locationValue.placeType,
+          placeType: 'home',
           recipientName: locationValue.recipientName,
           recipientPhone: locationValue.recipientPhone,
           provinceCode: locationValue.provinceCode,
@@ -145,11 +137,6 @@ export const ElderlyBookingModal: React.FC<ElderlyBookingModalProps> = ({
           wardName: locationValue.wardName,
           detail: locationValue.detail,
           fullAddress: locationValue.fullAddress || locationValue.detail,
-          hospitalId: locationValue.hospitalId,
-          hospitalName: locationValue.hospitalName,
-          department: locationValue.department,
-          roomNumber: locationValue.roomNumber,
-          bedNumber: locationValue.bedNumber,
           coordinates: locationValue.coordinates,
         },
       });

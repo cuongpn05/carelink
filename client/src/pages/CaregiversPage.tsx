@@ -634,60 +634,62 @@ export const CaregiversPage: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* 2. Phường / Xã / Quận (Custom Dropdown) */}
-                          <div className="location-field-block">
-                            <label className="location-field-label">Phường / Xã / Quận</label>
-                            <div className="custom-dropdown-wrap" ref={wardMenuRef}>
-                              <button
-                                type="button"
-                                className={`custom-dropdown-btn ${isWardMenuOpen ? 'active' : ''}`}
-                                onClick={() => {
-                                  setIsWardMenuOpen((prev) => !prev);
-                                  setIsProvinceMenuOpen(false);
-                                }}
-                              >
-                                <span>{selectedWardName || 'Tất cả phường / xã'}</span>
-                                <ChevronDown size={14} className={`dropdown-chevron ${isWardMenuOpen ? 'open' : ''}`} />
-                              </button>
+                          {/* 2. Phường / Xã / Quận (Custom Dropdown) - Chỉ hiện khi đã chọn Tỉnh / Thành */}
+                          {selectedProvinceCode && (
+                            <div className="location-field-block animate-fade-in">
+                              <label className="location-field-label">Phường / Xã / Quận</label>
+                              <div className="custom-dropdown-wrap" ref={wardMenuRef}>
+                                <button
+                                  type="button"
+                                  className={`custom-dropdown-btn ${isWardMenuOpen ? 'active' : ''}`}
+                                  onClick={() => {
+                                    setIsWardMenuOpen((prev) => !prev);
+                                    setIsProvinceMenuOpen(false);
+                                  }}
+                                >
+                                  <span>{selectedWardName || 'Tất cả phường / xã'}</span>
+                                  <ChevronDown size={14} className={`dropdown-chevron ${isWardMenuOpen ? 'open' : ''}`} />
+                                </button>
 
-                              {isWardMenuOpen && (
-                                <div className="custom-dropdown-menu">
-                                  <div className="dropdown-search-wrap">
-                                    <Search size={13} />
-                                    <input
-                                      type="text"
-                                      placeholder="Tìm phường xã, quận huyện..."
-                                      value={wardSearch}
-                                      onChange={(e) => setWardSearch(e.target.value)}
-                                      autoFocus
-                                    />
-                                  </div>
-                                  <div className="custom-dropdown-list">
-                                    <div
-                                      className={`custom-dropdown-item ${!selectedWardName ? 'selected' : ''}`}
-                                      onClick={() => handleSelectWard('')}
-                                    >
-                                      <span>Tất cả phường / xã</span>
-                                      {!selectedWardName && <Check size={14} className="item-check" />}
+                                {isWardMenuOpen && (
+                                  <div className="custom-dropdown-menu">
+                                    <div className="dropdown-search-wrap">
+                                      <Search size={13} />
+                                      <input
+                                        type="text"
+                                        placeholder="Tìm phường xã, quận huyện..."
+                                        value={wardSearch}
+                                        onChange={(e) => setWardSearch(e.target.value)}
+                                        autoFocus
+                                      />
                                     </div>
-                                    {filteredWards.map((w, idx) => (
+                                    <div className="custom-dropdown-list">
                                       <div
-                                        key={`${w.code}-${idx}`}
-                                        className={`custom-dropdown-item ${selectedWardName === w.name ? 'selected' : ''}`}
-                                        onClick={() => handleSelectWard(w.name)}
+                                        className={`custom-dropdown-item ${!selectedWardName ? 'selected' : ''}`}
+                                        onClick={() => handleSelectWard('')}
                                       >
-                                        <span>{w.name}</span>
-                                        {selectedWardName === w.name && <Check size={14} className="item-check" />}
+                                        <span>Tất cả phường / xã</span>
+                                        {!selectedWardName && <Check size={14} className="item-check" />}
                                       </div>
-                                    ))}
-                                    {filteredWards.length === 0 && (
-                                      <div className="dropdown-empty-msg">Không tìm thấy phường xã</div>
-                                    )}
+                                      {filteredWards.map((w, idx) => (
+                                        <div
+                                          key={`${w.code}-${idx}`}
+                                          className={`custom-dropdown-item ${selectedWardName === w.name ? 'selected' : ''}`}
+                                          onClick={() => handleSelectWard(w.name)}
+                                        >
+                                          <span>{w.name}</span>
+                                          {selectedWardName === w.name && <Check size={14} className="item-check" />}
+                                        </div>
+                                      ))}
+                                      {filteredWards.length === 0 && (
+                                        <div className="dropdown-empty-msg">Không tìm thấy phường xã</div>
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </div>
-                          </div>
+                          )}
 
                           {/* 3. Gợi ý nhanh khu vực Cần Thơ */}
                           <div className="location-quick-picks">
@@ -1033,6 +1035,10 @@ export const CaregiversPage: React.FC = () => {
         <CaregiverDetailModal
           caregiver={selectedCaregiver}
           onClose={() => setSelectedCaregiver(null)}
+          onBook={(cg) => {
+            setSelectedCaregiver(null);
+            setBookingCaregiver(cg);
+          }}
         />
       )}
 

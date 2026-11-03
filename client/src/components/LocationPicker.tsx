@@ -1,5 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Home, Hospital as HospitalIcon, MapPin, Navigation, BookOpen, AlertCircle, CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  MapPin,
+  Navigation,
+  BookOpen,
+  AlertCircle,
+  CheckCircle2,
+  Search,
+  ChevronDown,
+  Check,
+  X,
+} from 'lucide-react';
 import {
   getUserAddresses,
   getAdministrativeProvinces,
@@ -8,11 +18,10 @@ import {
   ProvinceItem,
   WardItem,
 } from '../services/userService';
-import { getHospitals, HospitalItem } from '../services/hospitalService';
 import './LocationPicker.css';
 
 export interface LocationPickerValue {
-  placeType: 'home' | 'hospital';
+  placeType: 'home';
   recipientName: string;
   recipientPhone: string;
   provinceCode: string;
@@ -21,12 +30,13 @@ export interface LocationPickerValue {
   wardName: string;
   detail: string;
   fullAddress: string;
+  coordinates?: [number, number]; // [lng, lat]
+  // legacy optional fields for backward compatibility
   hospitalId?: string | null;
   hospitalName?: string;
   department?: string;
   roomNumber?: string;
   bedNumber?: string;
-  coordinates?: [number, number]; // [lng, lat]
 }
 
 interface LocationPickerProps {
@@ -51,6 +61,155 @@ const calculateDistanceKm = (coord1: [number, number], coord2: [number, number])
   return Math.round(R * c * 10) / 10;
 };
 
+const normalizeSearch = (val: string) =>
+  val
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .trim();
+
+// Custom Searchable Select Component (No OS Native Overflow, Full Search Support)
+interface SearchableSelectProps {
+  label: string;
+  placeholder: string;
+  searchPlaceholder?: string;
+  options: Array<{ code: string; name: string }>;
+  valueCode: string;
+  valueName?: string;
+  onChange: (code: string, name: string) => void;
+  disabled?: boolean;
+  loading?: boolean;
+  required?: boolean;
+}
+
+const SearchableSelect: React.FC<SearchableSelectProps> = ({
+  label,
+  placeholder,
+  searchPlaceholder = 'Tìm kiếm...',
+  options,
+  valueCode,
+  valueName,
+  onChange,
+  disabled = false,
+  loading = false,
+  required = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const menuRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+        setSearch('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredOptions = useMemo(() => {
+    const q = normalizeSearch(search);
+    if (!q) return options;
+    return options.filter((opt) => normalizeSearch(opt.name).includes(q));
+  }, [options, search]);
+
+  const selectedOption = useMemo(() => {
+    return options.find((opt) => opt.code === valueCode);
+  }, [options, valueCode]);
+
+  const displayName = valueName || selectedOption?.name || '';
+
+  const handleToggle = () => {
+    if (disabled || loading) return;
+    const next = !isOpen;
+    setIsOpen(next);
+    if (next) {
+      setTimeout(() => inputRef.current?.focus(), 60);
+    } else {
+      setSearch('');
+    }
+  };
+
+  const handleSelect = (code: string, name: string) => {
+    onChange(code, name);
+    setSearch('');
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="searchable-select-wrap" ref={menuRef}>
+      <label className="searchable-select-label">
+        {label} {required && <span className="select-required-star">*</span>}
+      </label>
+
+      <button
+        type="button"
+        className={`searchable-select-btn ${isOpen ? 'active' : ''} ${disabled ? 'disabled' : ''}`}
+        onClick={handleToggle}
+        disabled={disabled || loading}
+      >
+        <span className={displayName ? 'select-value-text' : 'select-placeholder-text'}>
+          {loading ? 'Đang tải...' : displayName || placeholder}
+        </span>
+        <ChevronDown size={16} className={`select-chevron ${isOpen ? 'open' : ''}`} />
+      </button>
+
+      {isOpen && !disabled && !loading && (
+        <div className="searchable-select-menu">
+          <div className="searchable-search-box">
+            <Search size={14} className="search-box-icon" />
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder={searchPlaceholder}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="searchable-search-input"
+            />
+            {search && (
+              <button
+                type="button"
+                className="searchable-clear-btn"
+                onClick={() => setSearch('')}
+                title="Xóa tìm kiếm"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+
+          <div className="searchable-options-list">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => {
+                const isSelected = opt.code === valueCode;
+                return (
+                  <div
+                    key={opt.code}
+                    className={`searchable-option-item ${isSelected ? 'selected' : ''}`}
+                    onClick={() => handleSelect(opt.code, opt.name)}
+                  >
+                    <span>{opt.name}</span>
+                    {isSelected && <Check size={14} className="option-check-icon" />}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="searchable-empty-msg">
+                Không tìm thấy kết quả phù hợp
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const LocationPicker: React.FC<LocationPickerProps> = ({
   value,
   onChange,
@@ -60,8 +219,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const [savedAddresses, setSavedAddresses] = useState<UserAddress[]>([]);
   const [provinces, setProvinces] = useState<ProvinceItem[]>([]);
   const [wards, setWards] = useState<WardItem[]>([]);
-  const [hospitals, setHospitals] = useState<HospitalItem[]>([]);
-  const [loadingHospitals, setLoadingHospitals] = useState(false);
+  const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [loadingWards, setLoadingWards] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
   // Load saved addresses and provinces
@@ -77,25 +236,25 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       })
       .catch(() => {});
 
+    setLoadingProvinces(true);
     getAdministrativeProvinces()
       .then((provs) => setProvinces(provs || []))
-      .catch(() => {});
-
-    setLoadingHospitals(true);
-    getHospitals()
-      .then((hosps) => setHospitals(hosps || []))
       .catch(() => {})
-      .finally(() => setLoadingHospitals(false));
+      .finally(() => setLoadingProvinces(false));
   }, []);
 
-  // When province changes in home mode, reload wards
+  // When province changes, reload wards
   useEffect(() => {
-    if (value.placeType === 'home' && value.provinceCode) {
+    if (value.provinceCode) {
+      setLoadingWards(true);
       getAdministrativeWards(value.provinceCode)
         .then((w) => setWards(w || []))
-        .catch(() => setWards([]));
+        .catch(() => setWards([]))
+        .finally(() => setLoadingWards(false));
+    } else {
+      setWards([]);
     }
-  }, [value.provinceCode, value.placeType]);
+  }, [value.provinceCode]);
 
   const applySavedAddress = (addr: UserAddress) => {
     setSelectedAddressId(addr._id);
@@ -111,56 +270,6 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       detail: addr.detail,
       fullAddress: addr.fullAddress,
       coordinates: addr.location?.coordinates || [105.7825, 10.0342],
-    });
-  };
-
-  const handlePlaceTypeChange = (type: 'home' | 'hospital') => {
-    if (type === 'hospital') {
-      const firstHosp = hospitals[0];
-      onChange({
-        ...value,
-        placeType: 'hospital',
-        hospitalId: firstHosp?._id || null,
-        hospitalName: firstHosp?.name || '',
-        provinceCode: firstHosp?.provinceCode || 'CT',
-        provinceName: firstHosp?.provinceName || 'Cần Thơ',
-        wardCode: firstHosp?.wardCode || '',
-        wardName: firstHosp?.wardName || '',
-        detail: firstHosp?.address || '',
-        fullAddress: firstHosp?.address || '',
-        department: firstHosp?.departments?.[0] || 'Khoa Lão khoa',
-        roomNumber: 'Phòng 201',
-        bedNumber: 'Giường 01',
-        coordinates: firstHosp?.location?.coordinates || [105.7828, 10.0321],
-      });
-    } else {
-      onChange({
-        ...value,
-        placeType: 'home',
-        hospitalId: null,
-        hospitalName: '',
-        department: '',
-        roomNumber: '',
-        bedNumber: '',
-      });
-    }
-  };
-
-  const handleHospitalSelect = (hospId: string) => {
-    const hosp = hospitals.find((h) => h._id === hospId);
-    if (!hosp) return;
-    onChange({
-      ...value,
-      hospitalId: hosp._id,
-      hospitalName: hosp.name,
-      provinceCode: hosp.provinceCode,
-      provinceName: hosp.provinceName,
-      wardCode: hosp.wardCode || '',
-      wardName: hosp.wardName || '',
-      detail: hosp.address,
-      fullAddress: hosp.address,
-      department: hosp.departments?.[0] || 'Khoa Lão khoa',
-      coordinates: hosp.location?.coordinates || [105.7828, 10.0321],
     });
   };
 
@@ -185,6 +294,78 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   };
 
+  // Smart sort provinces with Cần Thơ, TP.HCM, Hà Nội, Đà Nẵng at top
+  const sortedProvinces = useMemo(() => {
+    const priority = ['92', '79', '01', '48'];
+    return [...provinces].sort((a, b) => {
+      const aIdx = priority.indexOf(a.code);
+      const bIdx = priority.indexOf(b.code);
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+      if (aIdx !== -1) return -1;
+      if (bIdx !== -1) return 1;
+      return a.name.localeCompare(b.name, 'vi');
+    });
+  }, [provinces]);
+
+  // Default Cần Thơ districts
+  const defaultCanThoWards = useMemo<WardItem[]>(
+    () => [
+      { code: 'NK', name: 'Quận Ninh Kiều' },
+      { code: 'CR', name: 'Quận Cái Răng' },
+      { code: 'BT', name: 'Quận Bình Thủy' },
+      { code: 'PD', name: 'Huyện Phong Điền' },
+      { code: 'OM', name: 'Quận Ô Môn' },
+      { code: 'TN', name: 'Quận Thốt Nốt' },
+      { code: 'TB', name: 'Huyện Thới Lai' },
+      { code: 'CD', name: 'Huyện Cờ Đỏ' },
+      { code: 'VT', name: 'Huyện Vĩnh Thạnh' },
+    ],
+    []
+  );
+
+  const availableWards = useMemo(() => {
+    if (value.provinceCode === '92') {
+      const names = new Set(wards.map((w) => w.name));
+      const combined = [...defaultCanThoWards];
+      wards.forEach((w) => {
+        if (!names.has(w.name)) combined.push(w);
+      });
+      return combined;
+    }
+    return wards;
+  }, [wards, value.provinceCode, defaultCanThoWards]);
+
+  const handleProvinceChange = (pCode: string, pName: string) => {
+    onChange({
+      ...value,
+      placeType: 'home',
+      provinceCode: pCode,
+      provinceName: pName,
+      wardCode: '',
+      wardName: '',
+      fullAddress: `${value.detail ? value.detail + ', ' : ''}${pName}`,
+    });
+  };
+
+  const handleWardChange = (wCode: string, wName: string) => {
+    onChange({
+      ...value,
+      placeType: 'home',
+      wardCode: wCode,
+      wardName: wName,
+      fullAddress: `${value.detail ? value.detail + ', ' : ''}${wName ? wName + ', ' : ''}${value.provinceName}`,
+    });
+  };
+
+  const handleDetailChange = (detailText: string) => {
+    const fullAddress = `${detailText ? detailText + ', ' : ''}${value.wardName ? value.wardName + ', ' : ''}${value.provinceName}`;
+    onChange({
+      ...value,
+      detail: detailText,
+      fullAddress,
+    });
+  };
+
   // Distance computation
   const currentCoords = value.coordinates || [105.7825, 10.0342];
   const distanceKm = caregiverCoords ? calculateDistanceKm(caregiverCoords, currentCoords) : null;
@@ -198,26 +379,6 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
   return (
     <div className="location-picker-container">
-      {/* Visual Tabs */}
-      <div className="location-tabs">
-        <button
-          type="button"
-          className={`location-tab-btn ${value.placeType === 'home' ? 'active' : ''}`}
-          onClick={() => handlePlaceTypeChange('home')}
-        >
-          <Home size={18} />
-          <span>Chăm sóc tại Nhà riêng</span>
-        </button>
-        <button
-          type="button"
-          className={`location-tab-btn ${value.placeType === 'hospital' ? 'active' : ''}`}
-          onClick={() => handlePlaceTypeChange('hospital')}
-        >
-          <HospitalIcon size={18} />
-          <span>Chăm sóc tại Bệnh viện</span>
-        </button>
-      </div>
-
       {/* Recipient Details */}
       <div className="location-fields-grid">
         <div className="location-input-group">
@@ -242,176 +403,81 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         </div>
       </div>
 
-      {/* Tab 1: Home Mode */}
-      {value.placeType === 'home' && (
-        <>
-          {/* Quick selection from address book */}
-          {savedAddresses.length > 0 && (
-            <div className="saved-addresses-section">
-              <div className="saved-addresses-header">
-                <span className="saved-addresses-title">
-                  <BookOpen size={14} style={{ display: 'inline', marginRight: 4 }} />
-                  Chọn nhanh từ Sổ địa chỉ:
-                </span>
-              </div>
-              <div className="saved-addresses-grid">
-                {savedAddresses.map((addr) => (
-                  <div
-                    key={addr._id}
-                    className={`saved-address-card ${selectedAddressId === addr._id ? 'selected' : ''}`}
-                    onClick={() => applySavedAddress(addr)}
-                  >
-                    <div className="saved-address-top">
-                      <span className="saved-address-label">{addr.label || 'Địa chỉ'}</span>
-                      {addr.isDefault && <span className="saved-address-default">Mặc định</span>}
-                    </div>
-                    <div className="saved-address-text" title={addr.fullAddress}>
-                      {addr.fullAddress}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Manual Input */}
-          <div className="location-fields-grid">
-            <div className="location-input-group">
-              <label>Tỉnh / Thành phố *</label>
-              <select
-                value={value.provinceCode || ''}
-                onChange={(e) => {
-                  const pCode = e.target.value;
-                  const prov = provinces.find((p) => p.code === pCode);
-                  onChange({
-                    ...value,
-                    provinceCode: pCode,
-                    provinceName: prov?.name || '',
-                    wardCode: '',
-                    wardName: '',
-                    fullAddress: `${value.detail ? value.detail + ', ' : ''}${prov?.name || ''}`,
-                  });
-                }}
-              >
-                <option value="">-- Chọn Tỉnh / Thành phố --</option>
-                {provinces.map((p) => (
-                  <option key={p.code} value={p.code}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="location-input-group">
-              <label>Phường / Xã *</label>
-              <select
-                value={value.wardCode || ''}
-                onChange={(e) => {
-                  const wCode = e.target.value;
-                  const ward = wards.find((w) => w.code === wCode);
-                  onChange({
-                    ...value,
-                    wardCode: wCode,
-                    wardName: ward?.name || '',
-                    fullAddress: `${value.detail ? value.detail + ', ' : ''}${ward?.name ? ward.name + ', ' : ''}${value.provinceName}`,
-                  });
-                }}
-                disabled={!value.provinceCode}
-              >
-                <option value="">-- Chọn Phường / Xã --</option>
-                {wards.map((w) => (
-                  <option key={w.code} value={w.code}>
-                    {w.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="location-input-group location-field-full">
-              <label>Số nhà, tên đường, ngõ hẻm *</label>
-              <input
-                type="text"
-                placeholder="VD: Số 123 đường 30/4"
-                value={value.detail || ''}
-                onChange={(e) => {
-                  const detail = e.target.value;
-                  const fullAddress = `${detail ? detail + ', ' : ''}${value.wardName ? value.wardName + ', ' : ''}${value.provinceName}`;
-                  onChange({
-                    ...value,
-                    detail,
-                    fullAddress,
-                  });
-                }}
-              />
-            </div>
+      {/* Quick selection from address book */}
+      {savedAddresses.length > 0 && (
+        <div className="saved-addresses-section">
+          <div className="saved-addresses-header">
+            <span className="saved-addresses-title">
+              <BookOpen size={14} style={{ display: 'inline', marginRight: 4 }} />
+              Chọn nhanh từ Sổ địa chỉ:
+            </span>
           </div>
-        </>
+          <div className="saved-addresses-grid">
+            {savedAddresses.map((addr) => (
+              <div
+                key={addr._id}
+                className={`saved-address-card ${selectedAddressId === addr._id ? 'selected' : ''}`}
+                onClick={() => applySavedAddress(addr)}
+              >
+                <div className="saved-address-top">
+                  <span className="saved-address-label">{addr.label || 'Địa chỉ'}</span>
+                  {addr.isDefault && <span className="saved-address-default">Mặc định</span>}
+                </div>
+                <div className="saved-address-text" title={addr.fullAddress}>
+                  {addr.fullAddress}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* Tab 2: Hospital Mode */}
-      {value.placeType === 'hospital' && (
-        <>
-          <div className="location-input-group">
-            <label>Chọn Bệnh viện điều trị *</label>
-            <select
-              value={value.hospitalId || ''}
-              onChange={(e) => handleHospitalSelect(e.target.value)}
-              disabled={loadingHospitals}
-            >
-              {hospitals.map((h) => (
-                <option key={h._id} value={h._id}>
-                  {h.name} - ({h.address})
-                </option>
-              ))}
-            </select>
+      {/* Manual Input: Province first, then Ward appears upon selection */}
+      <div className="location-fields-grid">
+        {/* 1. Tỉnh / Thành phố */}
+        <div className={`location-input-group ${!value.provinceCode ? 'location-field-full' : ''}`}>
+          <SearchableSelect
+            label="Tỉnh / Thành phố"
+            required
+            placeholder="-- Chọn Tỉnh / Thành phố --"
+            searchPlaceholder="Tìm tỉnh thành..."
+            options={sortedProvinces}
+            valueCode={value.provinceCode || ''}
+            valueName={value.provinceName || ''}
+            onChange={handleProvinceChange}
+            loading={loadingProvinces}
+          />
+        </div>
+
+        {/* 2. Phường / Xã / Quận - CHỈ HIỂN THỊ KHI ĐÃ CHỌN TỈNH THÀNH */}
+        {value.provinceCode ? (
+          <div className="location-input-group location-ward-fade-in">
+            <SearchableSelect
+              label="Phường / Xã / Quận"
+              required
+              placeholder="-- Chọn Phường / Xã --"
+              searchPlaceholder="Tìm phường xã, quận huyện..."
+              options={availableWards}
+              valueCode={value.wardCode || ''}
+              valueName={value.wardName || ''}
+              onChange={handleWardChange}
+              loading={loadingWards}
+            />
           </div>
+        ) : null}
 
-          <div className="hospital-notice-box">
-            <CheckCircle2 size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-            <div>
-              <strong>Địa chỉ cố định:</strong> {value.fullAddress || 'Đang cập nhật'}
-              <br />
-              <small>Hệ thống tự động sử dụng tọa độ GPS chuẩn của bệnh viện để tính cự ly di chuyển cho người chăm sóc.</small>
-            </div>
-          </div>
-
-          {/* 3 Hospital specific inputs */}
-          <div className="location-fields-grid">
-            <div className="location-input-group">
-              <label>Khoa điều trị *</label>
-              <input
-                type="text"
-                placeholder="VD: Khoa Hồi sức tích cực, Nội tim mạch..."
-                value={value.department || ''}
-                onChange={(e) => onChange({ ...value, department: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className="location-input-group">
-              <label>Số phòng / Tầng lầu *</label>
-              <input
-                type="text"
-                placeholder="VD: Phòng 402 - Lầu 4"
-                value={value.roomNumber || ''}
-                onChange={(e) => onChange({ ...value, roomNumber: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className="location-input-group location-field-full">
-              <label>Số giường / Vị trí nằm *</label>
-              <input
-                type="text"
-                placeholder="VD: Giường 05 - Dãy bên phải"
-                value={value.bedNumber || ''}
-                onChange={(e) => onChange({ ...value, bedNumber: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-        </>
-      )}
+        {/* 3. Số nhà, tên đường */}
+        <div className="location-input-group location-field-full">
+          <label>Số nhà, tên đường, ngõ hẻm *</label>
+          <input
+            type="text"
+            placeholder="VD: Số 123 đường 30/4"
+            value={value.detail || ''}
+            onChange={(e) => handleDetailChange(e.target.value)}
+            required
+          />
+        </div>
+      </div>
 
       {/* Mini Interactive Map */}
       <div className="location-map-wrapper">
@@ -422,8 +488,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           </span>
           <button
             type="button"
-            className="location-tab-btn"
-            style={{ padding: '4px 10px', fontSize: 12 }}
+            className="btn-locate-current"
             onClick={handleUseCurrentLocation}
           >
             <Navigation size={13} />
@@ -467,4 +532,3 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     </div>
   );
 };
-
