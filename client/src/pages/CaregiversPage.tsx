@@ -16,6 +16,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
+  ShieldCheck,
+  Zap,
 } from 'lucide-react';
 import { Navbar } from '../components/Header/Navbar';
 import { Footer } from '../components/Footer/Footer';
@@ -266,15 +268,74 @@ export const CaregiversPage: React.FC = () => {
       <Navbar />
 
       <main className="caregivers-page">
-        {/* ================= 1. BANNER SECTION (Image 1) ================= */}
+        {/* ================= 1. BANNER SECTION (Image 1 & 2) ================= */}
         <section className="caregivers-banner-section">
           <div className="container">
             <div className="caregivers-banner-wrapper">
               <img
                 src={caregiverBannerImg}
-                alt="Chọn người chăm sóc phù hợp - CareLink"
+                alt="CareLink - Chọn người chăm sóc phù hợp"
                 className="caregivers-banner-img"
               />
+
+              <div className="caregivers-banner-content">
+                {/* 1. Badge Xác minh */}
+                <div className="caregivers-banner-badge">
+                  <span className="caregivers-banner-badge-icon">
+                    <ShieldCheck size={14} fill="#0284c7" color="#ffffff" strokeWidth={2.5} />
+                  </span>
+                  <span>ĐỘI NGŨ ĐÃ XÁC MINH</span>
+                </div>
+
+                {/* 2. Tiêu đề chính */}
+                <h1 className="caregivers-banner-title">
+                  Chọn người chăm sóc
+                  <span className="banner-title-break"> </span>
+                  phù hợp
+                </h1>
+
+                {/* 3. Mô tả phụ */}
+                <p className="caregivers-banner-subtitle">
+                  Lọc hồ sơ theo kinh nghiệm, mức phí, đánh giá, khu vực và kỹ năng.
+                </p>
+
+                {/* 4. Bộ 3 Cam kết / Lợi thế nổi bật */}
+                <div className="caregivers-banner-features">
+                  <div className="caregivers-banner-feature-item">
+                    <div className="feature-icon-box">
+                      <ShieldCheck size={26} fill="#0284c7" color="#ffffff" strokeWidth={2} />
+                    </div>
+                    <div className="feature-text-block">
+                      <span className="feature-text-line">An toàn</span>
+                      <span className="feature-text-line">& Uy tín</span>
+                    </div>
+                  </div>
+
+                  <div className="caregivers-banner-feature-divider" />
+
+                  <div className="caregivers-banner-feature-item">
+                    <div className="feature-icon-box">
+                      <Zap size={24} fill="#0284c7" color="#0284c7" strokeWidth={1.5} />
+                    </div>
+                    <div className="feature-text-block">
+                      <span className="feature-text-line">Nhanh chóng</span>
+                      <span className="feature-text-line">& Tiện lợi</span>
+                    </div>
+                  </div>
+
+                  <div className="caregivers-banner-feature-divider" />
+
+                  <div className="caregivers-banner-feature-item">
+                    <div className="feature-icon-box">
+                      <Users size={24} fill="#0284c7" color="#0284c7" strokeWidth={1.5} />
+                    </div>
+                    <div className="feature-text-block">
+                      <span className="feature-text-line">Đa dạng</span>
+                      <span className="feature-text-line">lựa chọn</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
