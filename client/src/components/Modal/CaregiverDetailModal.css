@@ -364,6 +364,108 @@
   gap: 12px;
 }
 
+.booking-start-date-input::-webkit-calendar-picker-indicator {
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.booking-location-field {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.searchable-location-select {
+  position: relative;
+}
+
+.searchable-location-input {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 34px 9px 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+}
+
+.searchable-location-input:focus-visible {
+  border-color: #2563eb;
+  outline: 2px solid rgba(37, 99, 235, 0.2);
+}
+
+.searchable-location-input:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.searchable-location-chevron {
+  position: absolute;
+  top: 13px;
+  right: 11px;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.searchable-location-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  padding: 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.14);
+}
+
+.searchable-location-options {
+  display: flex;
+  max-height: 200px;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.searchable-location-options button {
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #0f172a;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+}
+
+.searchable-location-options button:hover,
+.searchable-location-options button.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.searchable-location-options .location-search-empty {
+  padding: 9px 10px;
+}
+
+.location-search-empty {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 400;
+}
+
 .booking-form-actions {
   justify-content: flex-end;
   margin-top: 4px;

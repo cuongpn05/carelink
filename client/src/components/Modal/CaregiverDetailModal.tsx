@@ -15,6 +15,7 @@ import {
   Star, 
   Clock, 
   MapPin, 
+  ChevronDown,
   ShieldCheck, 
   Check, 
   Phone, 
@@ -30,6 +31,161 @@ const packageUnitByType: Record<BookingPackage, string> = {
   DAILY: 'ngày',
   WEEKLY: 'tuần',
   MONTHLY: 'tháng',
+};
+
+const packageDurationMs: Record<BookingPackage, number> = {
+  HOURLY: 60 * 60 * 1000,
+  DAILY: 24 * 60 * 60 * 1000,
+  WEEKLY: 7 * 24 * 60 * 60 * 1000,
+  MONTHLY: 30 * 24 * 60 * 60 * 1000,
+};
+
+const normalizeLocationSearch = (value: string) =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .trim();
+
+interface LocationOption {
+  code: string;
+  name: string;
+}
+
+interface SearchableLocationSelectProps {
+  id: string;
+  label: string;
+  placeholder: string;
+  options: LocationOption[];
+  value: string;
+  disabled?: boolean;
+  loading?: boolean;
+  onChange: (value: string) => void;
+}
+
+const SearchableLocationSelect: React.FC<SearchableLocationSelectProps> = ({
+  id,
+  label,
+  placeholder,
+  options,
+  value,
+  disabled = false,
+  loading = false,
+  onChange,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const selectedOption = options.find((option) => option.code === value);
+  const filteredOptions = useMemo(() => {
+    const query = normalizeLocationSearch(search);
+    return query
+      ? options.filter((option) => normalizeLocationSearch(option.name).includes(query))
+      : options;
+  }, [options, search]);
+
+  const selectOption = (option: LocationOption) => {
+    onChange(option.code);
+    setSearch('');
+    setIsOpen(false);
+  };
+
+  const openDropdown = () => {
+    if (disabled || loading) return;
+    setSearch('');
+    setActiveIndex(Math.max(options.findIndex((option) => option.code === value), 0));
+    setIsOpen(true);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setIsOpen(true);
+      if (filteredOptions.length > 0) {
+        setActiveIndex((index) => Math.min(index + 1, filteredOptions.length - 1));
+      }
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setActiveIndex((index) => Math.max(index - 1, 0));
+    } else if (event.key === 'Enter' && isOpen && filteredOptions[activeIndex]) {
+      event.preventDefault();
+      selectOption(filteredOptions[activeIndex]);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      setIsOpen(false);
+      setSearch('');
+    }
+  };
+
+  return (
+    <div className="booking-location-field">
+      <label htmlFor={id}>{label}</label>
+      <div
+        className="searchable-location-select"
+        onBlur={(event) => {
+          if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+          setIsOpen(false);
+          setSearch('');
+        }}
+      >
+        <input
+          id={id}
+          type="text"
+          className="searchable-location-input"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={isOpen}
+          aria-controls={`${id}-options`}
+          aria-activedescendant={
+            isOpen && filteredOptions[activeIndex]
+              ? `${id}-option-${filteredOptions[activeIndex].code}`
+              : undefined
+          }
+          autoComplete="off"
+          value={isOpen ? search : selectedOption?.name || ''}
+          onFocus={openDropdown}
+          onClick={() => {
+            if (!isOpen) openDropdown();
+          }}
+          onChange={(event) => {
+            setSearch(event.target.value);
+            setActiveIndex(0);
+            setIsOpen(true);
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder={loading ? 'Đang tải danh sách...' : placeholder}
+          disabled={disabled || loading}
+        />
+        <ChevronDown className="searchable-location-chevron" size={16} aria-hidden="true" />
+        {isOpen && !disabled && !loading && (
+          <div className="searchable-location-menu">
+            <div className="searchable-location-options" id={`${id}-options`} role="listbox">
+              {filteredOptions.length > 0 ? filteredOptions.map((option, index) => (
+                <button
+                  type="button"
+                  id={`${id}-option-${option.code}`}
+                  key={option.code}
+                  role="option"
+                  aria-selected={option.code === value}
+                  className={index === activeIndex ? 'active' : ''}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onClick={() => selectOption(option)}
+                >
+                  {option.name}
+                </button>
+              )) : (
+                <span className="location-search-empty" role="status">
+                  Không tìm thấy kết quả phù hợp
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 interface CaregiverDetailModalProps {
@@ -201,6 +357,16 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
   }, [availablePackages, packageType]);
   const selectedPackage = availablePackages.find((item) => item.value === packageType);
   const packageUnit = packageUnitByType[packageType];
+  const estimatedEndTime = useMemo(() => {
+    if (!startDate || !startHour || !Number.isInteger(durationValue) || durationValue < 1) {
+      return null;
+    }
+
+    const start = new Date(`${startDate}T${startHour}`);
+    if (!Number.isFinite(start.getTime())) return null;
+
+    return new Date(start.getTime() + packageDurationMs[packageType] * durationValue);
+  }, [durationValue, packageType, startDate, startHour]);
   const estimatedTotal = typeof selectedPackage?.rate === 'number'
     ? selectedPackage.rate * durationValue
     : null;
@@ -446,9 +612,16 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                       Ngày bắt đầu
                       <input
                         type="date"
+                        className="booking-start-date-input"
                         value={startDate}
                         min={toLocalDateInput(new Date())}
                         onChange={(event) => setStartDate(event.target.value)}
+                        onClick={(event) => {
+                          const dateInput = event.currentTarget as HTMLInputElement & {
+                            showPicker?: () => void;
+                          };
+                          dateInput.showPicker?.();
+                        }}
                         required
                       />
                     </label>
@@ -464,47 +637,44 @@ export const CaregiverDetailModal: React.FC<CaregiverDetailModalProps> = ({
                       />
                     </label>
                   </div>
+                  <label>
+                    Thời gian kết thúc dự kiến
+                    <input
+                      type="text"
+                      value={estimatedEndTime
+                        ? new Intl.DateTimeFormat('vi-VN', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                          }).format(estimatedEndTime)
+                        : ''}
+                      placeholder="Chọn ngày, giờ và thời lượng để xem giờ kết thúc"
+                      readOnly
+                    />
+                  </label>
                   <div className="booking-form-row">
-                    <label>
-                      Tỉnh / Thành phố
-                      <select
-                        value={provinceCode}
-                        onChange={(event) => {
-                          setProvinceCode(event.target.value);
-                          setWardCode('');
-                          setWards([]);
-                        }}
-                        disabled={loadingProvinces}
-                        required
-                      >
-                        <option value="">
-                          {loadingProvinces ? 'Đang tải tỉnh/thành...' : 'Chọn tỉnh/thành phố'}
-                        </option>
-                        {provinces.map((province) => (
-                          <option key={province.code} value={province.code}>
-                            {province.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label>
-                      Phường / Xã
-                      <select
-                        value={wardCode}
-                        onChange={(event) => setWardCode(event.target.value)}
-                        disabled={!provinceCode || loadingWards}
-                        required
-                      >
-                        <option value="">
-                          {loadingWards ? 'Đang tải phường/xã...' : 'Chọn phường/xã'}
-                        </option>
-                        {wards.map((ward) => (
-                          <option key={ward.code} value={ward.code}>
-                            {ward.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    <SearchableLocationSelect
+                      id="booking-province"
+                      label="Tỉnh / Thành phố"
+                      placeholder="Chọn hoặc nhập tỉnh/thành"
+                      options={provinces}
+                      value={provinceCode}
+                      loading={loadingProvinces}
+                      onChange={(code) => {
+                        setProvinceCode(code);
+                        setWardCode('');
+                        setWards([]);
+                      }}
+                    />
+                    <SearchableLocationSelect
+                      id="booking-ward"
+                      label="Phường / Xã"
+                      placeholder={provinceCode ? 'Chọn hoặc nhập phường/xã' : 'Chọn tỉnh/thành trước'}
+                      options={wards}
+                      value={wardCode}
+                      disabled={!provinceCode}
+                      loading={loadingWards}
+                      onChange={setWardCode}
+                    />
                   </div>
                   {locationError && <p className="booking-error" role="alert">{locationError}</p>}
                   <label>
