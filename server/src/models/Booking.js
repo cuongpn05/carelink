@@ -295,6 +295,8 @@ const bookingSchema = new mongoose.Schema(
 // Compound indexes để tối ưu query tìm kiếm, bộ lọc khu vực và chặn trùng lịch
 bookingSchema.index({ caregiverId: 1, startTime: 1, endTime: 1, status: 1 });
 bookingSchema.index({ caregiverProfileId: 1, startTime: 1, endTime: 1, status: 1 });
+bookingSchema.index({ customerId: 1, caregiverId: 1, status: 1, startTime: 1, endTime: 1 });
+bookingSchema.index({ customerId: 1, caregiverProfileId: 1, status: 1, startTime: 1, endTime: 1 });
 bookingSchema.index({ serviceArea: 1, status: 1, bookingType: 1 });
 bookingSchema.index({ 'locationSnapshot.coordinates': '2dsphere' }, { sparse: true });
 

@@ -275,6 +275,31 @@ const createBooking = async (req, res) => {
       });
     }
 
+    const caregiverIds = [caregiverAccountId, caregiver._id, caregiverId]
+      .filter(Boolean)
+      .map((id) => id.toString());
+    const duplicateBooking = await Booking.findOne({
+      customerId: req.account._id,
+      status: { $in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS'] },
+      startTime: bookingDetails.startTime,
+      packageType,
+      durationValue: Number(durationValue),
+      serviceAddress: targetServiceAddress,
+      $or: [
+        { caregiverId: { $in: caregiverIds } },
+        { caregiverProfileId: { $in: caregiverIds } },
+      ],
+    })
+      .select('_id')
+      .lean();
+
+    if (duplicateBooking) {
+      return res.status(409).json({
+        success: false,
+        message: 'Bạn đã gửi yêu cầu đặt lịch giống hệt cho người chăm sóc này. Hãy kiểm tra lịch đặt của bạn hoặc thay đổi thông tin lịch.',
+      });
+    }
+
     // Kiểm tra rảnh lịch chéo qua Availability Service (quét cả Booking và CareRequest)
     const isAvailable = await checkCaregiverAvailability(
       caregiverAccountId,

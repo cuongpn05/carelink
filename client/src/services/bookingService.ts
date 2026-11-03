@@ -199,6 +199,9 @@ const requestBookingApi = async <T>(
   if (!response.ok || !apiResponse || apiResponse.success !== true || !('data' in apiResponse)) {
     const message = apiResponse?.message || response.statusText || 'Lỗi API không xác định.';
     console.error(`[booking API] ${method} ${url} failed: HTTP ${response.status} - ${message}`);
+    if (response.status === 409) {
+      throw new Error(message);
+    }
     throw new Error(`API ${method} ${path} lỗi HTTP ${response.status}: ${message}`);
   }
 
