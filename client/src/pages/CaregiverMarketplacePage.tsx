@@ -604,6 +604,7 @@ export const CaregiverMarketplacePage: React.FC = () => {
       {/* Detail Modal */}
       {detailItem && (
         <div
+          className="marketplace-modal-backdrop"
           style={{
             position: 'fixed',
             inset: 0,
@@ -618,6 +619,7 @@ export const CaregiverMarketplacePage: React.FC = () => {
           onClick={() => setDetailItem(null)}
         >
           <div
+            className="marketplace-detail-modal"
             style={{
               backgroundColor: '#ffffff',
               borderRadius: '20px',
@@ -634,7 +636,7 @@ export const CaregiverMarketplacePage: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div className="marketplace-detail-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <span className={`service-badge ${detailItem.serviceCategory}`}>
                   {CATEGORY_LABELS[detailItem.serviceCategory]?.label}
@@ -648,6 +650,7 @@ export const CaregiverMarketplacePage: React.FC = () => {
               </div>
               <button
                 type="button"
+                className="marketplace-modal-close"
                 onClick={() => setDetailItem(null)}
                 style={{
                   border: 'none',
@@ -795,7 +798,7 @@ export const CaregiverMarketplacePage: React.FC = () => {
             )}
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '10px' }}>
+            <div className="marketplace-modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', paddingTop: '10px' }}>
               <button
                 type="button"
                 onClick={() => setDetailItem(null)}
@@ -856,6 +859,7 @@ export const CaregiverMarketplacePage: React.FC = () => {
       {/* Confirmation Modal */}
       {confirmItem && (
         <div
+          className="marketplace-modal-backdrop"
           style={{
             position: 'fixed',
             inset: 0,
@@ -870,6 +874,7 @@ export const CaregiverMarketplacePage: React.FC = () => {
           onClick={() => setConfirmItem(null)}
         >
           <div
+            className="marketplace-confirm-modal"
             style={{
               backgroundColor: '#fff',
               borderRadius: '18px',
@@ -920,7 +925,7 @@ export const CaregiverMarketplacePage: React.FC = () => {
               )}
             </p>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div className="marketplace-modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button
                 type="button"
                 onClick={() => setConfirmItem(null)}

@@ -18,7 +18,9 @@ export const CaregiverHeader: React.FC = () => {
           aria-label="CareLink - yêu cầu chăm sóc"
         >
           <img className="caregiver-brand-logo" src={carelinkLogo} alt="CareLink" />
-          <span className="caregiver-brand-caption">Khu vực người chăm sóc</span>
+          <span className="caregiver-brand-name">
+            Care<span>Link</span>
+          </span>
         </NavLink>
 
         <nav className="caregiver-nav" aria-label="Điều hướng người chăm sóc">

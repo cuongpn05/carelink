@@ -478,3 +478,213 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 900px) {
+  .marketplace-hero {
+    padding: 40px 0 46px;
+  }
+
+  .marketplace-hero-inner {
+    width: 92%;
+  }
+
+  .marketplace-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .mp-card {
+    min-width: 0;
+    padding: 20px;
+  }
+}
+
+.marketplace-detail-modal,
+.marketplace-confirm-modal {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.marketplace-detail-modal {
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 700px) {
+  .marketplace-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .marketplace-hero {
+    padding: 32px 0 36px;
+  }
+
+  .marketplace-hero h1 {
+    font-size: 27px;
+    line-height: 1.2;
+  }
+
+  .marketplace-hero p {
+    font-size: 14px;
+  }
+
+  .marketplace-container {
+    width: calc(100% - 32px);
+    margin: 16px auto 40px;
+    gap: 18px;
+  }
+
+  .marketplace-filter-card {
+    gap: 14px;
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .marketplace-filter-heading {
+    gap: 10px;
+  }
+
+  .marketplace-filter-heading h2 {
+    font-size: 17px;
+    line-height: 1.3;
+  }
+
+  .marketplace-filter-heading p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .marketplace-filter-count {
+    align-self: flex-start;
+  }
+
+  .filter-row-top {
+    gap: 12px;
+  }
+
+  .filter-search-form {
+    gap: 8px;
+  }
+
+  .filter-input-box input,
+  .filter-select {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .marketplace-filter-control {
+    gap: 5px;
+  }
+
+  .filter-reset-btn {
+    width: 100%;
+    align-self: stretch;
+    min-height: 42px;
+  }
+
+  .category-pills-row {
+    margin-right: -4px;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .cat-pill-btn {
+    min-height: 38px;
+    padding: 7px 11px;
+    font-size: 12px;
+  }
+
+  .result-count {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .marketplace-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .mp-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .mp-card-top {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .service-badge {
+    max-width: 70%;
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  .mp-card-title {
+    font-size: 16px;
+  }
+
+  .mp-info-box {
+    padding: 12px;
+  }
+
+  .mp-info-line {
+    align-items: flex-start;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .mp-card-footer {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mp-budget-val {
+    font-size: 16px;
+  }
+
+  .btn-accept-cta {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .marketplace-modal-backdrop {
+    align-items: flex-start !important;
+    padding: 12px !important;
+    overflow-y: auto;
+  }
+
+  .marketplace-detail-modal,
+  .marketplace-confirm-modal {
+    width: 100% !important;
+    max-height: calc(100dvh - 24px) !important;
+    margin: auto 0;
+    padding: 18px !important;
+    border-radius: 16px !important;
+    overflow-y: auto;
+  }
+
+  .marketplace-detail-modal {
+    gap: 16px !important;
+  }
+
+  .marketplace-detail-modal-header h2 {
+    font-size: 18px !important;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .marketplace-modal-actions {
+    flex-direction: column-reverse !important;
+    gap: 8px !important;
+  }
+
+  .marketplace-modal-actions button {
+    width: 100%;
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+}

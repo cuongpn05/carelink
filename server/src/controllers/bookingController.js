@@ -4,7 +4,10 @@ const CaregiverProfile = require('../models/CaregiverProfile');
 const User = require('../models/User');
 const Account = require('../models/Account');
 const ReputationLog = require('../models/ReputationLog');
-const { calculateBookingDetails } = require('../utils/booking.util');
+const {
+  calculateBookingDetails,
+  calculateCaregiverCancellationPenalty,
+} = require('../utils/booking.util');
 
 const enrichBooking = async (booking, viewerAccountId) => {
   const bookingData = typeof booking.toObject === 'function' ? booking.toObject() : booking;
@@ -781,9 +784,9 @@ const cancelBooking = async (req, res) => {
     let penaltyPoints = 0;
     if (requestedBooking.status === 'CONFIRMED') {
       if (req.account.role === 'CAREGIVER') {
-        if (caregiverCancellationCount > 2) {
-          penaltyPoints = hoursUntilStart < 12 ? 15 : 5;
-        }
+        penaltyPoints = calculateCaregiverCancellationPenalty(
+          caregiverCancellationCount,
+        );
       } else {
         penaltyPoints = hoursUntilStart < 2 ? 15 : 5;
       }
