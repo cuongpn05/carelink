@@ -21,7 +21,9 @@ interface PackageOption {
 }
 
 const PACKAGES: PackageOption[] = [
+  { id: 'HOURLY', name: 'Ca 2 tiếng', durationValue: 2, desc: 'Hỗ trợ sinh hoạt nhanh' },
   { id: 'HOURLY', name: 'Ca 4 tiếng', durationValue: 4, desc: 'Chăm sóc nửa ngày' },
+  { id: 'HOURLY', name: 'Ca 6 tiếng', durationValue: 6, desc: 'Chăm sóc buổi trưa / chiều' },
   { id: 'HOURLY', name: 'Ca 8 tiếng', durationValue: 8, desc: 'Ca ban ngày / ban đêm' },
   { id: 'HOURLY', name: 'Ca 12 tiếng', durationValue: 12, desc: 'Ca ngày dài hoặc trông đêm' },
   { id: 'DAILY', name: 'Theo ngày (24h)', durationValue: 1, desc: 'Nuôi bệnh nội trú 24/24' },

@@ -18,11 +18,19 @@ import {
   Users,
   ShieldCheck,
   Zap,
+  ChevronDown,
+  X,
 } from 'lucide-react';
 import { Navbar } from '../components/Header/Navbar';
 import { Footer } from '../components/Footer/Footer';
 import { CaregiverDetailModal } from '../components/Modal/CaregiverDetailModal';
 import { ElderlyBookingModal } from '../components/Modal/ElderlyBookingModal';
+import {
+  getAdministrativeProvinces,
+  getAdministrativeWards,
+  ProvinceItem,
+  WardItem,
+} from '../services/userService';
 import {
   CaregiverFilters,
   CaregiverSortField,
@@ -113,6 +121,14 @@ interface FilterFormValues {
   sortBy: CaregiverSortField;
 }
 
+const getTodayLocal = (): string => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
 const emptyFilters: FilterFormValues = {
   keyword: '',
   area: 'Cần Thơ',
@@ -157,6 +173,15 @@ export const CaregiversPage: React.FC = () => {
   const [appliedFilters, setAppliedFilters] = useState<FilterFormValues>(initialFilters);
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
 
+  // Location Picker Popover state
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const [provinces, setProvinces] = useState<ProvinceItem[]>([]);
+  const [wards, setWards] = useState<WardItem[]>([]);
+  const [selectedProvinceCode, setSelectedProvinceCode] = useState('92'); // default Can Tho (92)
+  const [selectedProvinceName, setSelectedProvinceName] = useState('Cần Thơ');
+  const [selectedWardName, setSelectedWardName] = useState('');
+  const locationPickerRef = React.useRef<HTMLDivElement>(null);
+
   const [page, setPage] = useState(1);
   const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
   const [total, setTotal] = useState(0);
@@ -171,6 +196,78 @@ export const CaregiversPage: React.FC = () => {
   // Favorite IDs state
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
 
+  // Load administrative provinces on mount
+  useEffect(() => {
+    getAdministrativeProvinces()
+      .then((provs) => {
+        if (provs && provs.length > 0) {
+          setProvinces(provs);
+          const ct = provs.find((p) => p.shortName.includes('Cần Thơ') || p.name.includes('Cần Thơ'));
+          if (ct) {
+            setSelectedProvinceCode(ct.code);
+            setSelectedProvinceName(ct.shortName || ct.name);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Load wards when province changes
+  useEffect(() => {
+    if (selectedProvinceCode) {
+      getAdministrativeWards(selectedProvinceCode)
+        .then((wList) => setWards(wList || []))
+        .catch(() => setWards([]));
+    } else {
+      setWards([]);
+    }
+  }, [selectedProvinceCode]);
+
+  // Click outside listener for location popover
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (locationPickerRef.current && !locationPickerRef.current.contains(e.target as Node)) {
+        setIsLocationOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const code = e.target.value;
+    setSelectedProvinceCode(code);
+    const found = provinces.find((p) => p.code === code);
+    const pName = found ? (found.shortName || found.name) : '';
+    setSelectedProvinceName(pName);
+    setSelectedWardName('');
+    updateField('area', pName);
+  };
+
+  const handleWardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const wName = e.target.value;
+    setSelectedWardName(wName);
+    if (wName) {
+      const cleanW = wName.replace(/^(Phường|Xã|Thị trấn|Quận|Huyện)\s+/, '');
+      updateField('area', cleanW);
+    } else {
+      updateField('area', selectedProvinceName || 'Cần Thơ');
+    }
+  };
+
+  const handleQuickAreaSelect = (areaName: string) => {
+    if (areaName === 'Cần Thơ' || areaName === 'Tất cả Cần Thơ') {
+      setSelectedWardName('');
+      setSelectedProvinceName('Cần Thơ');
+      updateField('area', 'Cần Thơ');
+    } else {
+      setSelectedWardName(areaName);
+      setSelectedProvinceName('Cần Thơ');
+      updateField('area', areaName);
+    }
+    setIsLocationOpen(false);
+  };
+
   const toggleFavorite = (id: string) => {
     setFavoriteIds((prev) => {
       const next = new Set(prev);
@@ -183,16 +280,19 @@ export const CaregiversPage: React.FC = () => {
   useEffect(() => {
     let active = true;
 
-    // Convert priceRange to min/max price
+    // Convert priceRange to min/max price according to real caregiver rates (75k - 130k)
     let minPrice: number | undefined;
     let maxPrice: number | undefined;
-    if (appliedFilters.priceRange === 'UNDER_150') {
-      maxPrice = 150000;
-    } else if (appliedFilters.priceRange === '150_250') {
-      minPrice = 150000;
-      maxPrice = 250000;
-    } else if (appliedFilters.priceRange === 'OVER_250') {
-      minPrice = 250000;
+    if (appliedFilters.priceRange === 'UNDER_85') {
+      maxPrice = 85000;
+    } else if (appliedFilters.priceRange === '85_105') {
+      minPrice = 85000;
+      maxPrice = 105000;
+    } else if (appliedFilters.priceRange === '105_120') {
+      minPrice = 105000;
+      maxPrice = 120000;
+    } else if (appliedFilters.priceRange === 'OVER_120') {
+      minPrice = 120000;
     }
 
     const filters: CaregiverFilters = {
@@ -205,7 +305,7 @@ export const CaregiversPage: React.FC = () => {
       page,
       limit: 10,
       sortBy: appliedFilters.sortBy,
-      order: 'desc',
+      order: appliedFilters.sortBy === 'hourlyRate' ? 'asc' : 'desc',
     };
 
     const loadCaregivers = async () => {
@@ -364,28 +464,129 @@ export const CaregiversPage: React.FC = () => {
 
                 {/* Primary Horizontal Filter Row */}
                 <div className="caregivers-main-filter-row" style={{ marginTop: 14 }}>
-                  {/* Field 1: Địa điểm chăm sóc */}
-                  <div className="filter-pill-box">
+                  {/* Field 1: Địa điểm chăm sóc (Dropdown Tỉnh / Phường Xã) */}
+                  <div className="filter-pill-box location-pill-box" ref={locationPickerRef}>
                     <MapPin size={18} className="filter-pill-icon" />
-                    <div className="filter-pill-content">
+                    <div
+                      className="filter-pill-content location-pill-trigger"
+                      onClick={() => setIsLocationOpen((prev) => !prev)}
+                    >
                       <span className="filter-pill-label">Địa điểm chăm sóc</span>
-                      <select
-                        className="filter-pill-input"
-                        value={formValues.area}
-                        onChange={(e) => updateField('area', e.target.value)}
-                      >
-                        <option value="Cần Thơ">Cần Thơ</option>
-                        <option value="Ninh Kiều">Ninh Kiều, Cần Thơ</option>
-                        <option value="Cái Răng">Cái Răng, Cần Thơ</option>
-                        <option value="Bình Thủy">Bình Thủy, Cần Thơ</option>
-                        <option value="Ô Môn">Ô Môn, Cần Thơ</option>
-                        <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-                        <option value="Tất cả khu vực">Tất cả khu vực</option>
-                      </select>
+                      <div className="location-pill-text-row">
+                        <span className="location-pill-text">
+                          {selectedWardName
+                            ? `${selectedWardName.replace(/^(Phường|Xã|Thị trấn|Quận|Huyện)\s+/, '')}, ${selectedProvinceName || 'Cần Thơ'}`
+                            : formValues.area || 'Cần Thơ'}
+                        </span>
+                        <ChevronDown size={14} className={`location-arrow ${isLocationOpen ? 'open' : ''}`} />
+                      </div>
                     </div>
+
+                    {/* Popover Dropdown Tỉnh/Thành & Phường/Xã */}
+                    {isLocationOpen && (
+                      <div className="location-popover-card">
+                        <div className="location-popover-header">
+                          <span className="location-popover-title">Chọn khu vực chăm sóc</span>
+                          <button
+                            type="button"
+                            className="btn-close-popover"
+                            onClick={() => setIsLocationOpen(false)}
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+
+                        <div className="location-popover-body">
+                          {/* 1. Tỉnh / Thành phố */}
+                          <div className="location-select-group">
+                            <label>Tỉnh / Thành phố</label>
+                            <select
+                              value={selectedProvinceCode}
+                              onChange={handleProvinceChange}
+                              className="location-select-control"
+                            >
+                              {provinces.length > 0 ? (
+                                provinces.map((prov) => (
+                                  <option key={prov.code} value={prov.code}>
+                                    {prov.name}
+                                  </option>
+                                ))
+                              ) : (
+                                <>
+                                  <option value="92">Thành phố Cần Thơ</option>
+                                  <option value="79">Thành phố Hồ Chí Minh</option>
+                                  <option value="1">Thành phố Hà Nội</option>
+                                </>
+                              )}
+                            </select>
+                          </div>
+
+                          {/* 2. Phường / Xã / Quận */}
+                          <div className="location-select-group">
+                            <label>Phường / Xã / Quận</label>
+                            <select
+                              value={selectedWardName}
+                              onChange={handleWardChange}
+                              className="location-select-control"
+                            >
+                              <option value="">Tất cả phường / xã</option>
+                              {wards.length > 0 ? (
+                                wards.map((ward) => (
+                                  <option key={ward.code} value={ward.name}>
+                                    {ward.name}
+                                  </option>
+                                ))
+                              ) : (
+                                <>
+                                  <option value="Ninh Kiều">Quận Ninh Kiều</option>
+                                  <option value="Cái Răng">Quận Cái Răng</option>
+                                  <option value="Bình Thủy">Quận Bình Thủy</option>
+                                  <option value="Phong Điền">Huyện Phong Điền</option>
+                                  <option value="Ô Môn">Quận Ô Môn</option>
+                                  <option value="Thốt Nốt">Quận Thốt Nốt</option>
+                                </>
+                              )}
+                            </select>
+                          </div>
+
+                          {/* 3. Gợi ý nhanh khu vực Cần Thơ */}
+                          <div className="location-quick-picks">
+                            <span className="quick-picks-label">Gợi ý khu vực Cần Thơ:</span>
+                            <div className="quick-picks-tags">
+                              {['Ninh Kiều', 'Cái Răng', 'Bình Thủy', 'Phong Điền', 'Ô Môn', 'Tất cả Cần Thơ'].map((areaName) => (
+                                <button
+                                  key={areaName}
+                                  type="button"
+                                  className={`quick-tag ${
+                                    (areaName === 'Tất cả Cần Thơ' && !selectedWardName) ||
+                                    selectedWardName.includes(areaName) ||
+                                    formValues.area.includes(areaName)
+                                      ? 'active'
+                                      : ''
+                                  }`}
+                                  onClick={() => handleQuickAreaSelect(areaName)}
+                                >
+                                  {areaName}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="location-popover-footer">
+                          <button
+                            type="button"
+                            className="btn-apply-location"
+                            onClick={() => setIsLocationOpen(false)}
+                          >
+                            Xác nhận khu vực
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Field 2: Ngày bắt đầu */}
+                  {/* Field 2: Ngày bắt đầu (Chặn chọn ngày quá khứ) */}
                   <div className="filter-pill-box">
                     <Calendar size={18} className="filter-pill-icon" />
                     <div className="filter-pill-content">
@@ -394,13 +595,20 @@ export const CaregiversPage: React.FC = () => {
                         type="date"
                         className="filter-pill-input"
                         value={formValues.startDate}
-                        min={new Date().toISOString().split('T')[0]}
-                        onChange={(e) => updateField('startDate', e.target.value)}
+                        min={getTodayLocal()}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val && val < getTodayLocal()) {
+                            updateField('startDate', getTodayLocal());
+                          } else {
+                            updateField('startDate', val);
+                          }
+                        }}
                       />
                     </div>
                   </div>
 
-                  {/* Field 3: Thời gian */}
+                  {/* Field 3: Thời gian (Bổ sung thêm 2h và 6h) */}
                   <div className="filter-pill-box">
                     <Clock size={18} className="filter-pill-icon" />
                     <div className="filter-pill-content">
@@ -411,7 +619,9 @@ export const CaregiversPage: React.FC = () => {
                         onChange={(e) => updateField('timeSlot', e.target.value)}
                       >
                         <option value="ALL">Chọn khung giờ</option>
+                        <option value="HOURLY_2">Ca 2 tiếng</option>
                         <option value="HOURLY_4">Ca 4 tiếng</option>
+                        <option value="HOURLY_6">Ca 6 tiếng</option>
                         <option value="HOURLY_8">Ca 8 tiếng</option>
                         <option value="HOURLY_12">Ca 12 tiếng</option>
                         <option value="DAILY_24">Theo ngày (24/24h)</option>
@@ -419,20 +629,21 @@ export const CaregiversPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Field 4: Mức giá */}
+                  {/* Field 4: Mức giá (Theo giá thực tế 75k - 130k của Caregiver) */}
                   <div className="filter-pill-box">
                     <Coins size={18} className="filter-pill-icon" />
                     <div className="filter-pill-content">
-                      <span className="filter-pill-label">Mức giá (VNĐ/ngày)</span>
+                      <span className="filter-pill-label">Mức giá (VNĐ/giờ)</span>
                       <select
                         className="filter-pill-input"
                         value={formValues.priceRange}
                         onChange={(e) => updateField('priceRange', e.target.value)}
                       >
-                        <option value="ALL">Tất cả</option>
-                        <option value="UNDER_150">Dưới 150.000đ/giờ</option>
-                        <option value="150_250">150.000đ - 250.000đ/giờ</option>
-                        <option value="OVER_250">Trên 250.000đ/giờ</option>
+                        <option value="ALL">Tất cả mức giá</option>
+                        <option value="UNDER_85">Dưới 85.000đ/giờ</option>
+                        <option value="85_105">85.000đ - 105.000đ/giờ</option>
+                        <option value="105_120">105.000đ - 120.000đ/giờ</option>
+                        <option value="OVER_120">Trên 120.000đ/giờ</option>
                       </select>
                     </div>
                   </div>
@@ -475,6 +686,7 @@ export const CaregiversPage: React.FC = () => {
                       </select>
                     </div>
 
+                    {/* Sắp xếp theo (Đã bỏ Mới tham gia) */}
                     <div className="adv-filter-field">
                       <label>Sắp xếp theo</label>
                       <select
@@ -484,18 +696,7 @@ export const CaregiversPage: React.FC = () => {
                         <option value="ratingAvg">Đánh giá cao nhất</option>
                         <option value="hourlyRate">Giá dịch vụ thấp nhất</option>
                         <option value="experienceYears">Kinh nghiệm nhiều nhất</option>
-                        <option value="createdAt">Mới tham gia</option>
                       </select>
-                    </div>
-
-                    <div className="adv-filter-field">
-                      <label>Tìm theo tên</label>
-                      <input
-                        type="text"
-                        placeholder="VD: Minh Anh, Thu Hà..."
-                        value={formValues.keyword}
-                        onChange={(e) => updateField('keyword', e.target.value)}
-                      />
                     </div>
 
                     <button

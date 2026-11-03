@@ -112,12 +112,25 @@ const getCaregivers = async (req, res) => {
       };
     }
 
-    // 5. Lọc theo khu vực
+    // 5. Lọc theo khu vực (hỗ trợ cả Tỉnh thành và Phường/Xã/Quận)
     if (area) {
-      filter.serviceAreas = {
-        $regex: escapeRegex(area),
-        $options: "i",
-      };
+      const cleanArea = area.replace(/^(Phường|Xã|Thị trấn|Quận|Huyện|Tỉnh|Thành phố)\s+/i, '').trim();
+      const canThoDistricts = ['Ninh Kiều', 'Cái Răng', 'Bình Thủy', 'Phong Điền', 'Ô Môn', 'Thốt Nốt', 'Cờ Đỏ', 'Thới Lai', 'Vĩnh Thạnh'];
+
+      if (/Cần Thơ/i.test(area) || /Can Tho/i.test(area)) {
+        filter.serviceAreas = {
+          $in: [
+            new RegExp('Cần Thơ', 'i'),
+            ...canThoDistricts.map((d) => new RegExp(escapeRegex(d), 'i')),
+          ],
+        };
+      } else {
+        const searchTerm = cleanArea || area;
+        filter.serviceAreas = {
+          $regex: escapeRegex(searchTerm),
+          $options: "i",
+        };
+      }
     }
 
     // 6. Lọc theo kỹ năng
